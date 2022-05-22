@@ -1,4 +1,4 @@
-using SimpleDbNET;
+using SimpleDbNET.Api;
 
 public class Program
 {

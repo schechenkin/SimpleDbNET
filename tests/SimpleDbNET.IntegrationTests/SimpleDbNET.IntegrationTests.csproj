@@ -30,6 +30,6 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-	  <ProjectReference Include="..\..\SimpleDbNET\SimpleDbNET.csproj" />
+	  <ProjectReference Include="..\..\SimpleDbNET\SimpleDbNET.Api.csproj" />
 	</ItemGroup>
 </Project>

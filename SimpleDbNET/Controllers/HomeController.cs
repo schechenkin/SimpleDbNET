@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StackExchange.Profiling;
 
-namespace SimpleDbNET.Controllers
+namespace SimpleDbNET.Api.Controllers
 {
     [Route("home")]
     [ApiController]

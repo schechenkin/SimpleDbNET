@@ -1,4 +1,5 @@
 ﻿using AspNetCore.Testing.Authentication.ClaimInjector;
+using SimpleDbNET.Api;
 
 namespace SimpleDbNET.IntegrationTests.Features.Fixtures
 {

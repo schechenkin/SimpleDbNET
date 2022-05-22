@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace SimpleDbNET.Views.Shared.Components.ComponentTest
+namespace SimpleDbNET.Api.Views.Shared.Components.ComponentTest
 {
     public class ComponentTestViewComponent : ViewComponent
     {

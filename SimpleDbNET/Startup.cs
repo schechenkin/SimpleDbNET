@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Server.Kestrel.Core;
+using SimpleDb.Extensions;
 using StackExchange.Profiling.Storage;
 using System.Text.Json.Serialization;
 
-namespace SimpleDbNET
+namespace SimpleDbNET.Api
 {
     public class Startup
     {
@@ -20,7 +21,7 @@ namespace SimpleDbNET
         public void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddControllers(config => {})
+                .AddControllers(config => { })
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
@@ -39,6 +40,8 @@ namespace SimpleDbNET
                 // See: https://github.com/aspnet/AspNetCore/issues/8998
                 options.SuppressAsyncSuffixInActionNames = false;
             });
+
+            services.AddSimpleDb(Configuration);
 
             ConfigureMiniProfiler(services);
 
@@ -124,7 +127,7 @@ namespace SimpleDbNET
 
                     // (Optional) Profiles are stored under a user ID, function to get it:
                     // (default is null, since above methods don't use it by default)
-                   // options.UserIdProvider = request => MyGetUserIdFunction(request);
+                    // options.UserIdProvider = request => MyGetUserIdFunction(request);
 
                     // (Optional) Swap out the entire profiler provider, if you want
                     // (default handles async and works fine for almost all applications)

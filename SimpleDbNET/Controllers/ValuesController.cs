@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace SimpleDbNET.Controllers
+namespace SimpleDbNET.Api.Controllers
 {
     [Route("values")]
     [ApiController]
