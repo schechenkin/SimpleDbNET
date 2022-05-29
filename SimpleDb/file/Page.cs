@@ -1,18 +1,16 @@
-﻿using System;
-using System.IO;
-using System.Text;
+﻿using System.Text;
 
 namespace SimpleDB.file
 {
     public class Page
     {
         private byte[] buffer;
-        public static Encoding CHARSET = Encoding.ASCII;
+        public readonly static Encoding CHARSET = Encoding.UTF8;
 
         // For creating data buffers
-        public Page(int blocksize)
+        public Page(int blockSize)
         {
-            buffer = new byte[blocksize];
+            buffer = new byte[blockSize];
         }
 
         // For creating log pages
@@ -21,7 +19,7 @@ namespace SimpleDB.file
             buffer = b;
         }
 
-        public int getInt(int offset)
+        public int GetInt(int offset)
         {
             var stream = new MemoryStream(buffer);
             stream.Position = offset;
@@ -31,16 +29,16 @@ namespace SimpleDB.file
             return reader.ReadInt32();
         }
 
-        public void setInt(int offset, int n)
+        public void SetInt(int offset, int value)
         {
             var stream = new MemoryStream(buffer);
             stream.Position = offset;
 
             using BinaryWriter writer = new BinaryWriter(stream, CHARSET, true);
-            writer.Write(n);
+            writer.Write(value);
         }
 
-        public byte[] getBytes(int offset)
+        public byte[] GetBytes(int offset)
         {
             var stream = new MemoryStream(buffer);
             stream.Position = offset;
@@ -50,32 +48,36 @@ namespace SimpleDB.file
             return reader.ReadBytes(length);
         }
 
-        public void setBytes(int offset, byte[] b)
+        public void SetBytes(int offset, byte[] bytes)
         {
             var stream = new MemoryStream(buffer);
             stream.Position = offset;
 
             using BinaryWriter writer = new BinaryWriter(stream, CHARSET, true);
-            writer.Write(b.Length);
-            writer.Write(b);
+            writer.Write(bytes.Length);
+            writer.Write(bytes);
         }
 
-        public String getString(int offset)
+        public string GetString(int offset)
         {
-            byte[] b = getBytes(offset);
-            return CHARSET.GetString(b);
+            byte[] bytes = GetBytes(offset);
+            return CHARSET.GetString(bytes);
         }
 
-        public void setString(int offset, String s)
+        public void SetString(int offset, String value)
         {
-            byte[] b = CHARSET.GetBytes(s);
-            setBytes(offset, b);
+            byte[] b = CHARSET.GetBytes(value);
+            SetBytes(offset, b);
+        }
+
+        public static int CalculateStringStoringSize(string text)
+        {
+            return sizeof(Int32) + Encoding.UTF8.GetByteCount(text);
         }
 
         public static int maxLength(int strlen)
         {
-            //float bytesPerChar = CHARSET.GetMaxByteCount(1);
-            float bytesPerChar = 1;
+            float bytesPerChar = 4;
             return sizeof(Int32) + (strlen * (int)bytesPerChar);
         }
 

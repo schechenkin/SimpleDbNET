@@ -1,41 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
 namespace SimpleDB.file
 {
-    public class BlockId
+    public record BlockId
     {
-        private String filename;
-        private int blknum;
+        public string FileName { get; }
+        public int Number { get; }
 
-        public BlockId(String filename, int blknum)
+        public static BlockId New(string fileName, uint blockNumber)
         {
-            this.filename = filename;
-            this.blknum = blknum;
+            return BlockId.New(fileName, blockNumber);
         }
 
-        public String fileName()
+        public static BlockId New(string fileName, int blockNumber)
         {
-            return filename;
+            Debug.Assert(blockNumber >= 0);
+
+            return new BlockId(fileName, blockNumber);
         }
 
-        public int number()
+        public static BlockId Dummy(string fileName)
         {
-            return blknum;
+            return new BlockId(fileName, -1);
         }
 
-        public override bool Equals(Object obj)
+        private BlockId(string fileName, int blockNumber)
         {
-            BlockId blk = (BlockId)obj;
-            return filename.Equals(blk.filename) && blknum == blk.blknum;
+            Debug.Assert(!string.IsNullOrEmpty(fileName));
+
+            FileName = fileName;
+            Number = blockNumber;
         }
 
-        public override String ToString()
+        public override string ToString()
         {
-            return "[file " + filename + ", block " + blknum + "]";
+            return "[file " + FileName + ", block " + Number + "]";
         }
 
         public override int GetHashCode()
