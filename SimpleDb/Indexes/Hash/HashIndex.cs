@@ -80,7 +80,7 @@ namespace SimpleDB.Indexes.Hash
 		{
 			beforeFirst(val);
 			ts.insert();
-			ts.setInt("block", rid.blockNumber());
+			ts.setInt("block", (int)rid.blockNumber());
 			ts.setInt("id", rid.slot());
 			ts.setVal("dataval", val);
 		}

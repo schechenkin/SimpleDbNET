@@ -1,50 +1,31 @@
 ﻿using SimpleDB.file;
 using SimpleDB.log;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleDB.Data
 {
     public class Buffer
     {
-        private FileMgr fm;
-        private LogMgr lm;
-        private Page _contents;
-        private BlockId blk = null;
-        private int pins = 0;
-        private int txnum = -1;
-        private int lsn = -1;
+        private FileManager m_FileManager;
+        private LogManager m_logManager;
+        private int m_PinsCount = 0;
+        private int m_TransactionNumber = -1;
+        private int m_lsn = -1;
+        public Page Page { get; private set; }
+        public BlockId BlockId { get; private set; }
+        public bool IsPinned => m_PinsCount > 0;
 
-        public Buffer(FileMgr fm, LogMgr lm)
+        public Buffer(FileManager fm, LogManager lm)
         {
-            this.fm = fm;
-            this.lm = lm;
-            _contents = new Page(fm.blockSize());
+            this.m_FileManager = fm;
+            this.m_logManager = lm;
+            Page = new Page(fm.BlockSize);
         }
 
-        public Page contents()
+        public void SetModified(int txnum, int lsn)
         {
-            return _contents;
-        }
-
-        /**
-         * Returns a reference to the disk block
-         * allocated to the buffer.
-         * @return a reference to a disk block
-         */
-        public BlockId block()
-        {
-            return blk;
-        }
-
-        public void setModified(int txnum, int lsn)
-        {
-            this.txnum = txnum;
+            this.m_TransactionNumber = txnum;
             if (lsn >= 0)
-                this.lsn = lsn;
+                this.m_lsn = lsn;
         }
 
         /**
@@ -52,14 +33,10 @@ namespace SimpleDB.Data
          * (that is, if it has a nonzero pin count).
          * @return true if the buffer is pinned
          */
-        public bool isPinned()
-        {
-            return pins > 0;
-        }
 
         public int modifyingTx()
         {
-            return txnum;
+            return m_TransactionNumber;
         }
 
         /**
@@ -69,41 +46,41 @@ namespace SimpleDB.Data
          * are first written to disk.
          * @param b a reference to the data block
          */
-        internal void assignToBlock(BlockId b)
+        internal void AssignToBlock(BlockId blockId)
         {
-            flush();
-            blk = b;
-            fm.read(blk, _contents);
-            pins = 0;
+            Flush();
+            BlockId = blockId;
+            m_FileManager.ReadBlock(BlockId, Page);
+            m_PinsCount = 0;
         }
 
         /**
          * Write the buffer to its disk block if it is dirty.
          */
-        internal void flush()
+        internal void Flush()
         {
-            if (txnum >= 0)
+            if (m_TransactionNumber >= 0)
             {
-                lm.flush(lsn);
-                fm.write(blk, _contents);
-                txnum = -1;
+                m_logManager.Flush(m_lsn);
+                m_FileManager.WritePage(Page, BlockId);
+                m_TransactionNumber = -1;
             }
         }
 
         /**
          * Increase the buffer's pin count.
          */
-        internal void pin()
+        internal void Pin()
         {
-            pins++;
+            m_PinsCount++;
         }
 
         /**
          * Decrease the buffer's pin count.
          */
-        internal void unpin()
+        internal void Unpin()
         {
-            pins--;
+            m_PinsCount--;
         }
     }
 }

@@ -10,8 +10,8 @@ namespace SimpleDB.Tx.Recovery
 {
     public class RecoveryMgr
     {
-        private LogMgr lm;
-        private BufferMgr bm;
+        private LogManager lm;
+        private BufferManager bm;
         private Transaction tx;
         private int txnum;
 
@@ -19,7 +19,7 @@ namespace SimpleDB.Tx.Recovery
          * Create a recovery manager for the specified transaction.
          * @param txnum the ID of the specified transaction
          */
-        public RecoveryMgr(Transaction tx, int txnum, LogMgr lm, BufferMgr bm)
+        public RecoveryMgr(Transaction tx, int txnum, LogManager lm, BufferManager bm)
         {
             this.tx = tx;
             this.txnum = txnum;
@@ -33,9 +33,9 @@ namespace SimpleDB.Tx.Recovery
          */
         public void commit()
         {
-            bm.flushAll(txnum);
+            bm.FlushAll(txnum);
             int lsn = CommitRecord.writeToLog(lm, txnum);
-            lm.flush(lsn);
+            lm.Flush(lsn);
         }
 
         /**
@@ -44,9 +44,9 @@ namespace SimpleDB.Tx.Recovery
         public void rollback()
         {
             doRollback();
-            bm.flushAll(txnum);
+            bm.FlushAll(txnum);
             int lsn = RollbackRecord.writeToLog(lm, txnum);
-            lm.flush(lsn);
+            lm.Flush(lsn);
         }
 
         /**
@@ -56,9 +56,9 @@ namespace SimpleDB.Tx.Recovery
         public void recover()
         {
             doRecover();
-            bm.flushAll(txnum);
+            bm.FlushAll(txnum);
             int lsn = CheckpointRecord.writeToLog(lm);
-            lm.flush(lsn);
+            lm.Flush(lsn);
         }
 
         /**
@@ -69,8 +69,8 @@ namespace SimpleDB.Tx.Recovery
          */
         public int setInt(Data.Buffer buff, int offset, int newval)
         {
-            int oldval = buff.contents().getInt(offset);
-            BlockId blk = buff.block();
+            int oldval = buff.Page.GetInt(offset);
+            BlockId blk = buff.BlockId;
             return SetIntRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 
@@ -82,8 +82,8 @@ namespace SimpleDB.Tx.Recovery
          */
         public int setString(Data.Buffer buff, int offset, string newval)
         {
-            string oldval = buff.contents().getString(offset);
-            BlockId blk = buff.block();
+            string oldval = buff.Page.GetString(offset);
+            BlockId blk = buff.BlockId;
             return SetStringRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 
@@ -96,10 +96,10 @@ namespace SimpleDB.Tx.Recovery
          */
         private void doRollback()
         {
-            var iter = lm.iterator();
-            while (iter.hasNext())
+            var iter = lm.GetIterator();
+            while (iter.HasNext())
             {
-                byte[] bytes = iter.next();
+                byte[] bytes = iter.Next();
                 LogRecord rec = LogRecord.createLogRecord(bytes);
                 if (rec.txNumber() == txnum)
                 {
@@ -121,10 +121,10 @@ namespace SimpleDB.Tx.Recovery
         private void doRecover()
         {
             var finishedTxs = new List<int>();
-            var iter = lm.iterator();
-            while (iter.hasNext())
+            var iter = lm.GetIterator();
+            while (iter.HasNext())
             {
-                byte[] bytes = iter.next();
+                byte[] bytes = iter.Next();
                 LogRecord rec = LogRecord.createLogRecord(bytes);
                 if (rec.op() == LogRecord.Type.CHECKPOINT)
                     return;

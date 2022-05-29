@@ -39,7 +39,7 @@ namespace SimpleDB.Tx.Recovery
         public static LogRecord createLogRecord(byte[] bytes)
         {
             Page p = new Page(bytes);
-            switch ((LogRecord.Type)p.getInt(0))
+            switch ((LogRecord.Type)p.GetInt(0))
             {
                 case Type.CHECKPOINT:
                     return new CheckpointRecord();

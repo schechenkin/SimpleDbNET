@@ -27,7 +27,7 @@ namespace SimpleDb
 
         public Task DropDb()
         {
-            db.fileMgr().closeFiles();
+            db.fileMgr().CloseFiles();
 
             db = new Server("database", true);
             return Task.CompletedTask;

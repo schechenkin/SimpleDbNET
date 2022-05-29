@@ -15,7 +15,7 @@ namespace SimpleDB.Tx.Recovery
         public StartRecord(Page p)
         {
             int tpos = sizeof(int);
-            txnum = p.getInt(tpos);
+            txnum = p.GetInt(tpos);
         }
 
         public LogRecord.Type op()
@@ -45,13 +45,13 @@ namespace SimpleDB.Tx.Recovery
          * followed by the transaction id.
          * @return the LSN of the last log value
          */
-        public static int writeToLog(LogMgr lm, int txnum)
+        public static int writeToLog(LogManager lm, int txnum)
         {
             byte[] rec = new byte[2 * sizeof(int)];
             Page p = new Page(rec);
-            p.setInt(0, (int)LogRecord.Type.START);
-            p.setInt(sizeof(int), txnum);
-            return lm.append(rec);
+            p.SetInt(0, (int)LogRecord.Type.START);
+            p.SetInt(sizeof(int), txnum);
+            return lm.Append(rec);
         }
     }
 }

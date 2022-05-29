@@ -14,9 +14,9 @@ namespace SimpleDB
         public static int BUFFER_SIZE = 8;
         public static string LOG_FILE = "simpledb.log";
 
-        private FileMgr fm;
-        private LogMgr lm;
-        private BufferMgr bm;
+        private FileManager fm;
+        private LogManager lm;
+        private BufferManager bm;
         private MetadataMgr mdm;
         private Planner mPlanner;
 
@@ -28,9 +28,9 @@ namespace SimpleDB
          */
         public Server(string dirname, int blocksize, int buffsize, bool recreate = false)
         {
-            fm = new FileMgr(dirname, blocksize, recreate);
-            lm = new LogMgr(fm, LOG_FILE);
-            bm = new BufferMgr(fm, lm, buffsize);
+            fm = new FileManager(dirname, blocksize, recreate);
+            lm = new LogManager(fm, LOG_FILE);
+            bm = new BufferManager(fm, lm, buffsize);
         }
 
         /**
@@ -64,17 +64,17 @@ namespace SimpleDB
 
 
         // These methods aid in debugging
-        public FileMgr fileMgr()
+        public FileManager fileMgr()
         {
             return fm;
         }
 
-        public LogMgr logMgr()
+        public LogManager logMgr()
         {
             return lm;
         }
 
-        public BufferMgr bufferMgr()
+        public BufferManager bufferMgr()
         {
             return bm;
         }

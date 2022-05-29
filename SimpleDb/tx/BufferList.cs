@@ -8,9 +8,9 @@ namespace SimpleDB.Tx
     {
         private Dictionary<BlockId, Buffer> buffers = new Dictionary<BlockId, Buffer>();
         private List<BlockId> pins = new List<BlockId>();
-        private BufferMgr bm;
+        private BufferManager bm;
 
-        public BufferList(BufferMgr bm)
+        public BufferList(BufferManager bm)
         {
             this.bm = bm;
         }
@@ -33,7 +33,7 @@ namespace SimpleDB.Tx
          */
         internal void pin(BlockId blk)
         {
-            Buffer buff = bm.pin(blk);
+            Buffer buff = bm.PinBlock(blk);
             buffers[blk] = buff;
             pins.Add(blk);
         }
@@ -45,7 +45,7 @@ namespace SimpleDB.Tx
         internal void unpin(BlockId blk)
         {
             Buffer buff = buffers[blk];
-            bm.unpin(buff);
+            bm.UnpinBuffer(buff);
             pins.Remove(blk);
             if (!pins.Contains(blk))
                 buffers.Remove(blk);
@@ -59,7 +59,7 @@ namespace SimpleDB.Tx
             foreach (BlockId blk in pins)
             {
                 Buffer buff = buffers[blk];
-                bm.unpin(buff);
+                bm.UnpinBuffer(buff);
             }
             buffers.Clear();
             pins.Clear();

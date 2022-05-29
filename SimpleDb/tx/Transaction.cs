@@ -14,8 +14,8 @@ namespace SimpleDB.Tx
         private static int END_OF_FILE = -1;
         private RecoveryMgr recoveryMgr;
         private ConcurrencyMgr concurMgr;
-        private BufferMgr bm;
-        private FileMgr fm;
+        private BufferManager bm;
+        private FileManager fm;
         private int txnum;
         private BufferList mybuffers;
         private static Mutex mutex = new Mutex();
@@ -32,7 +32,7 @@ namespace SimpleDB.Tx
          * {@link simpledb.server.SimpleDB#initFileLogAndBufferMgr(String)} or
          * is called first.
          */
-        public Transaction(FileMgr fm, LogMgr lm, BufferMgr bm)
+        public Transaction(FileManager fm, LogManager lm, BufferManager bm)
         {
             this.fm = fm;
             this.bm = bm;
@@ -81,7 +81,7 @@ namespace SimpleDB.Tx
          */
         public void recover()
         {
-            bm.flushAll(txnum);
+            bm.FlushAll(txnum);
             recoveryMgr.recover();
         }
 
@@ -119,7 +119,7 @@ namespace SimpleDB.Tx
         {
             concurMgr.sLock(blk);
             Buffer buff = mybuffers.getBuffer(blk);
-            return buff.contents().getInt(offset);
+            return buff.Page.GetInt(offset);
         }
 
         /**
@@ -135,7 +135,7 @@ namespace SimpleDB.Tx
         {
             concurMgr.sLock(blk);
             Buffer buff = mybuffers.getBuffer(blk);
-            return buff.contents().getString(offset);
+            return buff.Page.GetString(offset);
         }
 
         /**
@@ -158,9 +158,9 @@ namespace SimpleDB.Tx
             int lsn = -1;
             if (okToLog)
                 lsn = recoveryMgr.setInt(buff, offset, val);
-            Page p = buff.contents();
-            p.setInt(offset, val);
-            buff.setModified(txnum, lsn);
+            Page p = buff.Page;
+            p.SetInt(offset, val);
+            buff.SetModified(txnum, lsn);
         }
 
         /**
@@ -183,9 +183,9 @@ namespace SimpleDB.Tx
             int lsn = -1;
             if (okToLog)
                 lsn = recoveryMgr.setString(buff, offset, val);
-            Page p = buff.contents();
-            p.setString(offset, val);
-            buff.setModified(txnum, lsn);
+            Page p = buff.Page;
+            p.SetString(offset, val);
+            buff.SetModified(txnum, lsn);
         }
 
         /**
@@ -198,9 +198,9 @@ namespace SimpleDB.Tx
          */
         public int size(string filename)
         {
-            BlockId dummyblk = new BlockId(filename, END_OF_FILE);
+            BlockId dummyblk = BlockId.Dummy(filename);
             concurMgr.sLock(dummyblk);
-            return fm.length(filename);
+            return fm.GetBlocksCount(filename);
         }
 
         /**
@@ -213,19 +213,19 @@ namespace SimpleDB.Tx
          */
         public BlockId append(string filename)
         {
-            BlockId dummyblk = new BlockId(filename, END_OF_FILE);
+            BlockId dummyblk = BlockId.New(filename, END_OF_FILE);
             concurMgr.xLock(dummyblk);
-            return fm.append(filename);
+            return fm.AppendNewBlock(filename);
         }
 
         public int blockSize()
         {
-            return fm.blockSize();
+            return fm.BlockSize;
         }
 
         public int availableBuffs()
         {
-            return bm.available();
+            return bm.GetAvailableBufferCount();
         }
 
         private static int nextTxNumber()

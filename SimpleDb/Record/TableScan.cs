@@ -38,7 +38,7 @@ namespace SimpleDB.Record
             {
                 if (atLastBlock())
                     return false;
-                moveToBlock(rp.block().number() + 1);
+                moveToBlock(rp.block().Number + 1);
                 currentslot = rp.nextAfter(currentslot);
             }
             return true;
@@ -101,7 +101,7 @@ namespace SimpleDB.Record
                 if (atLastBlock())
                     moveToNewBlock();
                 else
-                    moveToBlock(rp.block().number() + 1);
+                    moveToBlock(rp.block().Number + 1);
                 currentslot = rp.insertAfter(currentslot);
             }
         }
@@ -114,14 +114,14 @@ namespace SimpleDB.Record
         public void moveToRid(RID rid)
         {
             close();
-            BlockId blk = new BlockId(filename, rid.blockNumber());
+            BlockId blk = BlockId.New(filename, rid.blockNumber());
             rp = new RecordPage(tx, blk, layout);
             currentslot = rid.slot();
         }
 
         public RID getRid()
         {
-            return new RID(rp.block().number(), currentslot);
+            return new RID((int)rp.block().Number, currentslot);
         }
 
         // Private auxiliary methods
@@ -129,7 +129,7 @@ namespace SimpleDB.Record
         private void moveToBlock(int blknum)
         {
             close();
-            BlockId blk = new BlockId(filename, blknum);
+            BlockId blk = BlockId.New(filename, blknum);
             rp = new RecordPage(tx, blk, layout);
             currentslot = -1;
         }
@@ -145,7 +145,7 @@ namespace SimpleDB.Record
 
         private bool atLastBlock()
         {
-            return rp.block().number() == tx.size(filename) - 1;
+            return rp.block().Number == tx.size(filename) - 1;
         }
     }
 }

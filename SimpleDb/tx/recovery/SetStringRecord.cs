@@ -16,16 +16,16 @@ namespace SimpleDB.Tx.Recovery
         public SetStringRecord(Page p)
         {
             int tpos = sizeof(int);
-            txnum = p.getInt(tpos);
+            txnum = p.GetInt(tpos);
             int fpos = tpos + sizeof(int);
-            string filename = p.getString(fpos);
-            int bpos = fpos + Page.maxLength(filename.Length);
-            int blknum = p.getInt(bpos);
-            blk = new BlockId(filename, blknum);
+            string filename = p.GetString(fpos);
+            int bpos = fpos + Page.CalculateStringStoringSize(filename);
+            int blknum = p.GetInt(bpos);
+            blk = BlockId.New(filename, blknum);
             int opos = bpos + sizeof(int);
-            offset = p.getInt(opos);
+            offset = p.GetInt(opos);
             int vpos = opos + sizeof(int);
-            val = p.getString(vpos);
+            val = p.GetString(vpos);
         }
 
         public LogRecord.Type op()
@@ -65,23 +65,23 @@ namespace SimpleDB.Tx.Recovery
          * integer value at that offset.
          * @return the LSN of the last log value
          */
-        public static int writeToLog(LogMgr lm, int txnum, BlockId blk, int offset, string val)
+        public static int writeToLog(LogManager lm, int txnum, BlockId blk, int offset, string val)
         {
             int tpos = sizeof(int);
             int fpos = tpos + sizeof(int);
-            int bpos = fpos + Page.maxLength(blk.fileName().Length);
+            int bpos = fpos + Page.CalculateStringStoringSize(blk.FileName);
             int opos = bpos + sizeof(int);
             int vpos = opos + sizeof(int);
-            int reclen = vpos + Page.maxLength(val.Length);
+            int reclen = vpos + Page.CalculateStringStoringSize(val);
             byte[] rec = new byte[reclen];
             Page p = new Page(rec);
-            p.setInt(0, (int)LogRecord.Type.SETSTRING);
-            p.setInt(tpos, txnum);
-            p.setString(fpos, blk.fileName());
-            p.setInt(bpos, blk.number());
-            p.setInt(opos, offset);
-            p.setString(vpos, val);
-            return lm.append(rec);
+            p.SetInt(0, (int)LogRecord.Type.SETSTRING);
+            p.SetInt(tpos, txnum);
+            p.SetString(fpos, blk.FileName);
+            p.SetInt(bpos, (int)blk.Number);
+            p.SetInt(opos, offset);
+            p.SetString(vpos, val);
+            return lm.Append(rec);
         }
     }
 }

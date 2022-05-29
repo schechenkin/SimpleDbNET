@@ -47,12 +47,12 @@ namespace SimpleDB.Tx.Recovery
          * and nothing else.
          * @return the LSN of the last log value
          */
-        public static int writeToLog(LogMgr lm)
+        public static int writeToLog(LogManager lm)
         {
             byte[] rec = new byte[sizeof(int)];
             Page p = new Page(rec);
-            p.setInt(0, (int)LogRecord.Type.CHECKPOINT);
-            return lm.append(rec);
+            p.SetInt(0, (int)LogRecord.Type.CHECKPOINT);
+            return lm.Append(rec);
         }
     }
 }

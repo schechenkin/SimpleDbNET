@@ -1,20 +1,14 @@
 ﻿using SimpleDB.file;
 using SimpleDB.log;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace SimpleDB.Data
 {
-    public class BufferMgr
+    public class BufferManager
     {
-        private Buffer[] bufferpool;
-        private int numAvailable;
-        private Mutex mutex = new Mutex();
-        private static TimeSpan MAX_TIME = new TimeSpan(0, 0, 10); // 10 seconds
+        private Buffer[] m_Bufferpool;
+        private int m_AvailableBufferCounter;
+        private object mutex = new object();
+        private static TimeSpan MAX_WAIT_TIME = new TimeSpan(0, 0, 10); // 10 seconds
 
         /**
          * Creates a buffer manager having the specified number 
@@ -23,23 +17,23 @@ namespace SimpleDB.Data
          * {@link simpledb.log.LogMgr LogMgr} object.
          * @param numbuffs the number of buffer slots to allocate
          */
-        public BufferMgr(FileMgr fm, LogMgr lm, int numbuffs)
+        public BufferManager(FileManager fm, LogManager lm, int numbuffs)
         {
-            bufferpool = new Buffer[numbuffs];
-            numAvailable = numbuffs;
+            m_Bufferpool = new Buffer[numbuffs];
+            m_AvailableBufferCounter = numbuffs;
             for (int i = 0; i < numbuffs; i++)
-                bufferpool[i] = new Buffer(fm, lm);
+                m_Bufferpool[i] = new Buffer(fm, lm);
         }
 
         /**
          * Returns the number of available (i.e. unpinned) buffers.
          * @return the number of available buffers
          */
-        public int available()
+        public int GetAvailableBufferCount()
         {
             lock(mutex)
             {
-                return numAvailable;
+                return m_AvailableBufferCounter;
             }
         }
 
@@ -47,13 +41,13 @@ namespace SimpleDB.Data
          * Flushes the dirty buffers modified by the specified transaction.
          * @param txnum the transaction's id number
          */
-        public void flushAll(int txnum)
+        public void FlushAll(int txnum)
         {
             lock (mutex)
             {
-                foreach (Buffer buff in bufferpool)
+                foreach (Buffer buff in m_Bufferpool)
                     if (buff.modifyingTx() == txnum)
-                        buff.flush();
+                        buff.Flush();
             }
         }
 
@@ -63,14 +57,14 @@ namespace SimpleDB.Data
          * goes to zero, then notify any waiting threads.
          * @param buff the buffer to be unpinned
          */
-        public void unpin(Buffer buff)
+        public void UnpinBuffer(Buffer buffer)
         {
             lock (mutex)
             {
-                buff.unpin();
-                if (!buff.isPinned())
+                buffer.Unpin();
+                if (!buffer.IsPinned)
                 {
-                    numAvailable++;
+                    m_AvailableBufferCounter++;
                     //notifyAll();
                 }
             }
@@ -84,16 +78,16 @@ namespace SimpleDB.Data
          * @param blk a reference to a disk block
          * @return the buffer pinned to that block
          */
-        public Buffer pin(BlockId blk)
+        public Buffer PinBlock(BlockId blockId)
         {
             lock (mutex)
             {
                 DateTime timestamp = DateTime.Now;
-                Buffer buff = tryToPin(blk);
-                while (buff == null && !waitingTooLong(timestamp))
+                var buff = TryPinBlock(blockId);
+                while (buff == null && !WaitingTooLong(timestamp))
                 {
                     Thread.Sleep(100);
-                    buff = tryToPin(blk);
+                    buff = TryPinBlock(blockId);
                 }
                 if (buff == null)
                     throw new BufferAbortException();
@@ -101,9 +95,9 @@ namespace SimpleDB.Data
             }
         }
 
-        private bool waitingTooLong(DateTime starttime)
+        private bool WaitingTooLong(DateTime starttime)
         {
-            return DateTime.Now - starttime > MAX_TIME;
+            return DateTime.Now - starttime > MAX_WAIT_TIME;
         }
 
         /**
@@ -115,38 +109,38 @@ namespace SimpleDB.Data
          * @param blk a reference to a disk block
          * @return the pinned buffer
          */
-        private Buffer tryToPin(BlockId blk)
+        private Buffer? TryPinBlock(BlockId blockId)
         {
-            Buffer buff = findExistingBuffer(blk);
-            if (buff == null)
+            var buffer = FindBufferContainsBlock(blockId);
+            if (buffer == null)
             {
-                buff = chooseUnpinnedBuffer();
-                if (buff == null)
+                buffer = ChooseUnpinnedBuffer();
+                if (buffer == null)
                     return null;
-                buff.assignToBlock(blk);
+                buffer.AssignToBlock(blockId);
             }
-            if (!buff.isPinned())
-                numAvailable--;
-            buff.pin();
-            return buff;
+            if (!buffer.IsPinned)
+                m_AvailableBufferCounter--;
+            buffer.Pin();
+            return buffer;
         }
 
-        private Buffer findExistingBuffer(BlockId blk)
+        private Buffer? FindBufferContainsBlock(BlockId blockId)
         {
-            foreach (Buffer buff in bufferpool)
+            foreach (Buffer buffer in m_Bufferpool)
             {
-                BlockId b = buff.block();
-                if (b != null && b.Equals(blk))
-                    return buff;
+                BlockId b = buffer.BlockId;
+                if (b != null && b.Equals(blockId))
+                    return buffer;
             }
             return null;
         }
 
-        private Buffer chooseUnpinnedBuffer()
+        private Buffer? ChooseUnpinnedBuffer()
         {
-            foreach (Buffer buff in bufferpool)
-                if (!buff.isPinned())
-                    return buff;
+            foreach (Buffer buffer in m_Bufferpool)
+                if (!buffer.IsPinned)
+                    return buffer;
             return null;
         }
     }

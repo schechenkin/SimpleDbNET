@@ -83,8 +83,10 @@ namespace SimpleDB.Record
             SqlType fldtype = _schema.type(fldname);
             if (fldtype == SqlType.INTEGER)
                 return sizeof(int);
-            else // fldtype == VARCHAR
+            else if (fldtype == SqlType.VARCHAR)
                 return Page.maxLength(_schema.length(fldname));
+            else
+                throw new NotImplementedException();
         }
     }
 }
