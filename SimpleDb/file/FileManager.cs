@@ -55,10 +55,10 @@
         {
             lock (fileManagerLock)
             {
-                var f = GetFileStream(blockId.FileName);
-                f.Seek(blockId.Number * blocksize, SeekOrigin.Begin);
-                f.Write(page.GetBuffer(), 0, blocksize);
-                f.Flush(true);
+                var fileStream = GetFileStream(blockId.FileName);
+                fileStream.Seek(blockId.Number * blocksize, SeekOrigin.Begin);
+                fileStream.Write(page.GetBuffer(), 0, blocksize);
+                fileStream.Flush(true);
             }
         }
 
