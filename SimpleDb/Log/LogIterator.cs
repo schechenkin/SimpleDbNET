@@ -59,7 +59,7 @@ namespace SimpleDB.log
                 blk = BlockId.New(blk.FileName, blk.Number - 1);
                 MoveToBlock(blk);
             }
-            byte[] rec = p.GetBytes(currentpos);
+            byte[] rec = p.GetBytesArray(currentpos);
             currentpos += sizeof(int) + rec.Length;
             return rec;
         }

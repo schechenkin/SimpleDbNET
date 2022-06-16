@@ -7,8 +7,6 @@ namespace SimpleDbNET.UnitTests
 {
     public class LogManagerTest
     {
-        
-        
         [Fact]
         public void Should_return_SLN_when_add_record()
         {

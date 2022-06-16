@@ -5,12 +5,7 @@ namespace SimpleDB.file
     public record BlockId
     {
         public string FileName { get; }
-        public int Number { get; }
-
-        public static BlockId New(string fileName, uint blockNumber)
-        {
-            return BlockId.New(fileName, blockNumber);
-        }
+        public int Number { get; private set; }
 
         public static BlockId New(string fileName, int blockNumber)
         {
@@ -40,6 +35,11 @@ namespace SimpleDB.file
         public override int GetHashCode()
         {
             return ToString().GetHashCode();
+        }
+
+        public void SetNumber(int number)
+        {
+            Number = number;
         }
     }
 
