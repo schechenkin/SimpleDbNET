@@ -6,8 +6,7 @@
         private readonly int blocksize;
 
         private bool isNew;
-        private object fileManagerLock = new object();
-        private readonly Dictionary<string, FileStream> openFiles = new Dictionary<string, FileStream>();
+        private readonly Dictionary<string, FileStream> openFiles = new Dictionary<string, FileStream>(); //TODO replace with concurent dict
 
         public FileManager(string dbDirectory, int blocksize, bool recreate = false)
         {
@@ -38,9 +37,9 @@
         /// <param name="page"></param>
         public void ReadBlock(BlockId blockId, Page page)
         {
-            lock(fileManagerLock)
+            var fileStream = GetFileStream(blockId.FileName);
+            lock (fileStream)
             {
-                var fileStream = GetFileStream(blockId.FileName);
                 fileStream.Seek(blockId.Number * blocksize, SeekOrigin.Begin);
                 fileStream.Read(page.GetBuffer(), 0, blocksize);
             }
@@ -53,9 +52,9 @@
         /// <param name="blockId"></param>
         public void WritePage(Page page, BlockId blockId)
         {
-            lock (fileManagerLock)
+            var fileStream = GetFileStream(blockId.FileName);
+            lock (fileStream)
             {
-                var fileStream = GetFileStream(blockId.FileName);
                 fileStream.Seek(blockId.Number * blocksize, SeekOrigin.Begin);
                 fileStream.Write(page.GetBuffer(), 0, blocksize);
                 fileStream.Flush(true);
@@ -64,13 +63,13 @@
 
         public BlockId AppendNewBlock(string filename)
         {
-            lock (fileManagerLock)
+            var fileStream = GetFileStream(filename);
+            lock (fileStream)
             {
-                int newBlockNumber = (int)GetBlocksCount(filename);
+                int newBlockNumber = (int)(fileStream.Length / blocksize);
                 var blockId = BlockId.New(filename, newBlockNumber);
                 byte[] bytes = new byte[blocksize];
 
-                var fileStream = GetFileStream(blockId.FileName);
                 fileStream.Seek(blockId.Number * blocksize, SeekOrigin.Begin);
                 fileStream.Write(bytes);
                 fileStream.Flush(true);
@@ -80,8 +79,11 @@
 
         public int GetBlocksCount(String filename)
         {
-            var f = GetFileStream(filename);
-            return (int)(f.Length / blocksize);
+            var fileStream = GetFileStream(filename);
+            lock(fileStream)
+            {
+                return (int)(fileStream.Length / blocksize);
+            }
         }
 
         public bool IsNew()
@@ -107,7 +109,7 @@
                 openFiles.Add(filename, fileStream);
            }
 
-            return openFiles[filename];
+           return openFiles[filename];
        }
     }
 }
