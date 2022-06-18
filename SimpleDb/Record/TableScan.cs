@@ -70,7 +70,7 @@ namespace SimpleDB.Record
         public void close()
         {
             if (rp != null)
-                tx.unpin(rp.block());
+                tx.UnpinBlock(rp.block());
         }
 
         // Methods that implement UpdateScan

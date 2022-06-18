@@ -58,9 +58,9 @@ namespace SimpleDB.Tx.Recovery
          */
         public void undo(Transaction tx)
         {
-            tx.pin(blk);
-            tx.setInt(blk, offset, val, false); // don't log the undo!
-            tx.unpin(blk);
+            tx.PinBlock(blk);
+            tx.SetInt(blk, offset, val, false); // don't log the undo!
+            tx.UnpinBlock(blk);
         }
 
         /**

@@ -37,7 +37,7 @@ namespace SimpleDb
         {
             Transaction tx = db.newTx();
             db.planner().executeUpdate(sql, tx);
-            tx.commit();
+            tx.Commit();
 
             return Task.CompletedTask;
         }

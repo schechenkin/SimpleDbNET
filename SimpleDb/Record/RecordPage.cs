@@ -16,7 +16,7 @@ namespace SimpleDB.Record
             this.tx = tx;
             this.blk = blk;
             this.layout = layout;
-            tx.pin(blk);
+            tx.PinBlock(blk);
         }
 
         /**
@@ -28,7 +28,7 @@ namespace SimpleDB.Record
         public int getInt(int slot, String fldname)
         {
             int fldpos = offset(slot) + layout.offset(fldname);
-            return tx.getInt(blk, fldpos);
+            return tx.GetInt(blk, fldpos);
         }
 
         /**
@@ -40,7 +40,7 @@ namespace SimpleDB.Record
         public String getString(int slot, String fldname)
         {
             int fldpos = offset(slot) + layout.offset(fldname);
-            return tx.getString(blk, fldpos);
+            return tx.GetString(blk, fldpos);
         }
 
         /**
@@ -52,7 +52,7 @@ namespace SimpleDB.Record
         public void setInt(int slot, String fldname, int val)
         {
             int fldpos = offset(slot) + layout.offset(fldname);
-            tx.setInt(blk, fldpos, val, true);
+            tx.SetInt(blk, fldpos, val, true);
         }
 
         /**
@@ -64,7 +64,7 @@ namespace SimpleDB.Record
         public void setString(int slot, String fldname, String val)
         {
             int fldpos = offset(slot) + layout.offset(fldname);
-            tx.setString(blk, fldpos, val, true);
+            tx.SetString(blk, fldpos, val, true);
         }
 
         public void delete(int slot)
@@ -81,15 +81,15 @@ namespace SimpleDB.Record
             int slot = 0;
             while (isValidSlot(slot))
             {
-                tx.setInt(blk, offset(slot), EMPTY, false);
+                tx.SetInt(blk, offset(slot), EMPTY, false);
                 Schema sch = layout.schema();
                 foreach (string fldname in sch.fields())
                 {
                     int fldpos = offset(slot) + layout.offset(fldname);
                     if (sch.type(fldname) == SqlType.INTEGER)
-                        tx.setInt(blk, fldpos, 0, false);
+                        tx.SetInt(blk, fldpos, 0, false);
                     else
-                        tx.setString(blk, fldpos, "", false);
+                        tx.SetString(blk, fldpos, "", false);
                 }
                 slot++;
             }
@@ -120,7 +120,7 @@ namespace SimpleDB.Record
          */
         private void setFlag(int slot, int flag)
         {
-            tx.setInt(blk, offset(slot), flag, true);
+            tx.SetInt(blk, offset(slot), flag, true);
         }
 
         private int searchAfter(int slot, int flag)
@@ -128,7 +128,7 @@ namespace SimpleDB.Record
             slot++;
             while (isValidSlot(slot))
             {
-                if (tx.getInt(blk, offset(slot)) == flag)
+                if (tx.GetInt(blk, offset(slot)) == flag)
                     return slot;
                 slot++;
             }

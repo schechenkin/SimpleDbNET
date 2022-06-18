@@ -3,21 +3,21 @@ using SimpleDB.file;
 using SimpleDB.log;
 using SimpleDB.tx.concurrency;
 using SimpleDB.Tx.Recovery;
-using System.Threading;
 using Buffer = SimpleDB.Data.Buffer;
 
 namespace SimpleDB.Tx
 {
     public class Transaction
     {
-        private static int nextTxNum = 0;
+        private static int nextTransactionNumber = 0;
         private static int END_OF_FILE = -1;
-        private RecoveryMgr recoveryMgr;
-        private ConcurrencyMgr concurMgr;
-        private BufferManager bm;
-        private FileManager fm;
-        private int txnum;
-        private BufferList mybuffers;
+
+        private RecoveryMgr recoveryManager;
+        private ConcurrencyManager concurrencyManager;
+        private BufferManager bufferManager;
+        private FileManager fileManager;
+        private int txNumber;
+        private BufferList txBuffers;
         private static Mutex mutex = new Mutex();
 
         /**
@@ -32,14 +32,14 @@ namespace SimpleDB.Tx
          * {@link simpledb.server.SimpleDB#initFileLogAndBufferMgr(String)} or
          * is called first.
          */
-        public Transaction(FileManager fm, LogManager lm, BufferManager bm)
+        public Transaction(FileManager fileManager, LogManager logManager, BufferManager bufferManager)
         {
-            this.fm = fm;
-            this.bm = bm;
-            txnum = nextTxNumber();
-            recoveryMgr = new RecoveryMgr(this, txnum, lm, bm);
-            concurMgr = new ConcurrencyMgr();
-            mybuffers = new BufferList(bm);
+            this.fileManager = fileManager;
+            this.bufferManager = bufferManager;
+            txNumber = nextTxNumber();
+            recoveryManager = new RecoveryMgr(this, txNumber, logManager, bufferManager);
+            concurrencyManager = new ConcurrencyManager();
+            txBuffers = new BufferList(bufferManager);
         }
 
         /**
@@ -48,12 +48,11 @@ namespace SimpleDB.Tx
          * write and flush a commit record to the log,
          * release all locks, and unpin any pinned buffers.
          */
-        public void commit()
+        public void Commit()
         {
-            recoveryMgr.commit();
-            System.Console.WriteLine("transaction " + txnum + " committed");
-            concurMgr.release();
-            mybuffers.unpinAll();
+            recoveryManager.commit();
+            concurrencyManager.Release();
+            txBuffers.unpinAll();
         }
 
         /**
@@ -63,12 +62,11 @@ namespace SimpleDB.Tx
          * write and flush a rollback record to the log,
          * release all locks, and unpin any pinned buffers.
          */
-        public void rollback()
+        public void Rollback()
         {
-            recoveryMgr.rollback();
-            System.Console.WriteLine("transaction " + txnum + " rolled back");
-            concurMgr.release();
-            mybuffers.unpinAll();
+            recoveryManager.rollback();
+            concurrencyManager.Release();
+            txBuffers.unpinAll();
         }
 
         /**
@@ -79,10 +77,10 @@ namespace SimpleDB.Tx
          * This method is called during system startup,
          * before user transactions begin.
          */
-        public void recover()
+        public void Recover()
         {
-            bm.FlushAll(txnum);
-            recoveryMgr.recover();
+            bufferManager.FlushAll(txNumber);
+            recoveryManager.recover();
         }
 
         /**
@@ -90,9 +88,9 @@ namespace SimpleDB.Tx
          * The transaction manages the buffer for the client.
          * @param blk a reference to the disk block
          */
-        public void pin(BlockId blk)
+        public void PinBlock(BlockId blockId)
         {
-            mybuffers.pin(blk);
+            txBuffers.pin(blockId);
         }
 
         /**
@@ -101,9 +99,9 @@ namespace SimpleDB.Tx
          * and unpins it.
          * @param blk a reference to the disk block
          */
-        public void unpin(BlockId blk)
+        public void UnpinBlock(BlockId blockId)
         {
-            mybuffers.unpin(blk);
+            txBuffers.unpin(blockId);
         }
 
         /**
@@ -115,10 +113,10 @@ namespace SimpleDB.Tx
          * @param offset the byte offset within the block
          * @return the integer stored at that offset
          */
-        public int getInt(BlockId blk, int offset)
+        public int GetInt(BlockId blockId, int offset)
         {
-            concurMgr.sLock(blk);
-            Buffer buff = mybuffers.getBuffer(blk);
+            concurrencyManager.RequestSharedLock(blockId);
+            Buffer buff = txBuffers.getBuffer(blockId);
             return buff.Page.GetInt(offset);
         }
 
@@ -131,11 +129,11 @@ namespace SimpleDB.Tx
          * @param offset the byte offset within the block
          * @return the string stored at that offset
          */
-        public string getString(BlockId blk, int offset)
+        public string GetString(BlockId blockId, int offset)
         {
-            concurMgr.sLock(blk);
-            Buffer buff = mybuffers.getBuffer(blk);
-            return buff.Page.GetString(offset);
+            concurrencyManager.RequestSharedLock(blockId);
+            Buffer buffer = txBuffers.getBuffer(blockId);
+            return buffer.Page.GetString(offset);
         }
 
         /**
@@ -151,16 +149,16 @@ namespace SimpleDB.Tx
          * @param offset a byte offset within that block
          * @param val the value to be stored
          */
-        public void setInt(BlockId blk, int offset, int val, bool okToLog)
+        public void SetInt(BlockId blockId, int offset, int val, bool okToLog)
         {
-            concurMgr.xLock(blk);
-            Buffer buff = mybuffers.getBuffer(blk);
+            concurrencyManager.RequestExclusiveLock(blockId);
+            Buffer buffer = txBuffers.getBuffer(blockId);
             int lsn = -1;
             if (okToLog)
-                lsn = recoveryMgr.setInt(buff, offset, val);
-            Page p = buff.Page;
+                lsn = recoveryManager.setInt(buffer, offset, val);
+            Page p = buffer.Page;
             p.SetInt(offset, val);
-            buff.SetModified(txnum, lsn);
+            buffer.SetModified(txNumber, lsn);
         }
 
         /**
@@ -176,16 +174,16 @@ namespace SimpleDB.Tx
          * @param offset a byte offset within that block
          * @param val the value to be stored
          */
-        public void setString(BlockId blk, int offset, string val, bool okToLog)
+        public void SetString(BlockId blockId, int offset, string val, bool okToLog)
         {
-            concurMgr.xLock(blk);
-            Buffer buff = mybuffers.getBuffer(blk);
+            concurrencyManager.RequestExclusiveLock(blockId);
+            Buffer buff = txBuffers.getBuffer(blockId);
             int lsn = -1;
             if (okToLog)
-                lsn = recoveryMgr.setString(buff, offset, val);
+                lsn = recoveryManager.setString(buff, offset, val);
             Page p = buff.Page;
             p.SetString(offset, val);
-            buff.SetModified(txnum, lsn);
+            buff.SetModified(txNumber, lsn);
         }
 
         /**
@@ -199,8 +197,8 @@ namespace SimpleDB.Tx
         public int size(string filename)
         {
             BlockId dummyblk = BlockId.Dummy(filename);
-            concurMgr.sLock(dummyblk);
-            return fm.GetBlocksCount(filename);
+            concurrencyManager.RequestSharedLock(dummyblk);
+            return fileManager.GetBlocksCount(filename);
         }
 
         /**
@@ -214,28 +212,28 @@ namespace SimpleDB.Tx
         public BlockId append(string filename)
         {
             BlockId dummyblk = BlockId.New(filename, END_OF_FILE);
-            concurMgr.xLock(dummyblk);
-            return fm.AppendNewBlock(filename);
+            concurrencyManager.RequestExclusiveLock(dummyblk);
+            return fileManager.AppendNewBlock(filename);
         }
 
         public int blockSize()
         {
-            return fm.BlockSize;
+            return fileManager.BlockSize;
         }
 
         public int availableBuffs()
         {
-            return bm.GetAvailableBufferCount();
+            return bufferManager.GetAvailableBufferCount();
         }
 
         private static int nextTxNumber()
         {
             lock(mutex)
             {
-                nextTxNum++;
+                nextTransactionNumber++;
             }
 
-            return nextTxNum;
+            return nextTransactionNumber;
 
         }
     }
