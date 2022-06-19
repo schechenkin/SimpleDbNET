@@ -42,13 +42,13 @@ namespace SimpleDB.Tx
          * Unpin the specified block.
          * @param blk a reference to the disk block
          */
-        internal void unpin(BlockId blk)
+        internal void unpin(BlockId blockId)
         {
-            Buffer buff = buffers[blk];
-            bm.UnpinBuffer(buff);
-            pins.Remove(blk);
-            if (!pins.Contains(blk))
-                buffers.Remove(blk);
+            Buffer buffer = buffers[blockId];
+            bm.UnpinBuffer(buffer);
+            pins.Remove(blockId);
+            if (!pins.Contains(blockId))
+                buffers.Remove(blockId);
         }
 
         /**

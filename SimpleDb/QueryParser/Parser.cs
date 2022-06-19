@@ -217,7 +217,7 @@ namespace SimpleDB.QueryParser
             {
                 lex.eatDelim(',');
                 Schema schema2 = fieldDefs();
-                schema.addAll(schema2);
+                schema.AddAll(schema2);
             }
             return schema;
         }
@@ -234,7 +234,7 @@ namespace SimpleDB.QueryParser
             if (lex.matchKeyword("int"))
             {
                 lex.eatKeyword("int");
-                schema.addIntField(fldname);
+                schema.AddIntColumn(fldname);
             }
             else
             {
@@ -242,7 +242,7 @@ namespace SimpleDB.QueryParser
                 lex.eatDelim('(');
                 int strLen = lex.eatIntConstant();
                 lex.eatDelim(')');
-                schema.addStringField(fldname, strLen);
+                schema.AddStringColumn(fldname, strLen);
             }
             return schema;
         }

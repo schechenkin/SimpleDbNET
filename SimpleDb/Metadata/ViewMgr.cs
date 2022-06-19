@@ -17,8 +17,8 @@ namespace SimpleDB.Metadata
             if (isNew)
             {
                 Schema sch = new Schema();
-                sch.addStringField("viewname", TableMgr.MAX_NAME);
-                sch.addStringField("viewdef", MAX_VIEWDEF);
+                sch.AddStringColumn("viewname", TableMgr.MAX_NAME);
+                sch.AddStringColumn("viewdef", MAX_VIEWDEF);
                 tblMgr.createTable("viewcat", sch, tx);
             }
         }

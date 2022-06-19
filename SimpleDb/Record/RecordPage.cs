@@ -4,7 +4,7 @@ using System;
 
 namespace SimpleDB.Record
 {
-    public class RecordPage
+    public struct RecordPage
     {
         public static int EMPTY = 0, USED = 1;
         private Transaction tx;
@@ -83,10 +83,10 @@ namespace SimpleDB.Record
             {
                 tx.SetInt(blk, offset(slot), EMPTY, false);
                 Schema sch = layout.schema();
-                foreach (string fldname in sch.fields())
+                foreach (string fldname in sch.ColumnNames())
                 {
                     int fldpos = offset(slot) + layout.offset(fldname);
-                    if (sch.type(fldname) == SqlType.INTEGER)
+                    if (sch.GetSqlType(fldname) == SqlType.INTEGER)
                         tx.SetInt(blk, fldpos, 0, false);
                     else
                         tx.SetString(blk, fldpos, "", false);

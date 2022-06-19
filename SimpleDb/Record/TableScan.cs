@@ -9,7 +9,7 @@ namespace SimpleDB.Record
     {
         private Transaction tx;
         private Layout layout;
-        private RecordPage rp;
+        private RecordPage recordPage;
         private string filename;
         private int currentslot;
 
@@ -33,30 +33,30 @@ namespace SimpleDB.Record
 
         public bool next()
         {
-            currentslot = rp.nextAfter(currentslot);
+            currentslot = recordPage.nextAfter(currentslot);
             while (currentslot < 0)
             {
                 if (atLastBlock())
                     return false;
-                moveToBlock(rp.block().Number + 1);
-                currentslot = rp.nextAfter(currentslot);
+                moveToBlock(recordPage.block().Number + 1);
+                currentslot = recordPage.nextAfter(currentslot);
             }
             return true;
         }
 
         public int getInt(string fldname)
         {
-            return rp.getInt(currentslot, fldname);
+            return recordPage.getInt(currentslot, fldname);
         }
 
         public string getString(string fldname)
         {
-            return rp.getString(currentslot, fldname);
+            return recordPage.getString(currentslot, fldname);
         }
 
         public Constant getVal(string fldname)
         {
-            if (layout.schema().type(fldname) == SqlType.INTEGER)
+            if (layout.schema().GetSqlType(fldname) == SqlType.INTEGER)
                 return new Constant(getInt(fldname));
             else
                 return new Constant(getString(fldname));
@@ -64,30 +64,30 @@ namespace SimpleDB.Record
 
         public bool hasField(string fldname)
         {
-            return layout.schema().hasField(fldname);
+            return layout.schema().HasField(fldname);
         }
 
         public void close()
         {
-            if (rp != null)
-                tx.UnpinBlock(rp.block());
+            if(recordPage.block() != null)
+                tx.UnpinBlock(recordPage.block());
         }
 
         // Methods that implement UpdateScan
 
         public void setInt(string fldname, int val)
         {
-            rp.setInt(currentslot, fldname, val);
+            recordPage.setInt(currentslot, fldname, val);
         }
 
         public void setString(string fldname, string val)
         {
-            rp.setString(currentslot, fldname, val);
+            recordPage.setString(currentslot, fldname, val);
         }
 
         public void setVal(string fldname, Constant val)
         {
-            if (layout.schema().type(fldname) == SqlType.INTEGER)
+            if (layout.schema().GetSqlType(fldname) == SqlType.INTEGER)
                 setInt(fldname, val.asInt());
             else
                 setString(fldname, val.asString());
@@ -95,33 +95,33 @@ namespace SimpleDB.Record
 
         public void insert()
         {
-            currentslot = rp.insertAfter(currentslot);
+            currentslot = recordPage.insertAfter(currentslot);
             while (currentslot < 0)
             {
                 if (atLastBlock())
                     moveToNewBlock();
                 else
-                    moveToBlock(rp.block().Number + 1);
-                currentslot = rp.insertAfter(currentslot);
+                    moveToBlock(recordPage.block().Number + 1);
+                currentslot = recordPage.insertAfter(currentslot);
             }
         }
 
         public void delete()
         {
-            rp.delete(currentslot);
+            recordPage.delete(currentslot);
         }
 
         public void moveToRid(RID rid)
         {
             close();
             BlockId blk = BlockId.New(filename, rid.blockNumber());
-            rp = new RecordPage(tx, blk, layout);
+            recordPage = new RecordPage(tx, blk, layout);
             currentslot = rid.slot();
         }
 
         public RID getRid()
         {
-            return new RID((int)rp.block().Number, currentslot);
+            return new RID((int)recordPage.block().Number, currentslot);
         }
 
         // Private auxiliary methods
@@ -130,7 +130,7 @@ namespace SimpleDB.Record
         {
             close();
             BlockId blk = BlockId.New(filename, blknum);
-            rp = new RecordPage(tx, blk, layout);
+            recordPage = new RecordPage(tx, blk, layout);
             currentslot = -1;
         }
 
@@ -138,14 +138,14 @@ namespace SimpleDB.Record
         {
             close();
             BlockId blk = tx.append(filename);
-            rp = new RecordPage(tx, blk, layout);
-            rp.format();
+            recordPage = new RecordPage(tx, blk, layout);
+            recordPage.format();
             currentslot = -1;
         }
 
         private bool atLastBlock()
         {
-            return rp.block().Number == tx.size(filename) - 1;
+            return recordPage.block().Number == tx.size(filename) - 1;
         }
     }
 }

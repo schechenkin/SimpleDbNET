@@ -21,16 +21,16 @@ namespace SimpleDB.Metadata
         public TableMgr(bool isNew, Transaction tx)
         {
             Schema tcatSchema = new Schema();
-            tcatSchema.addStringField("tblname", MAX_NAME);
-            tcatSchema.addIntField("slotsize");
+            tcatSchema.AddStringColumn("tblname", MAX_NAME);
+            tcatSchema.AddIntColumn("slotsize");
             tcatLayout = new Layout(tcatSchema);
 
             Schema fcatSchema = new Schema();
-            fcatSchema.addStringField("tblname", MAX_NAME);
-            fcatSchema.addStringField("fldname", MAX_NAME);
-            fcatSchema.addIntField("type");
-            fcatSchema.addIntField("length");
-            fcatSchema.addIntField("offset");
+            fcatSchema.AddStringColumn("tblname", MAX_NAME);
+            fcatSchema.AddStringColumn("fldname", MAX_NAME);
+            fcatSchema.AddIntColumn("type");
+            fcatSchema.AddIntColumn("length");
+            fcatSchema.AddIntColumn("offset");
             fcatLayout = new Layout(fcatSchema);
 
             if (isNew)
@@ -58,13 +58,13 @@ namespace SimpleDB.Metadata
 
             // insert a record into fldcat for each field
             TableScan fcat = new TableScan(tx, "fldcat", fcatLayout);
-            foreach (String fldname in sch.fields())
+            foreach (String fldname in sch.ColumnNames())
             {
                 fcat.insert();
                 fcat.setString("tblname", tblname);
                 fcat.setString("fldname", fldname);
-                fcat.setInt("type", (int)sch.type(fldname));
-                fcat.setInt("length", sch.length(fldname));
+                fcat.setInt("type", (int)sch.GetSqlType(fldname));
+                fcat.setInt("length", sch.GetColumnLength(fldname));
                 fcat.setInt("offset", layout.offset(fldname));
             }
             fcat.close();
@@ -100,7 +100,7 @@ namespace SimpleDB.Metadata
                     int fldlen = fcat.getInt("length");
                     int offset = fcat.getInt("offset");
                     offsets[fldname] = offset;
-                    sch.addField(fldname, (SqlType)fldtype, fldlen);
+                    sch.AddColumn(fldname, (SqlType)fldtype, fldlen);
                 }
             fcat.close();
             return new Layout(sch, offsets, size);

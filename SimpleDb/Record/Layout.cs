@@ -26,7 +26,7 @@ namespace SimpleDB.Record
             _schema = schema;
             _offsets = new ();
             int pos = sizeof(int); // leave space for the empty/inuse flag
-            foreach (string fldname in schema.fields())
+            foreach (string fldname in schema.ColumnNames())
             {
                 _offsets[fldname] = pos;
                 pos += lengthInBytes(fldname);
@@ -80,11 +80,11 @@ namespace SimpleDB.Record
 
         private int lengthInBytes(string fldname)
         {
-            SqlType fldtype = _schema.type(fldname);
+            SqlType fldtype = _schema.GetSqlType(fldname);
             if (fldtype == SqlType.INTEGER)
                 return sizeof(int);
             else if (fldtype == SqlType.VARCHAR)
-                return Page.maxLength(_schema.length(fldname));
+                return Page.maxLength(_schema.GetColumnLength(fldname));
             else
                 throw new NotImplementedException();
         }

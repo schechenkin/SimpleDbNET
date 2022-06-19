@@ -96,14 +96,14 @@ namespace SimpleDB.Metadata
         private Layout createIdxLayout()
         {
             Schema sch = new Schema();
-            sch.addIntField("block");
-            sch.addIntField("id");
-            if (tblSchema.type(fldname) == SqlType.INTEGER)
-                sch.addIntField("dataval");
+            sch.AddIntColumn("block");
+            sch.AddIntColumn("id");
+            if (tblSchema.GetSqlType(fldname) == SqlType.INTEGER)
+                sch.AddIntColumn("dataval");
             else
             {
-                int fldlen = tblSchema.length(fldname);
-                sch.addStringField("dataval", fldlen);
+                int fldlen = tblSchema.GetColumnLength(fldname);
+                sch.AddStringColumn("dataval", fldlen);
             }
             return new Layout(sch);
         }

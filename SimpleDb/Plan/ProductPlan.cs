@@ -21,8 +21,8 @@ namespace SimpleDB.Plan
         {
             this.p1 = p1;
             this.p2 = p2;
-            mSchema.addAll(p1.schema());
-            mSchema.addAll(p2.schema());
+            mSchema.AddAll(p1.schema());
+            mSchema.AddAll(p2.schema());
         }
 
         /**
@@ -66,7 +66,7 @@ namespace SimpleDB.Plan
          */
         public int distinctValues(String fldname)
         {
-            if (p1.schema().hasField(fldname))
+            if (p1.schema().HasField(fldname))
                 return p1.distinctValues(fldname);
             else
                 return p2.distinctValues(fldname);

@@ -20,7 +20,7 @@ namespace SimpleDB.Plan
         {
             this.p = p;
             foreach (String fldname in fieldlist)
-                mSchema.add(fldname, p.schema());
+                mSchema.AddColumn(fldname, p.schema());
         }
 
         /**
@@ -30,7 +30,7 @@ namespace SimpleDB.Plan
         public Scan open()
         {
             Scan s = p.open();
-            return new ProjectScan(s, mSchema.fields());
+            return new ProjectScan(s, mSchema.ColumnNames());
         }
 
         /**

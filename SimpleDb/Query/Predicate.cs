@@ -95,8 +95,8 @@ namespace SimpleDB.Query
         {
             Predicate result = new Predicate();
             Schema newsch = new Schema();
-            newsch.addAll(sch1);
-            newsch.addAll(sch2);
+            newsch.AddAll(sch1);
+            newsch.AddAll(sch2);
             foreach (Term t in terms)
                 if (!t.appliesTo(sch1) &&
                       !t.appliesTo(sch2) &&

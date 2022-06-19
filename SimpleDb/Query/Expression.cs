@@ -72,7 +72,7 @@ namespace SimpleDB.Query
          */
         public bool appliesTo(Schema sch)
         {
-            return (val != null) ? true : sch.hasField(fldname);
+            return (val != null) ? true : sch.HasField(fldname);
         }
 
         public override string ToString()

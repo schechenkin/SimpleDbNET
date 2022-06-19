@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SimpleDB.Record
+﻿namespace SimpleDB.Record
 {
     public class Schema
     {
         private List<string> _fields = new ();
-        private Dictionary<String, FieldInfo> info = new ();
+        private Dictionary<string, FieldInfo> info = new ();
 
         /**
          * Add a field to the schema having a specified
@@ -20,7 +14,7 @@ namespace SimpleDB.Record
          * @param type the type of the field, according to the constants in simpledb.sql.types
          * @param length the conceptual length of a string field.
          */
-        public void addField(string fldname, SqlType type, int length)
+        public void AddColumn(string fldname, SqlType type, int length)
         {
             _fields.Add(fldname);
             info[fldname] =  new FieldInfo(type, length);
@@ -30,9 +24,9 @@ namespace SimpleDB.Record
          * Add an integer field to the schema.
          * @param fldname the name of the field
          */
-        public void addIntField(String fldname)
+        public void AddIntColumn(string fldname)
         {
-            addField(fldname, SqlType.INTEGER, 0);
+            AddColumn(fldname, SqlType.INTEGER, sizeof(int));
         }
 
         /**
@@ -43,9 +37,9 @@ namespace SimpleDB.Record
          * @param fldname the name of the field
          * @param length the number of chars in the varchar definition
          */
-        public void addStringField(String fldname, int length)
+        public void AddStringColumn(string fldname, int length)
         {
-            addField(fldname, SqlType.VARCHAR, length);
+            AddColumn(fldname, SqlType.VARCHAR, length);
         }
 
         /**
@@ -55,11 +49,11 @@ namespace SimpleDB.Record
          * @param fldname the name of the field
          * @param sch the other schema
          */
-        public void add(String fldname, Schema sch)
+        public void AddColumn(string fldname, Schema sch)
         {
-            SqlType type = sch.type(fldname);
-            int length = sch.length(fldname);
-            addField(fldname, type, length);
+            SqlType type = sch.GetSqlType(fldname);
+            int length = sch.GetColumnLength(fldname);
+            AddColumn(fldname, type, length);
         }
 
         /**
@@ -67,10 +61,10 @@ namespace SimpleDB.Record
          * to the current schema.
          * @param sch the other schema
          */
-        public void addAll(Schema sch)
+        public void AddAll(Schema sch)
         {
-            foreach (string fldname in sch.fields())
-                add(fldname, sch);
+            foreach (string fldname in sch.ColumnNames())
+                AddColumn(fldname, sch);
         }
 
         /**
@@ -78,7 +72,7 @@ namespace SimpleDB.Record
          * each field in the schema.
          * @return the collection of the schema's field names
          */
-        public List<String> fields()
+        public List<string> ColumnNames()
         {
             return _fields;
         }
@@ -89,7 +83,7 @@ namespace SimpleDB.Record
          * @param fldname the name of the field
          * @return true if the field is in the schema
          */
-        public bool hasField(String fldname)
+        public bool HasField(string fldname)
         {
             return _fields.Contains(fldname);
         }
@@ -100,7 +94,7 @@ namespace SimpleDB.Record
          * @param fldname the name of the field
          * @return the integer type of the field
          */
-        public SqlType type(String fldname)
+        public SqlType GetSqlType(string fldname)
         {
             return info[fldname].type;
         }
@@ -112,12 +106,12 @@ namespace SimpleDB.Record
          * @param fldname the name of the field
          * @return the conceptual length of the field
          */
-        public int length(String fldname)
+        public int GetColumnLength(string fldname)
         {
             return info[fldname].length;
         }
 
-        class FieldInfo
+        struct FieldInfo
         {
             internal SqlType type;
             internal int length;

@@ -26,9 +26,9 @@ namespace SimpleDB.Metadata
             if (isnew)
             {
                 Schema sch = new Schema();
-                sch.addStringField("indexname", TableMgr.MAX_NAME);
-                sch.addStringField("tablename", TableMgr.MAX_NAME);
-                sch.addStringField("fieldname", TableMgr.MAX_NAME);
+                sch.AddStringColumn("indexname", TableMgr.MAX_NAME);
+                sch.AddStringColumn("tablename", TableMgr.MAX_NAME);
+                sch.AddStringColumn("fieldname", TableMgr.MAX_NAME);
                 tblmgr.createTable("idxcat", sch, tx);
             }
             this.tblmgr = tblmgr;

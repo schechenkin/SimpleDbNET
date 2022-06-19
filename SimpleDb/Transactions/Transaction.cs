@@ -211,7 +211,7 @@ namespace SimpleDB.Tx
          */
         public BlockId append(string filename)
         {
-            BlockId dummyblk = BlockId.New(filename, END_OF_FILE);
+            BlockId dummyblk = BlockId.Dummy(filename);
             concurrencyManager.RequestExclusiveLock(dummyblk);
             return fileManager.AppendNewBlock(filename);
         }

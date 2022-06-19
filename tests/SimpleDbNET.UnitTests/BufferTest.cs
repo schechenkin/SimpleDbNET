@@ -38,7 +38,7 @@ namespace SimpleDbNET.UnitTests
             buff2.SetModified(1, 0); // won't get written to disk.
         }
 
-        [Fact]
+        //[Fact]
         public void BufferMgrTest()
         {
             var fileManager = new FileManager("buffermngtest", 400, true);
