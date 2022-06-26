@@ -15,9 +15,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{287F93D6-AC6
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleDb", "SimpleDb\SimpleDb.csproj", "{A4D08332-8664-436B-8C03-46F2BFB676CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiskWriteTest", "tests\DiskWriteTest\DiskWriteTest.csproj", "{0BB0D82D-9B4F-4E1F-9582-A933F2E9676C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiskWriteTest", "tests\DiskWriteTest\DiskWriteTest.csproj", "{0BB0D82D-9B4F-4E1F-9582-A933F2E9676C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleDbNET.Benchmarks", "tests\SimpleDbNET.Benchmarks\SimpleDbNET.Benchmarks.csproj", "{54E26CAB-A728-46EF-80A5-596EDBBDEA8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleDbNET.Benchmarks", "tests\SimpleDbNET.Benchmarks\SimpleDbNET.Benchmarks.csproj", "{54E26CAB-A728-46EF-80A5-596EDBBDEA8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableScanTest", "tests\TableScanTest\TableScanTest.csproj", "{6A19B53E-6738-4A24-91F8-2EA4F2B168AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +51,10 @@ Global
 		{54E26CAB-A728-46EF-80A5-596EDBBDEA8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{54E26CAB-A728-46EF-80A5-596EDBBDEA8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{54E26CAB-A728-46EF-80A5-596EDBBDEA8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A19B53E-6738-4A24-91F8-2EA4F2B168AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A19B53E-6738-4A24-91F8-2EA4F2B168AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A19B53E-6738-4A24-91F8-2EA4F2B168AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A19B53E-6738-4A24-91F8-2EA4F2B168AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{A4D08332-8664-436B-8C03-46F2BFB676CC} = {287F93D6-AC67-45CD-A32D-30E5EE73AF91}
 		{0BB0D82D-9B4F-4E1F-9582-A933F2E9676C} = {40298062-D525-4150-96B0-990B9FFF40C8}
 		{54E26CAB-A728-46EF-80A5-596EDBBDEA8D} = {40298062-D525-4150-96B0-990B9FFF40C8}
+		{6A19B53E-6738-4A24-91F8-2EA4F2B168AA} = {40298062-D525-4150-96B0-990B9FFF40C8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BB2E4502-D8DA-4450-94F2-12256B56A71F}

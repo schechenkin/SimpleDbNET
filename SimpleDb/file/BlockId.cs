@@ -32,11 +32,6 @@ namespace SimpleDB.file
             return "[file " + FileName + ", block " + Number + "]";
         }
 
-        public override int GetHashCode()
-        {
-            return ToString().GetHashCode();
-        }
-
         public void SetNumber(int number)
         {
             Number = number;
