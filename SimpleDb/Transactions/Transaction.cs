@@ -1,4 +1,5 @@
-﻿using SimpleDB.Data;
+﻿using SimpleDb.Transactions.Concurrency;
+using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
 using SimpleDB.tx.concurrency;
@@ -32,13 +33,13 @@ namespace SimpleDB.Tx
          * {@link simpledb.server.SimpleDB#initFileLogAndBufferMgr(String)} or
          * is called first.
          */
-        public Transaction(FileManager fileManager, LogManager logManager, BufferManager bufferManager)
+        public Transaction(FileManager fileManager, LogManager logManager, BufferManager bufferManager, LockTable lockTable)
         {
             this.fileManager = fileManager;
             this.bufferManager = bufferManager;
             txNumber = nextTxNumber();
             recoveryManager = new RecoveryMgr(this, txNumber, logManager, bufferManager);
-            concurrencyManager = new ConcurrencyManager();
+            concurrencyManager = new ConcurrencyManager(lockTable);
             txBuffers = new BufferList(bufferManager);
         }
 

@@ -6,8 +6,13 @@ namespace SimpleDB.tx.concurrency
 {
     public class ConcurrencyManager
     {
-        private static LockTable lockTable = new LockTable();
+        private LockTable lockTable;
         private Hashtable locks = new Hashtable();
+
+        public ConcurrencyManager(LockTable lockTable)
+        {
+            this.lockTable = lockTable;
+        }
 
         internal void Release()
         {

@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace SimpleDb.Transactions.Concurrency
 {
-    internal class LockTable
+    public class LockTable
     {
         private static TimeSpan MAX_WAIT_TIME = TimeSpan.FromSeconds(10);
 

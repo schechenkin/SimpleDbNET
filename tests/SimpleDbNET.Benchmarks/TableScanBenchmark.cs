@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
+using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
@@ -16,6 +17,7 @@ namespace SimpleDbNET.Benchmarks
         FileManager fileManager;
         LogManager logManager;
         BufferManager bufferManager;
+        LockTable lockTable;
         Random random = new Random();
 
         TableScan tableScan;
@@ -23,7 +25,7 @@ namespace SimpleDbNET.Benchmarks
 
         private Transaction newTx()
         {
-            return new Transaction(fileManager, logManager, bufferManager);
+            return new Transaction(fileManager, logManager, bufferManager, lockTable);
         }
 
         [GlobalSetup]
@@ -32,6 +34,7 @@ namespace SimpleDbNET.Benchmarks
             fileManager = new FileManager("TableScanBenchmark", 4096, true);
             logManager = new LogManager(fileManager, "log");
             bufferManager = new BufferManager(fileManager, logManager, 1024);
+            lockTable = new LockTable();
 
             var tx = newTx();
 

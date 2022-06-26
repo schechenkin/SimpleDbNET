@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
@@ -14,10 +15,11 @@ namespace SimpleDbNET.UnitTests
         {
             var fileManager = new FileManager("TransactionTest", 400, true);
             var logManager = new LogManager(fileManager, "log");
-            BufferManager bufferManager = new BufferManager(fileManager, logManager, 3);
+            var bufferManager = new BufferManager(fileManager, logManager, 3);
+            var lockTable = new LockTable();
 
             //Save some values to 1st block
-            Transaction tx1 = new Transaction(fileManager, logManager, bufferManager);
+            Transaction tx1 = new Transaction(fileManager, logManager, bufferManager ,lockTable);
             BlockId blk = BlockId.New("testfile", 1);
             tx1.PinBlock(blk);
             tx1.SetInt(blk, 80, 1, false);
@@ -25,7 +27,7 @@ namespace SimpleDbNET.UnitTests
             tx1.Commit();
 
             //Check values and update them
-            Transaction tx2 = new Transaction(fileManager, logManager, bufferManager);
+            Transaction tx2 = new Transaction(fileManager, logManager, bufferManager, lockTable);
             tx2.PinBlock(blk);
             tx2.GetInt(blk, 80).Should().Be(1);
             tx2.GetString(blk, 40).Should().Be("one");
@@ -34,7 +36,7 @@ namespace SimpleDbNET.UnitTests
             tx2.Commit();
 
             //update value and rollback
-            Transaction tx3 = new Transaction(fileManager, logManager, bufferManager);
+            Transaction tx3 = new Transaction(fileManager, logManager, bufferManager, lockTable);
             tx3.PinBlock(blk);
             tx3.GetInt(blk, 80).Should().Be(2);
             tx3.GetString(blk, 40).Should().Be("two");
@@ -45,7 +47,7 @@ namespace SimpleDbNET.UnitTests
             tx3.Rollback();
 
             //value should not be changed
-            Transaction tx4 = new Transaction(fileManager, logManager, bufferManager);
+            Transaction tx4 = new Transaction(fileManager, logManager, bufferManager, lockTable);
             tx4.PinBlock(blk);
             tx4.GetInt(blk, 80).Should().Be(2);
             tx4.Commit();

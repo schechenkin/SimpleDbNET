@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
@@ -16,9 +17,10 @@ namespace SimpleDbNET.UnitTests
             var fileManager = new FileManager("RerordTest", 400, true);
             var logManager = new LogManager(fileManager, "log");
             var bufferManager = new BufferManager(fileManager, logManager, 3);
+            var lockTable = new LockTable();
             Random random = new Random();
 
-            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager);
+            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable);
 
             Transaction tx = newTx();
 

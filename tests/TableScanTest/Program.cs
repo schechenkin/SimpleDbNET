@@ -1,4 +1,5 @@
-﻿using SimpleDB.Data;
+﻿using SimpleDb.Transactions.Concurrency;
+using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
 using SimpleDB.Record;
@@ -12,9 +13,10 @@ public class Program
         var fileManager = new FileManager("TableScanTest", 4096, false);
         var logManager = new LogManager(fileManager, "log");
         var bufferManager = new BufferManager(fileManager, logManager, 1000);
+        var lockTable = new LockTable();
         Random random = new Random();
 
-        Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager);
+        Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable);
 
         Transaction tx = newTx();
 

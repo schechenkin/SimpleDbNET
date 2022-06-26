@@ -1,4 +1,5 @@
-﻿using SimpleDB.Data;
+﻿using SimpleDb.Transactions.Concurrency;
+using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
 using SimpleDB.Metadata;
@@ -19,6 +20,7 @@ namespace SimpleDB
         private BufferManager bm;
         private MetadataMgr mdm;
         private Planner mPlanner;
+        private LockTable lockTable;
 
         /**
          * A constructor useful for debugging.
@@ -31,6 +33,7 @@ namespace SimpleDB
             fm = new FileManager(dirname, blocksize, recreate);
             lm = new LogManager(fm, LOG_FILE);
             bm = new BufferManager(fm, lm, buffsize);
+            lockTable = new LockTable();
         }
 
         /**
@@ -59,7 +62,7 @@ namespace SimpleDB
 
         public Transaction newTx()
         {
-            return new Transaction(fm, lm, bm);
+            return new Transaction(fm, lm, bm, lockTable);
         }
 
 
