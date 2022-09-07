@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Primitives;
+using SimpleDb.QueryParser;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +8,60 @@ using System.Threading.Tasks;
 
 namespace SimpleDB.QueryParser
 {
-    class StringTokenizer
+    internal class QueryTokenizer_old
+    {
+        private readonly SimpleDb.QueryParser.QueryTokenizer stringTokenizer;
+        private SimpleDb.QueryParser.QueryTokenizer.Enumerator enumerator;
+        private static char[] Delimeters = new char[] { ',', '=' , '(' , ')' };
+
+        public QueryTokenizer_old(string input)
+        {
+            //stringTokenizer = new SimpleDb.QueryParser.QueryTokenizer(input, new char[] { ' ', '\n' });
+            enumerator = stringTokenizer.GetEnumerator();
+
+            /*var a = enumerator.MoveNext();
+            a = enumerator.MoveNext();
+            a = enumerator.MoveNext();*/
+        }
+
+        private bool IsDelimeter(char currentSymbol)
+        {
+            return Delimeters.Contains(currentSymbol);
+        }
+
+        public bool NextToken()
+        {
+            return enumerator.MoveNext();
+        }
+
+        public TokenType CurrentTokenType
+        {
+            get
+            {
+                if (CurrentToken.Length == 1 && IsDelimeter(CurrentToken[0]))
+                    return TokenType.Delimiter;
+
+                int res;
+                if (int.TryParse(CurrentToken, out res))
+                    return TokenType.Number;
+
+                if (string.IsNullOrEmpty(CurrentToken))
+                    return TokenType.Delimiter;
+
+                return TokenType.Word;
+            }
+        }
+
+        public string CurrentToken
+        {
+            get
+            {
+                return enumerator.Current.Value;
+            }
+        }
+    }
+
+    /*internal class StringTokenizer
     {
         private readonly string input;
         private List<string> tokens = new List<string>();
@@ -16,7 +71,7 @@ namespace SimpleDB.QueryParser
         {
             this.input = input;
             var tmp_tokens = input.Split(new char[] { ' ' }, StringSplitOptions.None).ToList();
-            foreach(var tmp_token in tmp_tokens)
+            foreach (var tmp_token in tmp_tokens)
             {
                 tokens.AddRange(AdditionalSplit(tmp_token));
             }
@@ -27,14 +82,14 @@ namespace SimpleDB.QueryParser
             List<string> res = new List<string>();
             int currentTokenStartsFrom = 0;
 
-            for(int index = 0; index < tmp_token.Length; index++)
+            for (int index = 0; index < tmp_token.Length; index++)
             {
                 char currentSymbol = tmp_token[index];
-                if(IsDelimeter(currentSymbol))
+                if (IsDelimeter(currentSymbol))
                 {
 
                     string substr = tmp_token.Substring(currentTokenStartsFrom, index - currentTokenStartsFrom);
-                    if(!string.IsNullOrEmpty(substr))
+                    if (!string.IsNullOrEmpty(substr))
                         res.Add(substr);
                     res.Add(currentSymbol.ToString());
                     index++;
@@ -42,7 +97,7 @@ namespace SimpleDB.QueryParser
                 }
             }
 
-            if(currentTokenStartsFrom < tmp_token.Length)
+            if (currentTokenStartsFrom < tmp_token.Length)
                 res.Add(tmp_token.Substring(currentTokenStartsFrom, tmp_token.Length - currentTokenStartsFrom));
 
             return res;
@@ -86,12 +141,5 @@ namespace SimpleDB.QueryParser
                 return tokens[currentTokenIndex];
             }
         }
-    }
-
-    enum TokenType
-    {
-        Number,
-        Word,
-        Delimiter
-    }
+    }*/
 }

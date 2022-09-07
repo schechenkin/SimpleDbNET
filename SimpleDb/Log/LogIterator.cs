@@ -1,8 +1,5 @@
 ﻿using SimpleDB.file;
 using System.Collections;
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleToAttribute("SimpleDbNET.UnitTests")]
 
 namespace SimpleDB.log
 {

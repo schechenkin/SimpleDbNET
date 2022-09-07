@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleDb.QueryParser;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace SimpleDB.QueryParser
     class Lexer
     {
         private List<String> keywords;
-        private StringTokenizer tok;
+        private QueryTokenizer tok;
 
         /**
          * Creates a new lexical analyzer for SQL statement s.
@@ -19,7 +20,7 @@ namespace SimpleDB.QueryParser
         public Lexer(String s)
         {
             initKeywords();
-            tok = new StringTokenizer(s);
+            tok = new QueryTokenizer(s);
             //tok.ordinaryChar('.');   //disallow "." in identifiers
             //tok.wordChars('_', '_'); //allow "_" in identifiers
             //tok.lowerCaseMode(true); //ids and keywords are converted
