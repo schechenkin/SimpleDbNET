@@ -2,10 +2,10 @@
 
 namespace SimpleDB.Record
 {
-    public class RID
+    public readonly ref struct RID
     {
-		private int _blknum;
-		private int _slot;
+		private readonly int _blknum;
+		private readonly int _slot;
 
 		/**
 		 * Create a RID for the record having the
@@ -37,11 +37,7 @@ namespace SimpleDB.Record
 			return _slot;
 		}
 
-		public override bool Equals(Object obj)
-		{
-			RID r = (RID)obj;
-			return _blknum == r._blknum && _slot == r._slot;
-		}
+		public bool Equals(in RID other) => _blknum == other._blknum && _slot == other._slot;
 
 		public override String ToString()
 		{

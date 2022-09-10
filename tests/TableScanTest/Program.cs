@@ -68,12 +68,12 @@ public class Program
             if (a < 0)
                 throw new Exception();
             //Console.WriteLine(a);
-            /*string b = tableScan.getString(B_column);
+            string b = tableScan.getString(B_column);
             if (string.IsNullOrEmpty(b))
-                throw new Exception();*/
-            /*var rid = tableScan.getRid();
+                throw new Exception();
+            var rid = tableScan.getRid();
             if (rid.blockNumber() < 0)
-                throw new Exception();*/
+                throw new Exception();
 
             //if (remaining > 100_000)
             //    break;

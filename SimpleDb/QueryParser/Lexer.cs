@@ -1,17 +1,34 @@
-﻿using SimpleDb.QueryParser;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Primitives;
+using SimpleDb.QueryParser;
 
 namespace SimpleDB.QueryParser
 {
     class Lexer
     {
-        private List<String> keywords;
-        private QueryTokenizer tok;
+        private static List<StringSegment> keywords = new()
+        {
+            "select",
+            "from",
+            "where",
+            "and",
+            "insert",
+            "into",
+            "values",
+            "delete",
+            "update",
+            "set",
+            "create",
+            "table",
+            "int",
+            "varchar",
+            "view",
+            "as",
+            "index",
+            "on"
+        };
+
+        private QueryTokenizer tokenizer;
+        private QueryTokenizer.Enumerator enumerator = new QueryTokenizer.Enumerator();
 
         /**
          * Creates a new lexical analyzer for SQL statement s.
@@ -19,11 +36,8 @@ namespace SimpleDB.QueryParser
          */
         public Lexer(String s)
         {
-            initKeywords();
-            tok = new QueryTokenizer(s);
-            //tok.ordinaryChar('.');   //disallow "." in identifiers
-            //tok.wordChars('_', '_'); //allow "_" in identifiers
-            //tok.lowerCaseMode(true); //ids and keywords are converted
+            tokenizer = new QueryTokenizer(s, new char[] { ' ', '\n' }, new char[] { ',', '=', '(', ')' });
+            enumerator = tokenizer.GetEnumerator();
             nextToken();
         }
 
@@ -37,7 +51,7 @@ namespace SimpleDB.QueryParser
          */
         public bool matchDelim(char d)
         {
-            return tok.CurrentTokenType == TokenType.Delimiter && !string.IsNullOrEmpty(tok.CurrentToken) && tok.CurrentToken[0] == d;
+            return enumerator.CurrentTokenType == TokenType.Delimiter && enumerator.Current != default(StringSegment) && enumerator.Current[0] == d;
         }
 
         /**
@@ -46,7 +60,7 @@ namespace SimpleDB.QueryParser
          */
         public bool matchIntConstant()
         {
-            return tok.CurrentTokenType == TokenType.Number;
+            return enumerator.CurrentTokenType == TokenType.Number;
         }
 
         /**
@@ -55,7 +69,7 @@ namespace SimpleDB.QueryParser
          */
         public bool matchStringConstant()
         {
-            return tok.CurrentTokenType == TokenType.Word;
+            return enumerator.CurrentTokenType == TokenType.Word;
         }
 
         /**
@@ -65,7 +79,7 @@ namespace SimpleDB.QueryParser
          */
         public bool matchKeyword(String w)
         {
-            return tok.CurrentToken.Equals(w) && tok.CurrentTokenType == TokenType.Word;
+            return enumerator.Current.Equals(w) && enumerator.CurrentTokenType == TokenType.Word;
         }
 
         /**
@@ -74,7 +88,7 @@ namespace SimpleDB.QueryParser
          */
         public bool matchId()
         {
-            return tok.CurrentTokenType == TokenType.Word && !keywords.Contains(tok.CurrentToken);
+            return enumerator.CurrentTokenType == TokenType.Word && !keywords.Contains(enumerator.Current);
         }
 
         //Methods to "eat" the current token
@@ -102,7 +116,7 @@ namespace SimpleDB.QueryParser
         {
             if (!matchIntConstant())
                 throw new BadSyntaxException();
-            int i = int.Parse(tok.CurrentToken);
+            int i = int.Parse(enumerator.Current);
 
             nextToken();
             return i;
@@ -119,7 +133,7 @@ namespace SimpleDB.QueryParser
             if (!matchStringConstant())
                 throw new BadSyntaxException();
 
-            String s = tok.CurrentToken; //constants are not converted to lower case
+            String s = enumerator.Current.ToString(); //constants are not converted to lower case
             nextToken();
             return s;
         }
@@ -149,7 +163,7 @@ namespace SimpleDB.QueryParser
             if (!matchId())
                 throw new BadSyntaxException();
 
-            String s = tok.CurrentToken;
+            String s = enumerator.Current.ToString();
             nextToken();
             return s;
         }
@@ -158,37 +172,12 @@ namespace SimpleDB.QueryParser
         {
             try
             {
-                tok.NextToken();
+                enumerator.MoveNext();
             }
             catch (Exception)
             {
                 throw new BadSyntaxException();
             }
-        }
-
-        private void initKeywords()
-        {
-            keywords = new()
-            {
-                "select",
-                "from",
-                "where",
-                "and",
-                "insert",
-                "into",
-                "values",
-                "delete",
-                "update",
-                "set",
-                "create",
-                "table",
-                "int",
-                "varchar",
-                "view",
-                "as",
-                "index",
-                "on"
-            };
         }
     }
 }

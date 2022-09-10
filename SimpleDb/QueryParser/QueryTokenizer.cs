@@ -8,13 +8,6 @@ namespace SimpleDb.QueryParser
         private readonly char[] _separators;
         private readonly char[] _delimeters;
 
-        public QueryTokenizer(string value)
-        {
-            _value = value;
-            _separators = null;
-            _delimeters = null;
-        }
-
         public QueryTokenizer(string value, char[] separators, char[] delimeters)
         {
             _value = value;
@@ -29,8 +22,8 @@ namespace SimpleDb.QueryParser
             _delimeters = delimeters;
         }
 
-        public TokenType CurrentTokenType => TokenType.Delimiter;
-        public string? CurrentToken => String.Empty;
+        //public TokenType CurrentTokenType => TokenType.Delimiter;
+        //public string? CurrentToken => String.Empty;
 
         public Enumerator GetEnumerator() => new Enumerator(in _value, _separators, _delimeters);
 
