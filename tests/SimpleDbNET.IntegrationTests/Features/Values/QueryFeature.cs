@@ -3,7 +3,6 @@ using LightBDD.Framework;
 using LightBDD.Framework.Scenarios;
 using LightBDD.XUnit2;
 using SimpleDb;
-using SimpleDbNET.IntegrationTests;
 using SimpleDbNET.IntegrationTests.Extensions;
 using SimpleDbNET.IntegrationTests.Features.Fixtures;
 using Xunit;

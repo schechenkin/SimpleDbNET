@@ -69,7 +69,7 @@ namespace SimpleDB.QueryParser
          */
         public bool matchStringConstant()
         {
-            return enumerator.CurrentTokenType == TokenType.Word;
+            return enumerator.CurrentTokenType == TokenType.String;
         }
 
         /**

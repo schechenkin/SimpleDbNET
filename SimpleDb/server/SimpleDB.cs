@@ -53,6 +53,9 @@ namespace SimpleDB
                 Console.WriteLine("recovering existing database");
             }
             mdm = new MetadataMgr(isnew, tx);
+
+            tx.Commit();
+
             QueryPlanner qp = new BasicQueryPlanner(mdm);
             UpdatePlanner up = new BasicUpdatePlanner(mdm);
             //    QueryPlanner qp = new HeuristicQueryPlanner(mdm);
