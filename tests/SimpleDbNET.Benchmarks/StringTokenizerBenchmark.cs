@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 using Microsoft.Extensions.Primitives;
+using SimpleDb.QueryParser;
 //using Microsoft.Extensions.Primitives;
 //using SimpleDB.QueryParser;
 using System;
@@ -15,7 +16,7 @@ namespace SimpleDbNET.Benchmarks
     [MemoryDiagnoser]
     public class StringTokenizerBenchmark
     {
-        SimpleDB.QueryParser.QueryTokenizer ownTokenizer;
+        QueryTokenizer ownTokenizer;
         Microsoft.Extensions.Primitives.StringTokenizer microsoftTokenizer;
         string sql = "select columnName from T1 where b=3";
         char[] delimeters = new char[] { ' ', ',', '(', ')' };
@@ -23,7 +24,7 @@ namespace SimpleDbNET.Benchmarks
         [Benchmark]
         public string OwnVersion()
         {
-            ownTokenizer = new SimpleDB.QueryParser.QueryTokenizer(sql);
+            ownTokenizer = new QueryTokenizer(sql);
 
             ownTokenizer.NextToken();
 

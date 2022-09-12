@@ -52,7 +52,7 @@ namespace SimpleDbNET.IntegrationTests.Features.Values
                 .AddAsyncStep("Then response contains 5 rows", async _ =>
                 {
                     var selectResult = await _response.BodyAs<SelectResult>();
-                    selectResult.RowsCount.Should().Be(5);
+                    selectResult.Rows.Count.Should().Be(5);
                 })
                 .RunAsync();
         }

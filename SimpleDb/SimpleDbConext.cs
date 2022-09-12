@@ -13,7 +13,33 @@ namespace SimpleDb
 
     public class SelectResult
     {
-        public int RowsCount { get; set; }
+        public SelectResult(List<string> columns)
+        {
+            Columns = columns;
+        }
+
+        protected SelectResult()
+        {
+
+        }
+
+        public List<string> Columns { get; set; }
+        public List<List<object>> Rows { get; set; } = new List<List<object>>();
+
+        internal void AddRow()
+        {
+            Rows.Add(new List<object>());
+        }
+
+        internal void AddIntColumn(string column, int v)
+        {
+            Rows.Last().Add(v);
+        }
+
+        internal void AddStringColumn(string column, string v)
+        {
+            Rows.Last().Add(v.Trim('\''));
+        }
     }
 
     internal class SimpleDbConext : ISimpleDbServer
@@ -44,13 +70,29 @@ namespace SimpleDb
 
         public Task<SelectResult> ExecuteSelectSql(string sql)
         {
-            var result = new SelectResult();
             Transaction tx = db.newTx();
             var plan = db.planner().createQueryPlan(sql, tx);
+            var schema = plan.schema();
+            var columns = schema.ColumnNames();
+            var result = new SelectResult(columns);
             var scan = plan.open();
             while(scan.next())
             {
-                result.RowsCount++;
+                result.AddRow();
+
+                foreach(var column in columns)
+                {
+                    var sqlType = schema.GetSqlType(column);
+                    switch(sqlType)
+                    {
+                        case SqlType.INTEGER:
+                            result.AddIntColumn(column, scan.getInt(column));
+                            break;
+                        case SqlType.VARCHAR:
+                            result.AddStringColumn(column, scan.getString(column));
+                            break;
+                    }
+                }
             }
 
             return Task.FromResult(result);
