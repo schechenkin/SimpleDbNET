@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiskWriteTest", "tests\Disk
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleDbNET.Benchmarks", "tests\SimpleDbNET.Benchmarks\SimpleDbNET.Benchmarks.csproj", "{54E26CAB-A728-46EF-80A5-596EDBBDEA8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TableScanTest", "tests\TableScanTest\TableScanTest.csproj", "{6A19B53E-6738-4A24-91F8-2EA4F2B168AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TableScanTest", "tests\TableScanTest\TableScanTest.csproj", "{6A19B53E-6738-4A24-91F8-2EA4F2B168AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -34,5 +34,15 @@ namespace SimpleDbNET.UnitTests
             ModifyData modifyData = res as ModifyData;
             modifyData.Should().NotBeNull();
         }
+
+        [Fact]
+        public void When_select_contains_more_comparison()
+        {
+            string sql = "select Name from People where Age > 10";
+            Parser parser = new Parser(sql);
+            QueryData queryData = parser.query();
+            queryData.Should().NotBeNull();
+            queryData.pred().ToString().Should().Be("Age>10");
+        }
     }
 }

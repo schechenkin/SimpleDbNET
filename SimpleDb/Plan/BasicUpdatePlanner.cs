@@ -2,11 +2,6 @@
 using SimpleDB.Query;
 using SimpleDB.QueryParser;
 using SimpleDB.Tx;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleDB.Plan
 {

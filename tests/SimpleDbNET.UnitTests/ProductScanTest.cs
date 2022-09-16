@@ -127,19 +127,37 @@ namespace SimpleDbNET.UnitTests
             s1.close();
 
             // selecting all records where A=10
-            Scan s2 = new TableScan(tx, "T", layout);
+            Scan tableScan = new TableScan(tx, "T", layout);
             Constant c = new Constant(10);
             Term t = new Term(new Expression("A"), new Expression(c));
             Predicate pred = new Predicate(t);
             pred.ToString().Should().Be("A=10");
 
             //should contain single record
-            Scan s3 = new SelectScan(s2, pred);
+            Scan s3 = new SelectScan(tableScan, pred);
             s3.next().Should().BeTrue();
             s3.getInt("A").Should().Be(10);
             s3.getString("B").Should().Be("rec10");
 
             s3.next().Should().BeFalse();
+
+            // selecting all records where A>10
+            Scan s4 = new TableScan(tx, "T", layout);
+            t = new Term(new Expression("A"), new Expression(c), Term.CompareOperator.More);
+            pred = new Predicate(t);
+            pred.ToString().Should().Be("A>10");
+
+            //should contain 10 records
+            Scan s5 = new SelectScan(s4, pred);
+            int j = 11;
+            while(j < 20)
+            {
+                s5.next().Should().BeTrue();
+                s5.getInt("A").Should().Be(j);
+                s5.getString("B").Should().Be($"rec{j}");
+                j++;
+            }
+            s5.next().Should().BeFalse();
         }
 
         [Fact]

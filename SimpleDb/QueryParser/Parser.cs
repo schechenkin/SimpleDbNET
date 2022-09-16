@@ -40,9 +40,26 @@ namespace SimpleDB.QueryParser
         public Term term()
         {
             Expression lhs = expression();
-            lex.eatDelim('=');
+            Term.CompareOperator compareOperator = Term.CompareOperator.Equal;
+            if (lex.matchDelim('='))
+            {
+                lex.eatDelim('=');
+            }
+            else if (lex.matchDelim('>'))
+            {
+                lex.eatDelim('>');
+                compareOperator = Term.CompareOperator.More;
+            }
+            else if (lex.matchDelim('<'))
+            {
+                lex.eatDelim('<');
+                compareOperator = Term.CompareOperator.Less;
+            }
+            else
+                throw new BadSyntaxException();
+
             Expression rhs = expression();
-            return new Term(lhs, rhs);
+            return new Term(lhs, rhs, compareOperator);
         }
 
         public Predicate predicate()

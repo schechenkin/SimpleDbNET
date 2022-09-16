@@ -36,7 +36,7 @@ namespace SimpleDB.QueryParser
          */
         public Lexer(String s)
         {
-            tokenizer = new QueryTokenizer(s, new char[] { ' ', '\n' }, new char[] { ',', '=', '(', ')' });
+            tokenizer = new QueryTokenizer(s, new char[] { ' ', '\n' }, new char[] { ',', '=', '(', ')', '>', '<' });
             enumerator = tokenizer.GetEnumerator();
             nextToken();
         }

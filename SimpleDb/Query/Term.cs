@@ -1,16 +1,13 @@
-﻿using SimpleDB.QueryPlan;
-using SimpleDB.Record;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SimpleDB.Record;
 
 namespace SimpleDB.Query
 {
     public class Term
     {
+        public enum CompareOperator { Equal, More, Less };
+        
         private Expression lhs, rhs;
+        private CompareOperator compareOperator;
 
         /**
          * Create a new term that compares two expressions
@@ -22,6 +19,14 @@ namespace SimpleDB.Query
         {
             this.lhs = lhs;
             this.rhs = rhs;
+            this.compareOperator = CompareOperator.Equal;
+        }
+
+        public Term(Expression lhs, Expression rhs, CompareOperator compareOperator)
+        {
+            this.lhs = lhs;
+            this.rhs = rhs;
+            this.compareOperator = compareOperator;
         }
 
         /**
@@ -35,7 +40,14 @@ namespace SimpleDB.Query
         {
             Constant lhsval = lhs.evaluate(s);
             Constant rhsval = rhs.evaluate(s);
-            return rhsval.Equals(lhsval);
+
+            return compareOperator switch
+            {
+                CompareOperator.Equal => rhsval.Equals(lhsval),
+                CompareOperator.More => lhsval.CompareTo(rhsval) > 0,
+                CompareOperator.Less => lhsval.CompareTo(rhsval) < 0,
+                _ => throw new ArgumentException("Invalid compareOperator", nameof(compareOperator)),
+            };
         }
 
         /**
@@ -130,7 +142,18 @@ namespace SimpleDB.Query
 
         public override String ToString()
         {
-            return lhs.ToString() + "=" + rhs.ToString();
+            return lhs.ToString() + GetCompareOperatorStringPresentation(compareOperator) + rhs.ToString();
+        }
+
+        private static string GetCompareOperatorStringPresentation(CompareOperator compareOperator)
+        {
+            switch(compareOperator)
+            {
+                case CompareOperator.Equal: return "=";
+                case CompareOperator.More: return ">";
+                case CompareOperator.Less: return "<";
+                default: throw new Exception("Unknownn CompareOperator");
+            }
         }
     }
 }

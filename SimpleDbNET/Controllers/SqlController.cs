@@ -10,9 +10,11 @@ namespace SimpleDbNET.Api.Controllers
     public class SqlController : Controller
     {
         [HttpPost]
-        public async Task<ActionResult> Run([FromBody] string sql, [FromServices] ISimpleDbServer db)
+        public async Task<ActionResult> Run([FromBody] string sql, [FromServices] ISimpleDbServer db, [FromServices] ILogger<SqlController> logger)
         {
-            if(sql.StartsWith("select"))
+            logger.LogDebug(sql);
+
+            if (sql.StartsWith("select"))
             {
                 return Ok(await db.ExecuteSelectSql(sql));
             }

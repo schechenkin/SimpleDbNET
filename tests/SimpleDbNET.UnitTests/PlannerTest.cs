@@ -50,6 +50,9 @@ namespace SimpleDbNET.UnitTests
             while (s.next())
                 s.getString("B").Should().NotBeNullOrEmpty();
             s.close();
+
+
+
             tx.Commit();
         }
     }

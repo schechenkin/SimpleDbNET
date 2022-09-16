@@ -95,6 +95,8 @@ namespace SimpleDb
                 }
             }
 
+            tx.Commit();
+
             return Task.FromResult(result);
         }
     }

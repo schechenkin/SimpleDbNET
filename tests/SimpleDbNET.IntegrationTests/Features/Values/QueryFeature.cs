@@ -46,13 +46,13 @@ namespace SimpleDbNET.IntegrationTests.Features.Values
                 })
                 .AddAsyncStep("When user sends request to get all students", async _ =>
                 {
-                    _response = await Users.AnonimousClient.ExecuteSql("select SId, SName from STUDENT");
+                    _response = await Users.AnonimousClient.ExecuteSql("select SId, SName from STUDENT where GradYear > 2021");
                     EnsureSuccessStatusCode();
                 })
-                .AddAsyncStep("Then response contains 5 rows", async _ =>
+                .AddAsyncStep("Then response contains 2 rows", async _ =>
                 {
                     var selectResult = await _response.BodyAs<SelectResult>();
-                    selectResult.Rows.Count.Should().Be(5);
+                    selectResult.Rows.Count.Should().Be(2);
                 })
                 .RunAsync();
         }
