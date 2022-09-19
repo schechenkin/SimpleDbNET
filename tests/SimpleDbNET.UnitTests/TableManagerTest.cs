@@ -16,7 +16,7 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void Test()
         {
-            var fileManager = new FileManager("TableManagerTest", 400, true);
+            var fileManager = new FileManager("TableManagerTest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
             var bufferManager = new BufferManager(fileManager, logManager, 3);
             var lockTable = new LockTable();

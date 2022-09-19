@@ -1,19 +1,23 @@
-﻿namespace SimpleDB.file
+﻿using SimpleDb.file;
+
+namespace SimpleDB.file
 {
     public class FileManager
     {
         private readonly string dbDirectory;
         private readonly int blocksize;
+        private readonly IBlocksReadWriteTracker blocksReadWriteTracker;
 
         private bool isNew;
         private readonly Dictionary<string, FileStream> openFiles = new Dictionary<string, FileStream>(); //TODO replace with concurent dict
 
-        public FileManager(string dbDirectory, int blocksize, bool recreate = false)
+        public FileManager(string dbDirectory, int blocksize, IBlocksReadWriteTracker blocksReadWriteTracker, bool recreate = false)
         {
             this.dbDirectory = dbDirectory;
             this.blocksize = blocksize;
+            this.blocksReadWriteTracker = blocksReadWriteTracker;
 
-            if(recreate && Directory.Exists(dbDirectory))
+            if (recreate && Directory.Exists(dbDirectory))
             {
                 Directory.Delete(dbDirectory, true);
             }
@@ -42,6 +46,7 @@
             {
                 fileStream.Seek(blockId.Number * blocksize, SeekOrigin.Begin);
                 fileStream.Read(page.GetBuffer(), 0, blocksize);
+                blocksReadWriteTracker.TrackBlockRead();
             }
         }
 
@@ -58,6 +63,7 @@
                 fileStream.Seek(blockId.Number * blocksize, SeekOrigin.Begin);
                 fileStream.Write(page.GetBuffer(), 0, blocksize);
                 fileStream.Flush(true);
+                blocksReadWriteTracker.TrackBlockWrite();
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using SimpleDb.Transactions.Concurrency;
+﻿using SimpleDb.file;
+using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
@@ -28,9 +29,9 @@ namespace SimpleDB
          * @param blocksize the block size
          * @param buffsize the number of buffers
          */
-        public Server(string dirname, int blocksize, int buffsize, bool recreate = false)
+        public Server(string dirname, int blocksize, int buffsize, IBlocksReadWriteTracker blocksReadWriteTracker, bool recreate = false)
         {
-            fm = new FileManager(dirname, blocksize, recreate);
+            fm = new FileManager(dirname, blocksize, blocksReadWriteTracker, recreate);
             lm = new LogManager(fm, LOG_FILE);
             bm = new BufferManager(fm, lm, buffsize);
             lockTable = new LockTable();
@@ -41,8 +42,8 @@ namespace SimpleDB
          * 3-arg constructor, it also initializes the metadata tables.
          * @param dirname the name of the database directory
          */
-        public Server(string dirname, bool recreate = false)
-            :this(dirname, BLOCK_SIZE, BUFFER_SIZE, recreate)
+        public Server(string dirname, IBlocksReadWriteTracker blocksReadWriteTracker, bool recreate = false)
+            :this(dirname, BLOCK_SIZE, BUFFER_SIZE, blocksReadWriteTracker, recreate)
         {
             Transaction tx = newTx();
             bool isnew = fm.IsNew();

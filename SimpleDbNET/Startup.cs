@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Server.Kestrel.Core;
 using SimpleDb.Extensions;
+using SimpleDbNET.Api.Tracking;
 using StackExchange.Profiling.Storage;
 using System.Text.Json.Serialization;
 
@@ -41,7 +42,7 @@ namespace SimpleDbNET.Api
                 options.SuppressAsyncSuffixInActionNames = false;
             });
 
-            services.AddSimpleDb(Configuration);
+            services.AddSimpleDb(Configuration, new BlocksReadWriteTracker());
 
             ConfigureMiniProfiler(services);
 

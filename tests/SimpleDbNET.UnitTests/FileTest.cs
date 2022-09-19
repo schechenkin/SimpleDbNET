@@ -10,7 +10,7 @@ namespace SimpleDbNET.UnitTests
         public void When_write_at_the_beginning_of_the_file()
         {
             //given
-            var fileManager = new FileManager("filetest", 400);
+            var fileManager = new FileManager("filetest", 400, new TestBlocksReadWriteTracker());
             BlockId firstBlock = BlockId.New("testfile", 0);
             Page page = new Page(fileManager.BlockSize);
 

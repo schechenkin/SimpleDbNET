@@ -11,7 +11,7 @@ namespace SimpleDbNET.UnitTests
         public void Should_return_SLN_when_add_record()
         {
             //given
-            var fileManager = new FileManager("loglsntest", 400, true);
+            var fileManager = new FileManager("loglsntest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
 
             logManager.GetIterator().HasNext().Should().BeFalse();
@@ -31,7 +31,7 @@ namespace SimpleDbNET.UnitTests
         public void When_add_and_iterate()
         {
             //given
-            var fileManager = new FileManager("logtest", 400, true);
+            var fileManager = new FileManager("logtest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
 
             logManager.GetIterator().HasNext().Should().BeFalse();

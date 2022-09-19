@@ -1,4 +1,5 @@
-﻿using SimpleDB;
+﻿using SimpleDb.file;
+using SimpleDB;
 using SimpleDB.Tx;
 
 namespace SimpleDb
@@ -23,6 +24,9 @@ namespace SimpleDb
 
         }
 
+        public int BlocksRead { get; set; }
+        public int BlocksWrite { get; set; }
+
         public List<string> Columns { get; set; }
         public List<List<object>> Rows { get; set; } = new List<List<object>>();
 
@@ -45,17 +49,19 @@ namespace SimpleDb
     internal class SimpleDbConext : ISimpleDbServer
     {
         private Server db;
+        private IBlocksReadWriteTracker blocksReadWriteTracker;
 
-        public SimpleDbConext()
+        public SimpleDbConext(IBlocksReadWriteTracker blocksReadWriteTracker)
         {
-            db = new Server("database");
+            db = new Server("database", blocksReadWriteTracker);
+            this.blocksReadWriteTracker = blocksReadWriteTracker;
         }
 
         public Task DropDb()
         {
             db.fileMgr().CloseFiles();
 
-            db = new Server("database", true);
+            db = new Server("database", blocksReadWriteTracker, true);
             return Task.CompletedTask;
         }
 
@@ -96,6 +102,9 @@ namespace SimpleDb
             }
 
             tx.Commit();
+
+            result.BlocksRead = blocksReadWriteTracker.BlocksRead;
+            result.BlocksWrite = blocksReadWriteTracker.BlocksWrite;
 
             return Task.FromResult(result);
         }

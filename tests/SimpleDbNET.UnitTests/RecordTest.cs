@@ -9,12 +9,12 @@ using Xunit;
 
 namespace SimpleDbNET.UnitTests
 {
-    public class RerordTest
+    public class ReсordTest
     {
         [Fact]
         public void Insert_and_delete()
         {
-            var fileManager = new FileManager("RerordTest", 400, true);
+            var fileManager = new FileManager("RerordTest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
             var bufferManager = new BufferManager(fileManager, logManager, 3);
             var lockTable = new LockTable();

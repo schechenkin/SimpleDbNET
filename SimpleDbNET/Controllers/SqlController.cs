@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SimpleDb;
-using StackExchange.Profiling;
 
 namespace SimpleDbNET.Api.Controllers
 {

@@ -16,7 +16,7 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void ProductScanTest()
         {
-            var fileManager = new FileManager("ProductScanTest", 400, true);
+            var fileManager = new FileManager("ProductScanTest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
             var bufferManager = new BufferManager(fileManager, logManager, 3);
             var lockTable = new LockTable();
@@ -100,7 +100,7 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void SelectScanTest()
         {
-            var fileManager = new FileManager("SelectScanTest", 400, true);
+            var fileManager = new FileManager("SelectScanTest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
             var bufferManager = new BufferManager(fileManager, logManager, 3);
             var lockTable = new LockTable();
@@ -163,7 +163,7 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void ProjectScanTest()
         {
-            var fileManager = new FileManager("ProjectScanTest", 400, true);
+            var fileManager = new FileManager("ProjectScanTest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
             var bufferManager = new BufferManager(fileManager, logManager, 3);
             var lockTable = new LockTable();

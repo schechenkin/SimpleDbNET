@@ -13,7 +13,7 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void Commit_and_rollback_test()
         {
-            var fileManager = new FileManager("TransactionTest", 400, true);
+            var fileManager = new FileManager("TransactionTest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
             var bufferManager = new BufferManager(fileManager, logManager, 3);
             var lockTable = new LockTable();

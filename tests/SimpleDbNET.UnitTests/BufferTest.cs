@@ -12,7 +12,7 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void Beffers_test()
         {
-            var fileManager = new FileManager("buffertest", 400, true);
+            var fileManager = new FileManager("buffertest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
             BufferManager bm = new BufferManager(fileManager, logManager, 3);
 
@@ -41,7 +41,7 @@ namespace SimpleDbNET.UnitTests
         //[Fact]
         public void BufferMgrTest()
         {
-            var fileManager = new FileManager("buffermngtest", 400, true);
+            var fileManager = new FileManager("buffermngtest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
             BufferManager bm = new BufferManager(fileManager, logManager, 3);
 

@@ -14,7 +14,7 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void Insert_and_delete()
         {
-            var fileManager = new FileManager("TableScanTest", 400, true);
+            var fileManager = new FileManager("TableScanTest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
             var bufferManager = new BufferManager(fileManager, logManager, 3);
             var lockTable = new LockTable();
