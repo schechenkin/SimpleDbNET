@@ -33,7 +33,8 @@ namespace SimpleDB.Tx.Recovery
             COMMIT = 2,
             ROLLBACK = 3,
             SETINT = 4,
-            SETSTRING = 5
+            SETSTRING = 5,
+            SETNULL = 6
         }
         
         public static LogRecord createLogRecord(byte[] bytes)
@@ -53,6 +54,8 @@ namespace SimpleDB.Tx.Recovery
                     return new SetIntRecord(p);
                 case Type.SETSTRING:
                     return new SetStringRecord(p);
+                case Type.SETNULL:
+                    return new SetNullRecord(p);
                 default:
                     return null;
             }

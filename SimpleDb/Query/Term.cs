@@ -4,7 +4,7 @@ namespace SimpleDB.Query
 {
     public class Term
     {
-        public enum CompareOperator { Equal, More, Less };
+        public enum CompareOperator { Equal, More, Less, IsNull, IsNotNull };
         
         private Expression lhs, rhs;
         private CompareOperator compareOperator;
@@ -39,13 +39,15 @@ namespace SimpleDB.Query
         public bool isSatisfied(Scan s)
         {
             Constant lhsval = lhs.evaluate(s);
-            Constant rhsval = rhs.evaluate(s);
+            Constant rhsval = rhs != null ? rhs.evaluate(s) : Constant.Null();
 
             return compareOperator switch
             {
                 CompareOperator.Equal => rhsval.Equals(lhsval),
                 CompareOperator.More => lhsval.CompareTo(rhsval) > 0,
                 CompareOperator.Less => lhsval.CompareTo(rhsval) < 0,
+                CompareOperator.IsNull => lhsval.IsNull(),
+                CompareOperator.IsNotNull => !lhsval.IsNull(),
                 _ => throw new ArgumentException("Invalid compareOperator", nameof(compareOperator)),
             };
         }
@@ -142,7 +144,7 @@ namespace SimpleDB.Query
 
         public override String ToString()
         {
-            return lhs.ToString() + GetCompareOperatorStringPresentation(compareOperator) + rhs.ToString();
+            return lhs.ToString() + GetCompareOperatorStringPresentation(compareOperator) + rhs?.ToString();
         }
 
         private static string GetCompareOperatorStringPresentation(CompareOperator compareOperator)
@@ -152,6 +154,8 @@ namespace SimpleDB.Query
                 case CompareOperator.Equal: return "=";
                 case CompareOperator.More: return ">";
                 case CompareOperator.Less: return "<";
+                case CompareOperator.IsNull: return " is null";
+                case CompareOperator.IsNotNull: return "is not null";
                 default: throw new Exception("Unknownn CompareOperator");
             }
         }

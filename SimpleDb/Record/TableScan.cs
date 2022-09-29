@@ -56,10 +56,23 @@ namespace SimpleDB.Record
 
         public Constant getVal(string fldname)
         {
+            if (IsNull(fldname))
+                return Constant.Null();
+
             if (layout.schema().GetSqlType(fldname) == SqlType.INTEGER)
                 return new Constant(getInt(fldname));
             else
                 return new Constant(getString(fldname));
+        }
+
+        public void setNull(string fldname)
+        {
+            recordPage.setNull(currentslot, fldname);
+        }
+
+        public bool IsNull(string fldname)
+        {
+            return recordPage.isNull(currentslot, fldname);
         }
 
         public bool hasField(string fldname)
@@ -87,7 +100,9 @@ namespace SimpleDB.Record
 
         public void setVal(string fldname, Constant val)
         {
-            if (layout.schema().GetSqlType(fldname) == SqlType.INTEGER)
+            if(val.IsNull())
+                setNull(fldname);
+            else if (layout.schema().GetSqlType(fldname) == SqlType.INTEGER)
                 setInt(fldname, val.asInt());
             else
                 setString(fldname, val.asString());

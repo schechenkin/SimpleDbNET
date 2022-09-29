@@ -87,6 +87,13 @@ namespace SimpleDB.Tx.Recovery
             return SetStringRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 
+        internal int SetBit(Data.Buffer buff, int offset, int bitLocation, bool value)
+        {
+            string oldval = buff.Page.GetString(offset);
+            BlockId blk = buff.BlockId;
+            return SetNullRecord.writeToLog(lm, txnum, blk, offset, oldval);
+        }
+
         /**
          * Rollback the transaction, by iterating
          * through the log records until it finds 

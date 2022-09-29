@@ -20,6 +20,9 @@ namespace SimpleDbNET.UnitTests
             //when
             page.SetString(0, importantString);
             page.SetInt(0 + stringSize, 42);
+            page.SetBit(0 + stringSize + 4, 2, true);
+            page.SetBit(0 + stringSize + 4, 3, false);
+            page.SetBit(0 + stringSize + 4, 4, true);
             fileManager.WritePage(page, firstBlock);
 
             //then
@@ -29,6 +32,9 @@ namespace SimpleDbNET.UnitTests
 
             page2.GetString(0).Should().Be(importantString);
             page2.GetInt(0 + stringSize).Should().Be(42);
+            page2.GetBit(0 + stringSize + 4, 2).Should().Be(true);
+            page2.GetBit(0 + stringSize + 4, 3).Should().Be(false);
+            page2.GetBit(0 + stringSize + 4, 4).Should().Be(true);
         }
     }
 }

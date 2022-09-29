@@ -10,7 +10,7 @@ namespace SimpleDbNET.UnitTests
     public class BufferTest
     {
         [Fact]
-        public void Beffers_test()
+        public void Buffers_test()
         {
             var fileManager = new FileManager("buffertest", 400, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
@@ -19,7 +19,9 @@ namespace SimpleDbNET.UnitTests
             Buffer buff1 = bm.PinBlock(BlockId.New("testfile", 1));
             Page p = buff1.Page;
             int n = p.GetInt(80);
+            bool bitValue = p.GetBit(81, 2);
             p.SetInt(80, n + 1);
+            p.SetBit(84, 2, true);
             buff1.SetModified(1, 0); //placeholder values
             Console.WriteLine("The new value is " + (n + 1));
             bm.UnpinBuffer(buff1);
@@ -33,6 +35,7 @@ namespace SimpleDbNET.UnitTests
             Page p2 = buff2.Page;
 
             p.GetInt(80).Should().Be(n + 1);
+            p.GetBit(84, 2).Should().Be(true);
 
             p2.SetInt(80, 9999);     // This modification
             buff2.SetModified(1, 0); // won't get written to disk.

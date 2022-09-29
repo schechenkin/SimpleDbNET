@@ -31,7 +31,7 @@ namespace SimpleDbNET.UnitTests
             UpdatePlanner up = new BasicUpdatePlanner(mdm);
             Planner planner = new Planner(qp, up);
 
-            String cmd = "create table T1(A int, B varchar(9))";
+            String cmd = "create table T1(A int not null, B varchar(9))";
             planner.executeUpdate(cmd, tx);
 
             int n = 200;
@@ -48,7 +48,9 @@ namespace SimpleDbNET.UnitTests
             Plan p = planner.createQueryPlan(qry, tx);
             Scan s = p.open();
             while (s.next())
+            {
                 s.getString("B").Should().NotBeNullOrEmpty();
+            }
             s.close();
 
 

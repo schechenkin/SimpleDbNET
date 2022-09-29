@@ -7,6 +7,12 @@ namespace SimpleDB.Query
         private int? ival = null;
         private String sval = null;
 
+        private Constant()
+        {
+        }
+
+        public static Constant Null() => new Constant();
+
         public Constant(int ival)
         {
             this.ival = ival;
@@ -46,6 +52,11 @@ namespace SimpleDB.Query
         public override String ToString()
         {
             return (ival != null) ? ival.ToString() : sval.ToString();
+        }
+
+        public bool IsNull()
+        {
+            return !ival.HasValue && sval == null;
         }
     }
 }

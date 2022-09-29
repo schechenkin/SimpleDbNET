@@ -41,5 +41,18 @@ namespace SimpleDb.Extensions
                 destination[offset + i] = (byte)(source >> (8 * j));
             }
         }
+
+        public static void CopyBitToByteArrayLE(this bool bitValue, byte[] destination, int byteoffset, int bitOffset)
+        {
+            Debug.Assert(destination != null, "Destination array cannot be null");
+
+            // check if there is enough space for all the 4 bytes we will copy
+            Debug.Assert(destination.Length >= byteoffset + 4, "Not enough room in the destination array");
+            int byteIndex = byteoffset + bitOffset / 8;
+            int offsetInByte = bitOffset % 8;
+
+            byte mask = (byte)(1 << offsetInByte);
+            destination[byteIndex] = (byte)(bitValue ? (destination[byteIndex] | mask) : (destination[byteIndex] & ~mask));
+        }
     }
 }

@@ -30,7 +30,13 @@ namespace SimpleDB.Query
          */
         public Constant evaluate(Scan s)
         {
-            return (val != null) ? val : s.getVal(fldname);
+            if(fldname != null)
+                return s.getVal(fldname);
+
+            if(val != null)
+                return val;
+
+            return Constant.Null();
         }
 
         /**

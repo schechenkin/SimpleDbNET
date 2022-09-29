@@ -1,7 +1,5 @@
 ﻿using SimpleDB.Query;
 using SimpleDB.Record;
-using System;
-using System.Collections.Generic;
 
 namespace SimpleDB.QueryParser
 {
@@ -23,7 +21,12 @@ namespace SimpleDB.QueryParser
 
         public Constant constant()
         {
-            if (lex.matchStringConstant())
+            if (lex.matchKeyword("null"))
+            {
+                lex.eatKeyword("null");
+                return Constant.Null();
+            }
+            else if (lex.matchStringConstant())
                 return new Constant(lex.eatStringConstant());
             else
                 return new Constant(lex.eatIntConstant());
@@ -40,6 +43,7 @@ namespace SimpleDB.QueryParser
         public Term term()
         {
             Expression lhs = expression();
+            Expression rhs = null;
             Term.CompareOperator compareOperator = Term.CompareOperator.Equal;
             if (lex.matchDelim('='))
             {
@@ -55,10 +59,17 @@ namespace SimpleDB.QueryParser
                 lex.eatDelim('<');
                 compareOperator = Term.CompareOperator.Less;
             }
+            else if(lex.matchKeyword("is"))
+            {
+                lex.eatKeyword("is");
+                lex.eatKeyword("null");
+                compareOperator = Term.CompareOperator.IsNull;
+            }
             else
                 throw new BadSyntaxException();
 
-            Expression rhs = expression();
+            if(compareOperator != Term.CompareOperator.IsNull && compareOperator != Term.CompareOperator.IsNotNull)
+                rhs = expression();
             return new Term(lhs, rhs, compareOperator);
         }
 
@@ -251,7 +262,16 @@ namespace SimpleDB.QueryParser
             if (lex.matchKeyword("int"))
             {
                 lex.eatKeyword("int");
-                schema.AddIntColumn(fldname);
+                if(lex.matchKeyword("not"))
+                {
+                    lex.eatKeyword("not");
+                    lex.eatKeyword("null");
+                    schema.AddIntColumn(fldname, false);
+                }
+                else
+                {
+                    schema.AddIntColumn(fldname, true);
+                }
             }
             else
             {
@@ -259,7 +279,16 @@ namespace SimpleDB.QueryParser
                 lex.eatDelim('(');
                 int strLen = lex.eatIntConstant();
                 lex.eatDelim(')');
-                schema.AddStringColumn(fldname, strLen);
+                if (lex.matchKeyword("not"))
+                {
+                    lex.eatKeyword("not");
+                    lex.eatKeyword("null");
+                    schema.AddStringColumn(fldname, strLen, false);
+                }
+                else
+                {
+                    schema.AddStringColumn(fldname, strLen, true);
+                }
             }
             return schema;
         }

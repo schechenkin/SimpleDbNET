@@ -24,7 +24,9 @@ namespace SimpleDB.QueryParser
             "view",
             "as",
             "index",
-            "on"
+            "on",
+            "not",
+            "null"
         };
 
         private QueryTokenizer tokenizer;

@@ -27,6 +27,7 @@ namespace SimpleDbNET.UnitTests
             Schema sch = new Schema();
             sch.AddIntColumn("A");
             sch.AddStringColumn("B", 9);
+            sch.AddStringColumn("C", 5, nullable: true);
             Layout layout = new Layout(sch);
 
             //Filling the table with 50 random records
@@ -37,6 +38,14 @@ namespace SimpleDbNET.UnitTests
                 int n = random.Next(0, 49);
                 tableScan.setInt("A", n);
                 tableScan.setString("B", "rec" + n);
+                if(n % 2 == 0)
+                {
+                    tableScan.setNull("C");
+                }
+                else
+                {
+                    tableScan.setString("C", "rec" + n);
+                }
             }
 
             //Deleting these records, whose A-values are less than 25
@@ -58,9 +67,19 @@ namespace SimpleDbNET.UnitTests
             tableScan.beforeFirst();
             while (tableScan.next())
             {
-                tableScan.getInt("A").Should().BeGreaterThan(0);
+                int A = tableScan.getInt("A");
+
+                A.Should().BeGreaterThan(0);
                 tableScan.getString("B").Should().NotBeNullOrEmpty();
-                //tableScan.getRid().Should().NotBeNull();
+                if(A % 2 == 0)
+                {
+                    tableScan.IsNull("C").Should().BeTrue();
+                }
+                else
+                {
+                    tableScan.IsNull("C").Should().BeFalse();
+                    tableScan.getString("C").Should().Be($"rec"+A);
+                }
                 remaining++;
             }
             tableScan.close();

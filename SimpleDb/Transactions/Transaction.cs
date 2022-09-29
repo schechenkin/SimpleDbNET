@@ -137,6 +137,13 @@ namespace SimpleDB.Tx
             return buffer.Page.GetString(offset);
         }
 
+        public bool GetBitValue(BlockId blockId, int offset, int bitLocation)
+        {
+            concurrencyManager.RequestSharedLock(blockId);
+            Buffer buffer = txBuffers.getBuffer(blockId);
+            return buffer.Page.GetBit(offset, bitLocation);
+        }
+
         /**
          * Store an integer at the specified offset 
          * of the specified block.
@@ -184,6 +191,18 @@ namespace SimpleDB.Tx
                 lsn = recoveryManager.setString(buff, offset, val);
             Page p = buff.Page;
             p.SetString(offset, val);
+            buff.SetModified(txNumber, lsn);
+        }
+
+        public void SetNull(BlockId blockId, int offset, int bitLocation, bool okToLog)
+        {
+            concurrencyManager.RequestExclusiveLock(blockId);
+            Buffer buff = txBuffers.getBuffer(blockId);
+            int lsn = -1;
+            if (okToLog)
+                lsn = recoveryManager.SetBit(buff, offset, bitLocation, true);
+            Page p = buff.Page;
+            p.SetBit(offset, bitLocation, true);
             buff.SetModified(txNumber, lsn);
         }
 

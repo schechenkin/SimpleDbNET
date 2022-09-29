@@ -1,9 +1,4 @@
 ﻿using SimpleDB.file;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleDB.Record
 {
@@ -12,6 +7,8 @@ namespace SimpleDB.Record
         private Schema _schema;
         private Dictionary<string, int> _offsets;
         private int _slotsize;
+
+        public static int NullBytesFlagsOffset = sizeof(int);
 
         /**
          * This constructor creates a Layout object from a schema. 
@@ -26,6 +23,7 @@ namespace SimpleDB.Record
             _schema = schema;
             _offsets = new ();
             int pos = sizeof(int); // leave space for the empty/inuse flag
+            pos += NullBytesFlagsOffset; //space for null fldname values flags
             foreach (string fldname in schema.ColumnNames())
             {
                 _offsets[fldname] = pos;
@@ -48,6 +46,20 @@ namespace SimpleDB.Record
             _schema = schema;
             _offsets = offsets;
             _slotsize = slotsize;
+        }
+
+        public int bitLocation(string fldname)
+        {
+            int index = 0;
+            foreach(var key in _offsets.Keys)
+            {
+                if (key == fldname)
+                    return index;
+                else
+                    index++;
+            }
+
+            throw new Exception($"unknown fldname {fldname}");
         }
 
         /**

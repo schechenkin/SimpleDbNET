@@ -56,5 +56,41 @@ namespace SimpleDbNET.IntegrationTests.Features.Values
                 })
                 .RunAsync();
         }
+
+        [Scenario]
+        public async Task Insert_and_select_test_with_nulls()
+        {
+            await Runner
+                .AddAsyncSteps(
+                    Db.Given_empty_db
+                )
+                .AddAsyncStep("When user sends a request to create Students db with 5 rows", async _ =>
+                {
+                    _response = await Users.AnonimousClient.ExecuteSql("create table STUDENT(SId int not null, SName varchar(10) not null, MajorId int not null, GradYear int not null, WorkExperience int)");
+
+                    string s = "insert into STUDENT(SId, SName, MajorId, GradYear, WorkExperience) values ";
+                    String[] studvals = {  "(1, 'joe', 10, 2021, 1)",
+                                           "(2, 'amy', 20, 2020, null)",
+                                           "(3, 'max', 10, 2022, 2)",
+                                           "(4, 'sue', 20, 2022, null)",
+                                           "(5, 'bob', 30, 2020, 2)"};
+                    for (int i = 0; i < studvals.Length; i++)
+                    {
+                        _response = await Users.AnonimousClient.ExecuteSql(s + studvals[i]);
+                        EnsureSuccessStatusCode();
+                    }
+                })
+                .AddAsyncStep("When user sends request to get all students", async _ =>
+                {
+                    _response = await Users.AnonimousClient.ExecuteSql("select SId, SName from STUDENT where WorkExperience is null");
+                    EnsureSuccessStatusCode();
+                })
+                .AddAsyncStep("Then response contains 2 rows", async _ =>
+                {
+                    var selectResult = await _response.BodyAs<SelectResult>();
+                    selectResult.Rows.Count.Should().Be(2);
+                })
+                .RunAsync();
+        }
     }
 }

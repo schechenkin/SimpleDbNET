@@ -14,19 +14,19 @@
          * @param type the type of the field, according to the constants in simpledb.sql.types
          * @param length the conceptual length of a string field.
          */
-        public void AddColumn(string fldname, SqlType type, int length)
+        public void AddColumn(string fldname, SqlType type, int length, bool nullable = false)
         {
             _fields.Add(fldname);
-            info[fldname] =  new FieldInfo(type, length);
+            info[fldname] =  new FieldInfo(type, length, nullable);
         }
 
         /**
          * Add an integer field to the schema.
          * @param fldname the name of the field
          */
-        public void AddIntColumn(string fldname)
+        public void AddIntColumn(string fldname, bool nullable = false)
         {
-            AddColumn(fldname, SqlType.INTEGER, sizeof(int));
+            AddColumn(fldname, SqlType.INTEGER, sizeof(int), nullable);
         }
 
         /**
@@ -37,9 +37,9 @@
          * @param fldname the name of the field
          * @param length the number of chars in the varchar definition
          */
-        public void AddStringColumn(string fldname, int length)
+        public void AddStringColumn(string fldname, int length, bool nullable = false)
         {
-            AddColumn(fldname, SqlType.VARCHAR, length);
+            AddColumn(fldname, SqlType.VARCHAR, length, nullable);
         }
 
         /**
@@ -51,9 +51,7 @@
          */
         public void AddColumn(string fldname, Schema sch)
         {
-            SqlType type = sch.GetSqlType(fldname);
-            int length = sch.GetColumnLength(fldname);
-            AddColumn(fldname, type, length);
+            AddColumn(fldname, sch.GetSqlType(fldname), sch.GetColumnLength(fldname), sch.IsNullable(fldname));
         }
 
         /**
@@ -111,14 +109,22 @@
             return info[fldname].length;
         }
 
+        public bool IsNullable(string fldname)
+        {
+            return info[fldname].nullable;
+        }
+
         struct FieldInfo
         {
             internal SqlType type;
             internal int length;
-            public FieldInfo(SqlType type, int length)
+            internal bool nullable;
+
+            public FieldInfo(SqlType type, int length, bool nullable)
             {
                 this.type = type;
                 this.length = length;
+                this.nullable = nullable;
             }
         }
     }

@@ -67,6 +67,18 @@ namespace SimpleDB.Record
             tx.SetString(blk, fldpos, val, true);
         }
 
+        public void setNull(int slot, String fldname)
+        {
+            var index = layout.bitLocation(fldname);
+            tx.SetNull(blk, offset(slot) + Layout.NullBytesFlagsOffset, index, true);
+        }
+
+        public bool isNull(int slot, String fldname)
+        {
+            var index = layout.bitLocation(fldname);
+            return tx.GetBitValue(blk, offset(slot) + Layout.NullBytesFlagsOffset, index);
+        }
+
         public void delete(int slot)
         {
             setFlag(slot, EMPTY);

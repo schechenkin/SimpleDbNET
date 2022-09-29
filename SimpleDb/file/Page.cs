@@ -30,6 +30,18 @@ namespace SimpleDB.file
             WriteIntToBuffer(offset, value);
         }
 
+        public void SetBit(int offset, int bitLocation, bool value)
+        {
+            WriteBitToBuffer(offset, bitLocation, value);
+        }
+
+        public bool GetBit(int offset, int bitLocation)
+        {
+            var intValue = BitConverter.ToInt32(buffer, offset);
+            int numberRightposition = intValue >> bitLocation;
+            return (numberRightposition & 1) == 1;
+        }
+
         public byte[] GetBytesArray(int offset)
         {
             int length = GetInt(offset);
@@ -85,6 +97,15 @@ namespace SimpleDB.file
                 value.CopyToByteArrayLE(buffer, offset);
             else
                 value.CopyToByteArray(buffer, offset);
+        }
+
+
+        private void WriteBitToBuffer(int offset, int bitLocation, bool value)
+        {
+            if (BitConverter.IsLittleEndian)
+                value.CopyBitToByteArrayLE(buffer, offset, bitLocation);
+            else
+                throw new NotImplementedException();
         }
     }
 }
