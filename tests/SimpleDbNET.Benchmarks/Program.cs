@@ -7,7 +7,7 @@ namespace MyBenchmarks
     {
         public static void Main(string[] args)
         {
-            var summary = BenchmarkRunner.Run<StringTokenizerBenchmark>();
+            var summary = BenchmarkRunner.Run<TableScanBenchmark>();
         }
     }
 }

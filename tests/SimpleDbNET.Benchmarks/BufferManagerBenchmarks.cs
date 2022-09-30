@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Proto.Utilities.Benchmark;
+using QueryPlannerTest;
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
@@ -33,7 +34,7 @@ namespace SimpleDbNET.Benchmarks
         [GlobalSetup(Target = nameof(PinBlock))]
         public void SetupPinBlock()
         {
-            var fileManager = new FileManager("bufferManagerBenchmarks", 4096, true);
+            var fileManager = new FileManager("bufferManagerBenchmarks", 4096, new EmptyBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
 
             bufferManager = new BufferManager(fileManager, logManager, 8);

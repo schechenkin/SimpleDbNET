@@ -55,6 +55,12 @@ namespace SimpleDB.Record
             tx.SetInt(blk, fldpos, val, true);
         }
 
+        public bool CompareString(int slot, string fldname, StringConstant val)
+        {
+            int fldpos = offset(slot) + layout.offset(fldname);
+            return tx.CompareString(blk, fldpos, val);
+        }
+
         /**
          * Store a string at the specified field
          * of the specified slot.

@@ -54,6 +54,11 @@ namespace SimpleDB.Record
             return recordPage.getString(currentslot, fldname);
         }
 
+        public bool CompareString(string fldname, StringConstant val)
+        {
+            return recordPage.CompareString(currentslot, fldname, val);
+        }
+
         public Constant getVal(string fldname)
         {
             if (IsNull(fldname))

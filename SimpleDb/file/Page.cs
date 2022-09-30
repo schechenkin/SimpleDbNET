@@ -50,10 +50,22 @@ namespace SimpleDB.file
             return result;
         }
 
-        public ReadOnlySpan<byte> GetBytes(int offset)
+        private ReadOnlySpan<byte> GetStringBytes(int offset)
         {
             int length = GetInt(offset);
             return new ReadOnlySpan<byte>(buffer, offset + sizeof(Int32), length);
+        }
+
+        public bool StringCompare(int offset, StringConstant text)
+        {
+            int length = GetInt(offset);
+            if (length != text.Length())
+                return false;
+
+            var stringBytes = new ReadOnlySpan<byte>(buffer, offset + sizeof(Int32), length);
+            var textBytes = text.AsSpan();
+
+            return stringBytes.SequenceEqual(textBytes);
         }
 
         public void SetBytes(int offset, byte[] bytes)
@@ -64,7 +76,7 @@ namespace SimpleDB.file
 
         public string GetString(int offset)
         {
-            ReadOnlySpan<byte> bytes = GetBytes(offset);
+            ReadOnlySpan<byte> bytes = GetStringBytes(offset);
             return CHARSET.GetString(bytes);
         }
 

@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Jobs;
+using QueryPlannerTest;
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
@@ -22,7 +23,7 @@ namespace SimpleDbNET.Benchmarks
         [GlobalSetup]
         public void ConfigureBufferManager()
         {
-            var fileManager = new FileManager("bufferManagerBenchmark", 4096, true);
+            var fileManager = new FileManager("bufferManagerBenchmark", 4096, new EmptyBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
 
             bufferManager = new BufferManager(fileManager, logManager, 8);

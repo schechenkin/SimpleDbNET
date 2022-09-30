@@ -1,4 +1,5 @@
-﻿using SimpleDB.Record;
+﻿using SimpleDB.file;
+using SimpleDB.Record;
 using SimpleDB.Tx;
 using System;
 
@@ -33,13 +34,14 @@ namespace SimpleDB.Metadata
             ts.close();
         }
 
-        public String getViewDef(String vname, Transaction tx)
+        public string? getViewDef(String vname, Transaction tx)
         {
-            String result = null;
+            string? result = null;
             Layout layout = tblMgr.getLayout("viewcat", tx);
+            StringConstant vnameConstant = new StringConstant(vname);
             TableScan ts = new TableScan(tx, "viewcat", layout);
             while (ts.next())
-                if (ts.getString("viewname").Equals(vname))
+                if (ts.CompareString("viewname", vnameConstant))
                 {
                     result = ts.getString("viewdef");
                     break;

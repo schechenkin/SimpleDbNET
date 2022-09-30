@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleDB.file;
+using System;
 using System.Collections.Generic;
 
 namespace SimpleDB.Query
@@ -62,6 +63,11 @@ namespace SimpleDB.Query
         public void close()
         {
             s.close();
+        }
+
+        public bool CompareString(string fldname, StringConstant val)
+        {
+            throw new NotImplementedException();
         }
     }
 }

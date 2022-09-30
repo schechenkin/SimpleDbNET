@@ -79,6 +79,8 @@ namespace SimpleDbNET.UnitTests
                 {
                     tableScan.IsNull("C").Should().BeFalse();
                     tableScan.getString("C").Should().Be($"rec"+A);
+                    tableScan.CompareString("C", new StringConstant($"rec" + A)).Should().BeTrue();
+                    tableScan.CompareString("C", new StringConstant($"random text")).Should().BeFalse();
                 }
                 remaining++;
             }

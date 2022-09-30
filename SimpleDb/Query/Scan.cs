@@ -1,4 +1,6 @@
-﻿namespace SimpleDB.Query
+﻿using SimpleDB.file;
+
+namespace SimpleDB.Query
 {
     public interface Scan
     {
@@ -29,6 +31,9 @@
          * @return the field's string value in the current record
          */
         public string getString(string fldname);
+
+
+        public bool CompareString(string fldname, StringConstant val);
 
         /**
          * Return the value of the specified field in the current record.

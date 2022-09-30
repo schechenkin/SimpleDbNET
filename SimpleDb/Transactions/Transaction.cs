@@ -137,6 +137,13 @@ namespace SimpleDB.Tx
             return buffer.Page.GetString(offset);
         }
 
+        public bool CompareString(BlockId blockId, int offset, StringConstant val)
+        {
+            concurrencyManager.RequestSharedLock(blockId);
+            Buffer buffer = txBuffers.getBuffer(blockId);
+            return buffer.Page.StringCompare(offset, val);
+        }
+
         public bool GetBitValue(BlockId blockId, int offset, int bitLocation)
         {
             concurrencyManager.RequestSharedLock(blockId);

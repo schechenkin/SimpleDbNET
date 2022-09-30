@@ -29,7 +29,7 @@ namespace SimpleDbNET.UnitTests
 
             Schema schema = new Schema();
             schema.AddIntColumn("A");
-            schema.AddStringColumn("B", 9);
+            schema.AddStringColumn("B", 9, true);
             tableManager.createTable("MyTable", schema, tx);
 
             Layout layout = tableManager.getLayout("MyTable", tx);
@@ -40,8 +40,10 @@ namespace SimpleDbNET.UnitTests
 
             sch2.GetSqlType("A").Should().Be(SqlType.INTEGER);
             sch2.GetColumnLength("A").Should().Be(4);
+            sch2.IsNullable("A").Should().BeFalse();
             sch2.GetSqlType("B").Should().Be(SqlType.VARCHAR);
             sch2.GetColumnLength("B").Should().Be(9);
+            sch2.IsNullable("B").Should().BeTrue();
 
             tx.Commit();
         }

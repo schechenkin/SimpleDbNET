@@ -35,6 +35,10 @@ namespace SimpleDbNET.UnitTests
             page2.GetBit(0 + stringSize + 4, 2).Should().Be(true);
             page2.GetBit(0 + stringSize + 4, 3).Should().Be(false);
             page2.GetBit(0 + stringSize + 4, 4).Should().Be(true);
+
+            page2.StringCompare(0, new StringConstant(importantString)).Should().BeTrue();
+            page2.StringCompare(0, new StringConstant("lol")).Should().BeFalse();
+
         }
     }
 }

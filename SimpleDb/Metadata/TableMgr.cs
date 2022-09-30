@@ -1,4 +1,5 @@
-﻿using SimpleDB.Record;
+﻿using SimpleDB.file;
+using SimpleDB.Record;
 using SimpleDB.Tx;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,7 @@ namespace SimpleDB.Metadata
             fcatSchema.AddIntColumn("type");
             fcatSchema.AddIntColumn("length");
             fcatSchema.AddIntColumn("offset");
+            fcatSchema.AddIntColumn("nullable");
             fcatLayout = new Layout(fcatSchema);
 
             if (isNew)
@@ -66,6 +68,7 @@ namespace SimpleDB.Metadata
                 fcat.setInt("type", (int)sch.GetSqlType(fldname));
                 fcat.setInt("length", sch.GetColumnLength(fldname));
                 fcat.setInt("offset", layout.offset(fldname));
+                fcat.setInt("nullable", sch.IsNullable(fldname) ? 1 : 0);
             }
             fcat.close();
         }
@@ -80,9 +83,10 @@ namespace SimpleDB.Metadata
         public Layout getLayout(string tblname, Transaction tx)
         {
             int size = -1;
+            StringConstant tblnameConstant = new StringConstant(tblname);
             TableScan tcat = new TableScan(tx, "tblcat", tcatLayout);
             while (tcat.next())
-                if (tcat.getString("tblname").Equals(tblname))
+                if (tcat.CompareString("tblname", tblnameConstant))
                 {
                     size = tcat.getInt("slotsize");
                     break;
@@ -90,10 +94,11 @@ namespace SimpleDB.Metadata
             tcat.close();
 
             Schema sch = new Schema();
-            Dictionary<string, int> offsets = new ();
+            Dictionary<string, int> offsets = new();
             TableScan fcat = new TableScan(tx, "fldcat", fcatLayout);
+
             while (fcat.next())
-                if (fcat.getString("tblname").Equals(tblname))
+                if (fcat.CompareString("tblname", tblnameConstant))
                 {
                     String fldname = fcat.getString("fldname");
                     int fldtype = fcat.getInt("type");

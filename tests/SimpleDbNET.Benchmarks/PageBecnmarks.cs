@@ -1,6 +1,7 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 using BenchmarkDotNet.Jobs;
+using QueryPlannerTest;
 using SimpleDB.file;
 
 namespace SimpleDbNET.Benchmarks
@@ -19,7 +20,7 @@ namespace SimpleDbNET.Benchmarks
         [GlobalSetup]
         public void ConfigureBufferManager()
         {
-            fileManager = new FileManager("PageBecnmarks", 4096);
+            fileManager = new FileManager("PageBecnmarks", 4096, new EmptyBlocksReadWriteTracker());
             importantString = "important string";
             page = new Page(fileManager.BlockSize);
             buffer = new byte[100];

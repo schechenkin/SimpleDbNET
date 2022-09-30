@@ -1,9 +1,5 @@
-﻿using SimpleDB.Record;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SimpleDB.file;
+using SimpleDB.Record;
 
 namespace SimpleDB.Query
 {
@@ -108,6 +104,11 @@ namespace SimpleDB.Query
 		{
 			UpdateScan us = (UpdateScan)s;
 			us.moveToRid(rid);
+		}
+
+		public bool CompareString(string fldname, StringConstant val)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

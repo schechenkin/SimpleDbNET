@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
+using QueryPlannerTest;
 using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
 using SimpleDB.file;
@@ -22,6 +23,7 @@ namespace SimpleDbNET.Benchmarks
 
         TableScan tableScan;
         Layout layout;
+        StringConstant stringConstant = new StringConstant("rec10");
 
         private Transaction newTx()
         {
@@ -31,7 +33,7 @@ namespace SimpleDbNET.Benchmarks
         [GlobalSetup]
         public void Configure()
         {
-            fileManager = new FileManager("TableScanBenchmark", 4096, true);
+            fileManager = new FileManager("TableScanBenchmark", 4096, new EmptyBlocksReadWriteTracker(), true);
             logManager = new LogManager(fileManager, "log");
             bufferManager = new BufferManager(fileManager, logManager, 1024);
             lockTable = new LockTable();
@@ -49,7 +51,7 @@ namespace SimpleDbNET.Benchmarks
             layout = mdm.getLayout("MyTable", tx);
 
             TableScan ts = new TableScan(tx, "MyTable", layout);
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 1000; i++)
             {
                 ts.insert();
                 int n = random.Next(0, 100);
@@ -63,7 +65,7 @@ namespace SimpleDbNET.Benchmarks
             tableScan = new TableScan(transaction, "MyTable", layout);
         }
 
-        [Benchmark]
+        //[Benchmark]
         public TableScan beforeFirst()
         {
             tableScan.beforeFirst();
@@ -85,7 +87,7 @@ namespace SimpleDbNET.Benchmarks
             return tableScan;
         }
 
-        /*[Benchmark]
+        [Benchmark]
         public int FullScan()
         {
             int counter = 0;
@@ -99,6 +101,36 @@ namespace SimpleDbNET.Benchmarks
             }
 
             return counter;
-        }*/
+        }
+
+        [Benchmark]
+        public int FullScanWithString()
+        {
+            int counter = 0;
+
+            tableScan.beforeFirst();
+            while (tableScan.next())
+            {
+                if (tableScan.getString("B").Equals("rec10"))
+                    counter++;
+            }
+
+            return counter;
+        }
+
+        [Benchmark]
+        public int FullScanWithStringCompare()
+        {
+            int counter = 0;
+
+            tableScan.beforeFirst();
+            while (tableScan.next())
+            {
+                if (tableScan.CompareString("B", stringConstant))
+                    counter++;
+            }
+
+            return counter;
+        }
     }
 }
