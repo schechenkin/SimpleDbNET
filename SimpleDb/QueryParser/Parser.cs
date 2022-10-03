@@ -28,8 +28,10 @@ namespace SimpleDB.QueryParser
             }
             else if (lex.matchStringConstant())
                 return new Constant(lex.eatStringConstant());
-            else
+            else if (lex.matchIntConstant())
                 return new Constant(lex.eatIntConstant());
+            else
+                return new Constant(lex.eatDateTimeConstant());
         }
 
         public Expression expression()
@@ -262,7 +264,7 @@ namespace SimpleDB.QueryParser
             if (lex.matchKeyword("int"))
             {
                 lex.eatKeyword("int");
-                if(lex.matchKeyword("not"))
+                if (lex.matchKeyword("not"))
                 {
                     lex.eatKeyword("not");
                     lex.eatKeyword("null");
@@ -273,7 +275,7 @@ namespace SimpleDB.QueryParser
                     schema.AddIntColumn(fldname, true);
                 }
             }
-            else
+            else if (lex.matchKeyword("varchar"))
             {
                 lex.eatKeyword("varchar");
                 lex.eatDelim('(');
@@ -290,6 +292,22 @@ namespace SimpleDB.QueryParser
                     schema.AddStringColumn(fldname, strLen, true);
                 }
             }
+            else if (lex.matchKeyword("dateTime"))
+            {
+                lex.eatKeyword("dateTime");
+                if (lex.matchKeyword("not"))
+                {
+                    lex.eatKeyword("not");
+                    lex.eatKeyword("null");
+                    schema.AddDateTimeColumn(fldname, false);
+                }
+                else
+                {
+                    schema.AddDateTimeColumn(fldname, false);
+                }
+            }
+            else
+                throw new BadSyntaxException();
             return schema;
         }
 

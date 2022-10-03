@@ -44,6 +44,11 @@ namespace SimpleDb
         {
             Rows.Last().Add(v.Trim('\''));
         }
+
+        internal void AddDateTimeColumn(string column, DateTime dt)
+        {
+            Rows.Last().Add(dt.ToString());
+        }
     }
 
     internal class SimpleDbConext : ISimpleDbServer
@@ -97,6 +102,11 @@ namespace SimpleDb
                         case SqlType.VARCHAR:
                             result.AddStringColumn(column, scan.getString(column));
                             break;
+                        case SqlType.DATETIME:
+                            result.AddDateTimeColumn(column, scan.getDateTime(column));
+                            break;
+                        default:
+                            throw new NotImplementedException();
                     }
                 }
             }

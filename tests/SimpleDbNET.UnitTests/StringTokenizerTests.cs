@@ -124,5 +124,74 @@ namespace SimpleDbNET.UnitTests
 
             enumerator.MoveNext().Should().BeFalse();
         }
+
+        [Fact]
+        public void When_input_contains_dateTime()
+        {
+            QueryTokenizer tokenizer = new QueryTokenizer("select columnName from T1 where b = '2000-08-20 00:52:40.252224-05' and a = 2", new char[] { ' ', '\n' }, new char[] { ',', '=', '(', ')' });
+            var enumerator = tokenizer.GetEnumerator();
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("select"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("columnName"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("from"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("T1"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("where"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("b"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Delimiter);
+            enumerator.Current.Should().Be(new StringSegment("="));
+
+            enumerator.MoveNext().Should().BeTrue();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.DateTime);
+            enumerator.Current.Should().Be(new StringSegment("'2000-08-20 00:52:40.252224-05'"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("and"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("a"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Delimiter);
+            enumerator.Current.Should().Be(new StringSegment("="));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Number);
+            enumerator.Current.Should().Be(new StringSegment("2"));
+
+            enumerator.MoveNext().Should().BeFalse();
+        }
     }
 }

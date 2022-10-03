@@ -137,6 +137,13 @@ namespace SimpleDB.Tx
             return buffer.Page.GetString(offset);
         }
 
+        public DateTime GetDateTime(BlockId blockId, int offset)
+        {
+            concurrencyManager.RequestSharedLock(blockId);
+            Buffer buffer = txBuffers.getBuffer(blockId);
+            return buffer.Page.GetDateTime(offset);
+        }
+
         public bool CompareString(BlockId blockId, int offset, StringConstant val)
         {
             concurrencyManager.RequestSharedLock(blockId);
@@ -210,6 +217,18 @@ namespace SimpleDB.Tx
                 lsn = recoveryManager.SetBit(buff, offset, bitLocation, true);
             Page p = buff.Page;
             p.SetBit(offset, bitLocation, true);
+            buff.SetModified(txNumber, lsn);
+        }
+
+        public void SetDateTime(BlockId blockId, int offset, DateTime dateTime, bool okToLog)
+        {
+            concurrencyManager.RequestExclusiveLock(blockId);
+            Buffer buff = txBuffers.getBuffer(blockId);
+            int lsn = -1;
+            if (okToLog)
+                lsn = recoveryManager.setDateTime(buff, offset, dateTime);
+            Page p = buff.Page;
+            p.SetDateTime(offset, dateTime);
             buff.SetModified(txNumber, lsn);
         }
 

@@ -1,6 +1,4 @@
 ﻿using SimpleDB.file;
-using System;
-using System.Collections.Generic;
 
 namespace SimpleDB.Query
 {
@@ -68,6 +66,14 @@ namespace SimpleDB.Query
         public bool CompareString(string fldname, StringConstant val)
         {
             throw new NotImplementedException();
+        }
+
+        public DateTime getDateTime(string fldname)
+        {
+            if (hasField(fldname))
+                return s.getDateTime(fldname);
+            else
+                throw new Exception("field " + fldname + " not found.");
         }
     }
 }

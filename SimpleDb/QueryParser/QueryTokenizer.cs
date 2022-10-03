@@ -21,10 +21,6 @@ namespace SimpleDb.QueryParser
             _separators = separators;
             _delimeters = delimeters;
         }
-
-        //public TokenType CurrentTokenType => TokenType.Delimiter;
-        //public string? CurrentToken => String.Empty;
-
         public Enumerator GetEnumerator() => new Enumerator(in _value, _separators, _delimeters);
 
         IEnumerator<StringSegment> IEnumerable<StringSegment>.GetEnumerator() => GetEnumerator();
@@ -80,7 +76,14 @@ namespace SimpleDb.QueryParser
                         return TokenType.Delimiter;
 
                     if (Current[0] == '\'')
-                        return TokenType.String;
+                    {
+                        DateTime dt;
+                        var currentToken = Current;
+                        if (DateTime.TryParse(currentToken.Subsegment(1, currentToken.Length - 2), out dt))
+                            return TokenType.DateTime;
+                        else
+                            return TokenType.String;
+                    }
 
                     return TokenType.Word;
                 }
@@ -158,6 +161,7 @@ namespace SimpleDb.QueryParser
         Number,
         Word,
         Delimiter,
-        String
+        String,
+        DateTime
     }
 }

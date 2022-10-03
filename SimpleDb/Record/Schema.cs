@@ -42,6 +42,11 @@
             AddColumn(fldname, SqlType.VARCHAR, length, nullable);
         }
 
+        public void AddDateTimeColumn(string fldname, bool nullable = false)
+        {
+            AddColumn(fldname, SqlType.DATETIME, sizeof(long), nullable);
+        }
+
         /**
          * Add a field to the schema having the same
          * type and length as the corresponding field

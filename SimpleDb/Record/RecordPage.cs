@@ -43,6 +43,11 @@ namespace SimpleDB.Record
             return tx.GetString(blk, fldpos);
         }
 
+        public DateTime getDateTime(int slot, String fldname)
+        {
+            int fldpos = offset(slot) + layout.offset(fldname);
+            return tx.GetDateTime(blk, fldpos);
+        }
         /**
          * Store an integer at the specified field
          * of the specified slot.
@@ -71,6 +76,12 @@ namespace SimpleDB.Record
         {
             int fldpos = offset(slot) + layout.offset(fldname);
             tx.SetString(blk, fldpos, val, true);
+        }
+
+        public void setDateTime(int slot, String fldname, DateTime dateTime)
+        {
+            int fldpos = offset(slot) + layout.offset(fldname);
+            tx.SetDateTime(blk, fldpos, dateTime, true);
         }
 
         public void setNull(int slot, String fldname)

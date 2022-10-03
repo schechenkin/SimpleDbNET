@@ -42,6 +42,17 @@ namespace SimpleDB.file
             return (numberRightposition & 1) == 1;
         }
 
+        public void SetDateTime(int offset, DateTime dt)
+        {
+            WriteLongToBuffer(offset, dt.Ticks);
+        }
+
+        public DateTime GetDateTime(int offset)
+        {
+            var ticks = BitConverter.ToInt64(buffer, offset);
+            return new DateTime(ticks);
+        }
+
         public byte[] GetBytesArray(int offset)
         {
             int length = GetInt(offset);
@@ -111,6 +122,13 @@ namespace SimpleDB.file
                 value.CopyToByteArray(buffer, offset);
         }
 
+        private void WriteLongToBuffer(int offset, long value)
+        {
+            if (BitConverter.IsLittleEndian)
+                value.CopyToByteArrayLE(buffer, offset);
+            else
+                value.CopyToByteArray(buffer, offset);
+        }
 
         private void WriteBitToBuffer(int offset, int bitLocation, bool value)
         {

@@ -16,6 +16,7 @@ namespace SimpleDbNET.UnitTests
 
             string importantString = "important string";
             int stringSize = Page.CalculateStringStoringSize(importantString);
+            DateTime dt = new DateTime(2022, 09, 30, 14, 38, 34);
 
             //when
             page.SetString(0, importantString);
@@ -23,6 +24,7 @@ namespace SimpleDbNET.UnitTests
             page.SetBit(0 + stringSize + 4, 2, true);
             page.SetBit(0 + stringSize + 4, 3, false);
             page.SetBit(0 + stringSize + 4, 4, true);
+            page.SetDateTime(0 + stringSize + 4 + 4, dt);
             fileManager.WritePage(page, firstBlock);
 
             //then
@@ -38,6 +40,8 @@ namespace SimpleDbNET.UnitTests
 
             page2.StringCompare(0, new StringConstant(importantString)).Should().BeTrue();
             page2.StringCompare(0, new StringConstant("lol")).Should().BeFalse();
+
+            page2.GetDateTime(0 + stringSize + 4 + 4).Should().Be(dt);
 
         }
     }

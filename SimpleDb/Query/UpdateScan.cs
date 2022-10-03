@@ -26,6 +26,8 @@ namespace SimpleDB.Query
          */
         public void setString(String fldname, String val);
 
+        public void setDateTime(String fldname, DateTime dateTime);
+
         /**
          * Insert a new record somewhere in the scan.
          */

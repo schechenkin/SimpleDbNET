@@ -98,13 +98,23 @@ namespace SimpleDB.Metadata
             Schema sch = new Schema();
             sch.AddIntColumn("block");
             sch.AddIntColumn("id");
-            if (tblSchema.GetSqlType(fldname) == SqlType.INTEGER)
-                sch.AddIntColumn("dataval");
-            else
+
+            switch(tblSchema.GetSqlType(fldname))
             {
-                int fldlen = tblSchema.GetColumnLength(fldname);
-                sch.AddStringColumn("dataval", fldlen);
+                case SqlType.INTEGER:
+                    sch.AddIntColumn("dataval");
+                    break;
+                case SqlType.VARCHAR:
+                    int fldlen = tblSchema.GetColumnLength(fldname);
+                    sch.AddStringColumn("dataval", fldlen);
+                    break;
+                case SqlType.DATETIME:
+                    sch.AddDateTimeColumn("dataval");
+                    break;
+                default:
+                    throw new NotImplementedException();
             }
+
             return new Layout(sch);
         }
     }

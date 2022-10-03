@@ -54,6 +54,11 @@ namespace SimpleDB.Record
             return recordPage.getString(currentslot, fldname);
         }
 
+        public DateTime getDateTime(string fldname)
+        {
+            return recordPage.getDateTime(currentslot, fldname);
+        }
+
         public bool CompareString(string fldname, StringConstant val)
         {
             return recordPage.CompareString(currentslot, fldname, val);
@@ -103,14 +108,26 @@ namespace SimpleDB.Record
             recordPage.setString(currentslot, fldname, val);
         }
 
+        public void setDateTime(string fldname, DateTime dateTime)
+        {
+            recordPage.setDateTime(currentslot, fldname, dateTime);
+        }
+
         public void setVal(string fldname, Constant val)
         {
             if(val.IsNull())
                 setNull(fldname);
-            else if (layout.schema().GetSqlType(fldname) == SqlType.INTEGER)
-                setInt(fldname, val.asInt());
             else
-                setString(fldname, val.asString());
+            {
+                var sqlType = layout.schema().GetSqlType(fldname);
+
+                if (sqlType == SqlType.INTEGER)
+                    setInt(fldname, val.asInt());
+                else if (sqlType == SqlType.VARCHAR)
+                    setString(fldname, val.asString());
+                else if (sqlType == SqlType.DATETIME)
+                    setDateTime(fldname, val.asDateTime());
+            }
         }
 
         public void insert()

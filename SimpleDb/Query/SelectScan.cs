@@ -110,5 +110,10 @@ namespace SimpleDB.Query
 		{
 			throw new NotImplementedException();
 		}
-	}
+
+        public DateTime getDateTime(string fldname)
+        {
+			return s.getDateTime(fldname);
+		}
+    }
 }

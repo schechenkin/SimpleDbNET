@@ -26,7 +26,8 @@ namespace SimpleDB.QueryParser
             "index",
             "on",
             "not",
-            "null"
+            "null",
+            "dateTime"
         };
 
         private QueryTokenizer tokenizer;
@@ -72,6 +73,11 @@ namespace SimpleDB.QueryParser
         public bool matchStringConstant()
         {
             return enumerator.CurrentTokenType == TokenType.String;
+        }
+
+        public bool matchDateTimeConstant()
+        {
+            return enumerator.CurrentTokenType == TokenType.DateTime;
         }
 
         /**
@@ -138,6 +144,17 @@ namespace SimpleDB.QueryParser
             String s = enumerator.Current.ToString(); //constants are not converted to lower case
             nextToken();
             return s;
+        }
+
+        public DateTime eatDateTimeConstant()
+        {
+            if (!matchDateTimeConstant())
+                throw new BadSyntaxException();
+            var currentToken = enumerator.Current;
+            DateTime dt = DateTime.Parse(currentToken.Subsegment(1, currentToken.Length - 2));
+
+            nextToken();
+            return dt;
         }
 
         /**

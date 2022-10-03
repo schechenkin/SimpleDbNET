@@ -97,6 +97,8 @@ namespace SimpleDB.Record
                 return sizeof(int);
             else if (fldtype == SqlType.VARCHAR)
                 return Page.maxLength(_schema.GetColumnLength(fldname));
+            else if (fldtype == SqlType.DATETIME)
+                return sizeof(long);
             else
                 throw new NotImplementedException();
         }

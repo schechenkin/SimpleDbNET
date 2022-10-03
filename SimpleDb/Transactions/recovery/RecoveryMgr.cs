@@ -87,6 +87,13 @@ namespace SimpleDB.Tx.Recovery
             return SetStringRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 
+        public int setDateTime(Data.Buffer buff, int offset, DateTime dateTime)
+        {
+            DateTime oldval = buff.Page.GetDateTime(offset);
+            BlockId blk = buff.BlockId;
+            return SetDateTimeRecord.writeToLog(lm, txnum, blk, offset, oldval);
+        }
+
         internal int SetBit(Data.Buffer buff, int offset, int bitLocation, bool value)
         {
             string oldval = buff.Page.GetString(offset);

@@ -35,6 +35,8 @@ namespace SimpleDB.Query
 
         public bool CompareString(string fldname, StringConstant val);
 
+        public DateTime getDateTime(string fldname);
+
         /**
          * Return the value of the specified field in the current record.
          * The value is expressed as a Constant.

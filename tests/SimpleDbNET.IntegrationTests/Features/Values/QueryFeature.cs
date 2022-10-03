@@ -30,14 +30,14 @@ namespace SimpleDbNET.IntegrationTests.Features.Values
                 )
                 .AddAsyncStep("When user sends a request to create Students db with 5 rows", async _ =>
                 {
-                    _response = await Users.AnonimousClient.ExecuteSql("create table STUDENT(SId int, SName varchar(10), MajorId int, GradYear int)");
+                    _response = await Users.AnonimousClient.ExecuteSql("create table STUDENT(SId int, SName varchar(10), MajorId int, GradYear int, BirthDay dateTime)");
 
-                    string s = "insert into STUDENT(SId, SName, MajorId, GradYear) values ";
-                    String[] studvals = {  "(1, 'joe', 10, 2021)",
-                                           "(2, 'amy', 20, 2020)",
-                                           "(3, 'max', 10, 2022)",
-                                           "(4, 'sue', 20, 2022)",
-                                           "(5, 'bob', 30, 2020)"};
+                    string s = "insert into STUDENT(SId, SName, MajorId, GradYear, BirthDay) values ";
+                    String[] studvals = {  "(1, 'joe', 10, 2021, '2000-08-20 00:52:40.252224-05')",
+                                           "(2, 'amy', 20, 2020, '2001-08-20 00:52:40.252224-05')",
+                                           "(3, 'max', 10, 2022, '2002-08-20 00:52:40.252224-05')",
+                                           "(4, 'sue', 20, 2022, '2003-08-20 00:52:40.252224-05')",
+                                           "(5, 'bob', 30, 2020, '2004-08-20 00:52:40.252224-05')"};
                     for (int i = 0; i < studvals.Length; i++)
                     {
                         _response = await Users.AnonimousClient.ExecuteSql(s + studvals[i]);
@@ -46,7 +46,7 @@ namespace SimpleDbNET.IntegrationTests.Features.Values
                 })
                 .AddAsyncStep("When user sends request to get all students", async _ =>
                 {
-                    _response = await Users.AnonimousClient.ExecuteSql("select SId, SName from STUDENT where GradYear > 2021");
+                    _response = await Users.AnonimousClient.ExecuteSql("select SId, SName, BirthDay from STUDENT where GradYear > 2021");
                     EnsureSuccessStatusCode();
                 })
                 .AddAsyncStep("Then response contains 2 rows", async _ =>

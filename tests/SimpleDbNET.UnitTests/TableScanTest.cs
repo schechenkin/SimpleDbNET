@@ -28,9 +28,11 @@ namespace SimpleDbNET.UnitTests
             sch.AddIntColumn("A");
             sch.AddStringColumn("B", 9);
             sch.AddStringColumn("C", 5, nullable: true);
+            sch.AddDateTimeColumn("D");
             Layout layout = new Layout(sch);
 
             //Filling the table with 50 random records
+            DateTime dt = new DateTime(2022, 09, 30);
             TableScan tableScan = new TableScan(tx, "T", layout);
             for (int i = 0; i < 50; i++)
             {
@@ -46,6 +48,7 @@ namespace SimpleDbNET.UnitTests
                 {
                     tableScan.setString("C", "rec" + n);
                 }
+                tableScan.setDateTime("D", dt);
             }
 
             //Deleting these records, whose A-values are less than 25
@@ -62,7 +65,11 @@ namespace SimpleDbNET.UnitTests
             }
             deleteCount.Should().BeGreaterThan(0);
 
+            tableScan.close();
+            tx.Commit();
+
             //check remaining records
+            tableScan = new TableScan(newTx(), "T", layout);
             int remaining = 0;
             tableScan.beforeFirst();
             while (tableScan.next())
@@ -71,7 +78,8 @@ namespace SimpleDbNET.UnitTests
 
                 A.Should().BeGreaterThan(0);
                 tableScan.getString("B").Should().NotBeNullOrEmpty();
-                if(A % 2 == 0)
+                tableScan.getDateTime("D").Should().Be(dt);
+                if (A % 2 == 0)
                 {
                     tableScan.IsNull("C").Should().BeTrue();
                 }

@@ -6,6 +6,7 @@ namespace SimpleDB.Query
     {
         private int? ival = null;
         private String sval = null;
+        private DateTime? dateTimeVal = null;
 
         private Constant()
         {
@@ -23,6 +24,11 @@ namespace SimpleDB.Query
             this.sval = sval;
         }
 
+        public Constant(DateTime dval)
+        {
+            this.dateTimeVal = dval;
+        }
+
         public int asInt()
         {
             return ival.Value;
@@ -31,6 +37,11 @@ namespace SimpleDB.Query
         public String asString()
         {
             return sval;
+        }
+
+        public DateTime asDateTime()
+        {
+            return dateTimeVal.Value;
         }
 
         public override bool Equals(Object obj)
@@ -46,17 +57,35 @@ namespace SimpleDB.Query
 
         public override int GetHashCode()
         {
-            return (ival != null) ? ival.GetHashCode() : sval.GetHashCode();
+            if (ival.HasValue)
+                return ival.Value.GetHashCode();
+
+            if (sval != null)
+                return sval.GetHashCode();
+
+            if(dateTimeVal.HasValue)
+                return dateTimeVal.Value.GetHashCode();
+
+            throw new Exception("unable to calculate GetHashCode");
         }
 
         public override String ToString()
         {
-            return (ival != null) ? ival.ToString() : sval.ToString();
+            if (ival.HasValue)
+                return ival.Value.ToString();
+
+            if (sval != null)
+                return sval.ToString();
+
+            if (dateTimeVal.HasValue)
+                return dateTimeVal.Value.ToString();
+
+            throw new Exception("unable to calculate ToString");
         }
 
         public bool IsNull()
         {
-            return !ival.HasValue && sval == null;
+            return !ival.HasValue && sval == null && !dateTimeVal.HasValue;
         }
     }
 }
