@@ -1,0 +1,13 @@
+﻿create table account (
+    account_id int not null,
+    login varchar(32) not null,
+    first_name varchar(16) not null,
+    last_name varchar(16) not null,
+    frequent_flyer_id int,
+    update_ts dateTime
+)
+
+insert into account (account_id, login, first_name, last_name, frequent_flyer_id, update_ts)
+values (31287, 'A.POPE31287@magic.email', 'AIDEN', 'POPE', null, '2020-05-01 06:54:27.691089-05');
+
+//199856	LOCK199856@magic.email	ANGEL	LOCK	70868	2020-07-21 11:17:19.761835-05

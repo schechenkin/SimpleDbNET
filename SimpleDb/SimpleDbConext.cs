@@ -49,6 +49,11 @@ namespace SimpleDb
         {
             Rows.Last().Add(dt.ToString());
         }
+
+        internal void AddNullColumn(string column)
+        {
+            Rows.Last().Add("null");
+        }
     }
 
     internal class SimpleDbConext : ISimpleDbServer
@@ -93,20 +98,27 @@ namespace SimpleDb
 
                 foreach(var column in columns)
                 {
-                    var sqlType = schema.GetSqlType(column);
-                    switch(sqlType)
+                    if (scan.isNull(column))
                     {
-                        case SqlType.INTEGER:
-                            result.AddIntColumn(column, scan.getInt(column));
-                            break;
-                        case SqlType.VARCHAR:
-                            result.AddStringColumn(column, scan.getString(column));
-                            break;
-                        case SqlType.DATETIME:
-                            result.AddDateTimeColumn(column, scan.getDateTime(column));
-                            break;
-                        default:
-                            throw new NotImplementedException();
+                        result.AddNullColumn(column);
+                    }
+                    else
+                    {
+                        var sqlType = schema.GetSqlType(column);
+                        switch (sqlType)
+                        {
+                            case SqlType.INTEGER:
+                                result.AddIntColumn(column, scan.getInt(column));
+                                break;
+                            case SqlType.VARCHAR:
+                                result.AddStringColumn(column, scan.getString(column));
+                                break;
+                            case SqlType.DATETIME:
+                                result.AddDateTimeColumn(column, scan.getDateTime(column));
+                                break;
+                            default:
+                                throw new NotImplementedException();
+                        }
                     }
                 }
             }

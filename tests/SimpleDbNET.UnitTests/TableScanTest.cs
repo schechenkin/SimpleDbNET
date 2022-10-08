@@ -81,11 +81,11 @@ namespace SimpleDbNET.UnitTests
                 tableScan.getDateTime("D").Should().Be(dt);
                 if (A % 2 == 0)
                 {
-                    tableScan.IsNull("C").Should().BeTrue();
+                    tableScan.isNull("C").Should().BeTrue();
                 }
                 else
                 {
-                    tableScan.IsNull("C").Should().BeFalse();
+                    tableScan.isNull("C").Should().BeFalse();
                     tableScan.getString("C").Should().Be($"rec"+A);
                     tableScan.CompareString("C", new StringConstant($"rec" + A)).Should().BeTrue();
                     tableScan.CompareString("C", new StringConstant($"random text")).Should().BeFalse();

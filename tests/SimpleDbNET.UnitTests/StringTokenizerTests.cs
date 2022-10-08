@@ -193,5 +193,62 @@ namespace SimpleDbNET.UnitTests
 
             enumerator.MoveNext().Should().BeFalse();
         }
+
+        [Fact]
+        public void When_input_contains_multiline_sql()
+        {
+            QueryTokenizer tokenizer = new QueryTokenizer(@"create table account (
+    account_id int not null
+)", new char[] { ' ', '\n', '\r' }, new char[] { ',', '=', '(', ')' });
+            var enumerator = tokenizer.GetEnumerator();
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("create"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("table"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("account"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Delimiter);
+            enumerator.Current.Should().Be(new StringSegment("("));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("account_id"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("int"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("not"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Word);
+            enumerator.Current.Should().Be(new StringSegment("null"));
+
+            enumerator.MoveNext();
+
+            enumerator.CurrentTokenType.Should().Be(TokenType.Delimiter);
+            enumerator.Current.Should().Be(new StringSegment(")"));
+
+            enumerator.MoveNext().Should().BeFalse();
+
+        }
     }
 }

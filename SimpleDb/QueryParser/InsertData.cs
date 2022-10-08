@@ -1,9 +1,4 @@
 ﻿using SimpleDB.Query;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleDB.QueryParser
 {
@@ -11,12 +6,12 @@ namespace SimpleDB.QueryParser
     {
         private String tblname;
         private List<String> flds;
-        private List<Constant> _vals;
+        private List<List<Constant>> _vals;
 
         /**
          * Saves the table name and the field and value lists.
          */
-        public InsertData(String tblname, List<String> flds, List<Constant> vals)
+        public InsertData(String tblname, List<String> flds, List<List<Constant>> vals)
         {
             this.tblname = tblname;
             this.flds = flds;
@@ -48,7 +43,7 @@ namespace SimpleDB.QueryParser
          * list of values and the list of fields.
          * @return a list of Constant values.
          */
-        public List<Constant> vals()
+        public List<List<Constant>> vals()
         {
             return _vals;
         }

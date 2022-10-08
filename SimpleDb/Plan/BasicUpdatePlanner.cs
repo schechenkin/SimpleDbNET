@@ -49,13 +49,16 @@ namespace SimpleDB.Plan
         {
             Plan p = new TablePlan(tx, data.tableName(), mdm);
             UpdateScan us = (UpdateScan)p.open();
-            us.insert();
-            var iter = data.vals().GetEnumerator();
-            foreach (String fldname in data.fields())
+            foreach(List<Constant> rowValues in data.vals())
             {
-                iter.MoveNext();
-                Constant val = iter.Current;
-                us.setVal(fldname, val);
+                us.insert();
+                var iter = rowValues.GetEnumerator();
+                foreach (String fldname in data.fields())
+                {
+                    iter.MoveNext();
+                    Constant val = iter.Current;
+                    us.setVal(fldname, val);
+                }
             }
             us.close();
             return 1;

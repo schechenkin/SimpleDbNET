@@ -177,11 +177,21 @@ namespace SimpleDB.QueryParser
             String tblname = lex.eatId();
             lex.eatDelim('(');
             List<String> flds = fieldList();
+            List<List<Constant>> vals = new();
             lex.eatDelim(')');
             lex.eatKeyword("values");
             lex.eatDelim('(');
-            List<Constant> vals = constList();
+            vals.Add(constList());
             lex.eatDelim(')');
+
+            while(lex.matchDelim(','))
+            {
+                lex.eatDelim(',');
+                lex.eatDelim('(');
+                vals.Add(constList());
+                lex.eatDelim(')');
+            }
+
             return new InsertData(tblname, flds, vals);
         }
 

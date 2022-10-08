@@ -10,7 +10,7 @@ namespace SimpleDbNET.IntegrationTests.Extensions
     {
         public static Task<HttpResponseMessage> ExecuteSql(this HttpClient client, string query)
         {
-            return client.PostAsync($"sql", query.ToJsonContent());
+            return client.PostAsync($"sql", new StringContent(query));
         }
     }
 }

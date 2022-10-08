@@ -115,5 +115,10 @@ namespace SimpleDB.Query
         {
 			return s.getDateTime(fldname);
 		}
+
+        public bool isNull(string fldname)
+        {
+            return s.isNull(fldname);
+        }
     }
 }

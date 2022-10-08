@@ -120,12 +120,26 @@ namespace SimpleDB.Query
 
         public bool CompareString(string fldname, StringConstant val)
         {
-            throw new NotImplementedException();
+            if (s1.hasField(fldname))
+                return s1.CompareString(fldname, val);
+            else
+                return s2.CompareString(fldname, val);
         }
 
         public DateTime getDateTime(string fldname)
         {
-            throw new NotImplementedException();
+            if (s1.hasField(fldname))
+                return s1.getDateTime(fldname);
+            else
+                return s2.getDateTime(fldname);
+        }
+
+        public bool isNull(string fldname)
+        {
+            if (s1.hasField(fldname))
+                return s1.isNull(fldname);
+            else
+                return s2.isNull(fldname);
         }
     }
 }

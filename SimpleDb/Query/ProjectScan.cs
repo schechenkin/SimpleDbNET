@@ -65,13 +65,24 @@ namespace SimpleDB.Query
 
         public bool CompareString(string fldname, StringConstant val)
         {
-            throw new NotImplementedException();
+            if (hasField(fldname))
+                return s.CompareString(fldname, val);
+            else
+                throw new Exception("field " + fldname + " not found.");
         }
 
         public DateTime getDateTime(string fldname)
         {
             if (hasField(fldname))
                 return s.getDateTime(fldname);
+            else
+                throw new Exception("field " + fldname + " not found.");
+        }
+
+        public bool isNull(string fldname)
+        {
+            if (hasField(fldname))
+                return s.isNull(fldname);
             else
                 throw new Exception("field " + fldname + " not found.");
         }

@@ -32,10 +32,11 @@ namespace SimpleDB.Query
          */
         public string getString(string fldname);
 
-
         public bool CompareString(string fldname, StringConstant val);
 
         public DateTime getDateTime(string fldname);
+
+        public bool isNull(string fldname);
 
         /**
          * Return the value of the specified field in the current record.

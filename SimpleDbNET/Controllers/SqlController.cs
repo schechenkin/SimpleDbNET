@@ -4,23 +4,36 @@ using SimpleDb;
 namespace SimpleDbNET.Api.Controllers
 {
     [Route("sql")]
-    [ApiController]
-    [Produces("application/json")]
     public class SqlController : Controller
     {
         [HttpPost]
-        public async Task<ActionResult> Run([FromBody] string sql, [FromServices] ISimpleDbServer db, [FromServices] ILogger<SqlController> logger)
+        public async Task<ActionResult> Run([FromServices] ISimpleDbServer db, [FromServices] ILogger<SqlController> logger)
         {
-            logger.LogDebug(sql);
+            string sql;
 
-            if (sql.StartsWith("select"))
+            using (StreamReader stream = new StreamReader(HttpContext.Request.Body))
             {
-                return Ok(await db.ExecuteSelectSql(sql));
+                sql = await stream.ReadToEndAsync();
             }
-            else
+
+            //logger.LogDebug(sql);
+
+            try
             {
-                await db.ExecuteUpdateSql(sql);
-                return Ok();
+                if (sql.StartsWith("select"))
+                {
+                    return Ok(await db.ExecuteSelectSql(sql));
+                }
+                else
+                {
+                    await db.ExecuteUpdateSql(sql);
+                    return Ok();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("error execute sql: " + sql, ex.Message);
+                throw;
             }
         }
     }

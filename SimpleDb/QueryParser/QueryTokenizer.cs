@@ -99,6 +99,11 @@ namespace SimpleDb.QueryParser
                 return current.Length == 1 && current[0] == ' ';
             }
 
+            private bool IsSeparator(StringSegment current)
+            {
+                return current.Length == 1 && _separators.Contains(current[0]);
+            }
+
             object System.Collections.IEnumerator.Current => Current;
 
             public void Dispose()
@@ -134,7 +139,7 @@ namespace SimpleDb.QueryParser
                 else
                     _index = nextSeparatorIndex;
 
-                while(IsSpace(Current) && MoveNext())
+                while((IsSpace(Current) || IsSeparator(Current)) && MoveNext())
                 {
 
                 }

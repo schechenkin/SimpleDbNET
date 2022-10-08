@@ -34,15 +34,15 @@ namespace SimpleDbNET.IntegrationTests.Features.Values
 
                     string s = "insert into STUDENT(SId, SName, MajorId, GradYear, BirthDay) values ";
                     String[] studvals = {  "(1, 'joe', 10, 2021, '2000-08-20 00:52:40.252224-05')",
-                                           "(2, 'amy', 20, 2020, '2001-08-20 00:52:40.252224-05')",
-                                           "(3, 'max', 10, 2022, '2002-08-20 00:52:40.252224-05')",
-                                           "(4, 'sue', 20, 2022, '2003-08-20 00:52:40.252224-05')",
-                                           "(5, 'bob', 30, 2020, '2004-08-20 00:52:40.252224-05')"};
+                                           "(2, 'amy', 20, 2020, '2001-08-20 00:52:40.252224-05')"};
                     for (int i = 0; i < studvals.Length; i++)
                     {
                         _response = await Users.AnonimousClient.ExecuteSql(s + studvals[i]);
                         EnsureSuccessStatusCode();
                     }
+
+                    _response = await Users.AnonimousClient.ExecuteSql(s + "(3, 'max', 10, 2022, '2002-08-20 00:52:40.252224-05'), (4, 'sue', 20, 2022, '2003-08-20 00:52:40.252224-05'), (5, 'bob', 30, 2020, '2004-08-20 00:52:40.252224-05')");
+                    EnsureSuccessStatusCode();
                 })
                 .AddAsyncStep("When user sends request to get all students", async _ =>
                 {
