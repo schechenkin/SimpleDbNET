@@ -143,5 +143,10 @@ namespace SimpleDB.Data
                     return buffer;
             return null;
         }
+
+        public int GetUnpinnedBlocksCount()
+        {
+            return m_Bufferpool.Where(x => !x.IsPinned).Count();
+        }
     }
 }

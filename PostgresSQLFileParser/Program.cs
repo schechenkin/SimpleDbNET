@@ -17,9 +17,9 @@
     update_ts dateTime
 )");
 
-            Console.WriteLine("AccountLoader");
+            //Console.WriteLine("AccountLoader");
 
-        new AccountLoader().Load(lines, 1000);
+        new AccountLoader().Load(lines);
 
             SQLExecutor.Run(@"create table aircraft (
     model varchar(32),
@@ -29,7 +29,7 @@
     code varchar(3) not null
 )");
 
-            Console.WriteLine("AircraftLoader");
+           // Console.WriteLine("AircraftLoader");
 
             new AircraftLoader().Load(lines);
 
@@ -45,7 +45,7 @@
 )");
 
             Console.WriteLine("AirportLoader");
-            new AirportLoader().Load(lines);
+            //new AirportLoader().Load(lines);
 
             SQLExecutor.Run(@"create table boarding_pass (
     pass_id int  not null,
@@ -58,7 +58,7 @@
 
             Console.WriteLine("BoardingPassLoader");
 
-            new BoardingPassLoader().Load(lines, 1000);
+            //new BoardingPassLoader().Load(lines);
 
             SQLExecutor.Run(@"create table booking (
     booking_id int not null,
@@ -73,7 +73,7 @@
 
             Console.WriteLine("BookingLoader");
 
-            new BookingLoader().Load(lines, 1000);
+            new BookingLoader().Load(lines);
 
             SQLExecutor.Run(@"create table booking_leg (
     booking_leg_id int not null,
@@ -86,7 +86,7 @@
 
 
             Console.WriteLine("BookingLegLoader");
-            new BookingLegLoader().Load(lines, 1000);
+            //new BookingLegLoader().Load(lines);
 
             SQLExecutor.Run(@"create table flight (
     flight_id int not null,
@@ -104,9 +104,9 @@
 
             Console.WriteLine("FlightLoader");
 
-            new FlightLoader().Load(lines, 1000);
+            //new FlightLoader().Load(lines);
 
-            SQLExecutor.Run(@"create table frequent_flyer (
+            /*SQLExecutor.Run(@"create table frequent_flyer (
     frequent_flyer_id int not null,
     first_name varchar(16) not null,
     last_name varchar(16) not null,
@@ -148,7 +148,7 @@
     boarding_time dateTime,
     precheck int,
     update_ts dateTime
-)");
+)");*/
         }
 
         private static IEnumerator<string> GetAllLines(string file)

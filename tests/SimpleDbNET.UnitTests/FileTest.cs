@@ -10,7 +10,7 @@ namespace SimpleDbNET.UnitTests
         public void When_write_at_the_beginning_of_the_file()
         {
             //given
-            var fileManager = new FileManager("filetest", 400, new TestBlocksReadWriteTracker());
+            var fileManager = new FileManager("filetest", 400, new TestBlocksReadWriteTracker(), true);
             BlockId firstBlock = BlockId.New("testfile", 0);
             Page page = new Page(fileManager.BlockSize);
 
@@ -42,6 +42,34 @@ namespace SimpleDbNET.UnitTests
             page2.StringCompare(0, new StringConstant("lol")).Should().BeFalse();
 
             page2.GetDateTime(0 + stringSize + 4 + 4).Should().Be(dt);
+
+        }
+
+        [Fact]
+        public void When_write_at_the_2nd_chunk_of_the_file()
+        {
+            //given
+            var fileManager = new FileManager("filetest_chunks", 400, new TestBlocksReadWriteTracker(), true, 2);
+            BlockId firstBlock = BlockId.New("testfile", 0);
+            Page page = new Page(fileManager.BlockSize);
+            page.SetInt(0, 42);
+            fileManager.WritePage(page, firstBlock);
+
+            BlockId block2 = BlockId.New("testfile", 2);
+            page = new Page(fileManager.BlockSize);
+
+            string importantString = "important string";
+
+            //when
+            page.SetString(0, importantString);
+            fileManager.WritePage(page, block2);
+
+            //then
+            Page page2 = new Page(fileManager.BlockSize);
+            BlockId block = BlockId.New("testfile", 2);
+            fileManager.ReadBlock(block, page2);
+
+            page2.GetString(0).Should().Be(importantString);
 
         }
     }

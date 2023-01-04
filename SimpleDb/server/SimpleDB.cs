@@ -13,7 +13,7 @@ namespace SimpleDB
     public class Server
     {
         public static int BLOCK_SIZE = 4096;
-        public static int BUFFER_SIZE = 8;
+        public static int BUFFER_SIZE = 1000;
         public static string LOG_FILE = "simpledb.log";
 
         private FileManager fm;
@@ -31,7 +31,7 @@ namespace SimpleDB
          */
         public Server(string dirname, int blocksize, int buffsize, IBlocksReadWriteTracker blocksReadWriteTracker, bool recreate = false)
         {
-            fm = new FileManager(dirname, blocksize, blocksReadWriteTracker, recreate);
+            fm = new FileManager(dirname, blocksize, blocksReadWriteTracker, recreate, 262144);
             lm = new LogManager(fm, LOG_FILE);
             bm = new BufferManager(fm, lm, buffsize);
             lockTable = new LockTable();

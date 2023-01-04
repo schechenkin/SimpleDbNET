@@ -51,13 +51,21 @@ namespace SimpleDB.Plan
             UpdateScan us = (UpdateScan)p.open();
             foreach(List<Constant> rowValues in data.vals())
             {
-                us.insert();
-                var iter = rowValues.GetEnumerator();
-                foreach (String fldname in data.fields())
+                try
                 {
-                    iter.MoveNext();
-                    Constant val = iter.Current;
-                    us.setVal(fldname, val);
+                    us.insert();
+                    var iter = rowValues.GetEnumerator();
+                    foreach (String fldname in data.fields())
+                    {
+                        iter.MoveNext();
+                        Constant val = iter.Current;
+                        us.setVal(fldname, val);
+                    }
+                }
+                catch (Exception)
+                {
+
+                    throw;
                 }
             }
             us.close();

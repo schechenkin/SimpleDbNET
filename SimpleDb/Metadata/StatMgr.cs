@@ -9,7 +9,7 @@ namespace SimpleDB.Metadata
     class StatMgr
     {
         private TableMgr tblMgr;
-        private Dictionary<string, StatInfo> tablestats;
+        private Dictionary<string, StatInfo> tablestats = new();
         private int numcalls;
         private Mutex mutex = new Mutex();
 
@@ -23,6 +23,12 @@ namespace SimpleDB.Metadata
         {
             this.tblMgr = tblMgr;
             refreshStatistics(tx);
+
+            Console.WriteLine("tables stats:");
+            foreach(var tableStat in tablestats)
+            {
+                Console.WriteLine($"table {tableStat.Key}, records: {tableStat.Value.recordsOutput()} blocks: {tableStat.Value.blocksAccessed()}");
+            }
         }
 
         /**
@@ -36,19 +42,21 @@ namespace SimpleDB.Metadata
         {
             lock(mutex)
             {
-                numcalls++;
+                /*numcalls++;
                 if (numcalls > 100)
-                    refreshStatistics(tx);
+                    refreshStatistics(tx);*/
                 if (!tablestats.ContainsKey(tblname))
                 {
                     tablestats[tblname] = calcTableStats(tblname, layout, tx);
                 }
-                return tablestats[tblname]; ;
+                return tablestats[tblname];
             }
         }
 
         private void refreshStatistics(Transaction tx)
         {
+            Console.WriteLine($"refreshStatistics");
+
             tablestats = new ();
             numcalls = 0;
             Layout tcatlayout = tblMgr.getLayout("tblcat", tx);

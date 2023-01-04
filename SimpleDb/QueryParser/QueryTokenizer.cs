@@ -79,7 +79,7 @@ namespace SimpleDb.QueryParser
                     {
                         DateTime dt;
                         var currentToken = Current;
-                        if (DateTime.TryParse(currentToken.Subsegment(1, currentToken.Length - 2), out dt))
+                        if (currentToken.Length >= 10 && DateTime.TryParse(currentToken.Subsegment(1, currentToken.Length - 2), out dt))
                             return TokenType.DateTime;
                         else
                             return TokenType.String;

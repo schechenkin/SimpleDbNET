@@ -185,6 +185,9 @@ namespace PostgresSQLFileParser
                 attempt++;
                 response = client.PostAsync("http://localhost:5000/sql", new StringContent(sql)).Result;
             }
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception("error!");
         }
     }
 
@@ -218,7 +221,7 @@ namespace PostgresSQLFileParser
             List<string> buffer = new List<string>();
             long count = 0;
 
-            while (lines.MoveNext() && limit.HasValue && count < limit.Value)
+            while (lines.MoveNext() && (!limit.HasValue || limit.HasValue && count < limit.Value))
             {
                 var line = lines.Current;
                 if (line == expected)

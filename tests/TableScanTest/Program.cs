@@ -1,4 +1,5 @@
-﻿using SimpleDb.Transactions.Concurrency;
+﻿using SimpleDb.file;
+using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
@@ -10,7 +11,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var fileManager = new FileManager("TableScanTest", 4096, false);
+        var fileManager = new FileManager("TableScanTest", 4096, new EmptyBlocksReadWriteTracker(), false);
         var logManager = new LogManager(fileManager, "log");
         var bufferManager = new BufferManager(fileManager, logManager, 1000);
         var lockTable = new LockTable();
@@ -34,7 +35,8 @@ public class Program
         /*for (int i = 0; i < 400_000; i++)
         {
             tableScan.insert();
-            int n = random.Next(0, 400_000);
+            //int n = random.Next(0, 400_000);
+            int n = i;
             tableScan.setInt(A_column, n);
             tableScan.setString(B_column, "rec" + n);
 
@@ -65,6 +67,10 @@ public class Program
         while (tableScan.next())
         {
             int a = tableScan.getInt(A_column);
+            if(a == 79871)
+            {
+                Console.WriteLine("79871");
+            }
             if (a < 0)
                 throw new Exception();
             //Console.WriteLine(a);
@@ -86,5 +92,22 @@ public class Program
 
         Console.WriteLine($"scan complete {remaining} records");
         Console.WriteLine($"time ms {stopwatch.ElapsedMilliseconds}");
+    }
+
+    internal class EmptyBlocksReadWriteTracker : IBlocksReadWriteTracker
+    {
+        public int BlocksRead { get; set; }
+
+        public int BlocksWrite { get; set; }
+
+        public void TrackBlockRead()
+        {
+
+        }
+
+        public void TrackBlockWrite()
+        {
+
+        }
     }
 }
