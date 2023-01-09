@@ -13,7 +13,7 @@ namespace SimpleDB
     public class Server
     {
         public static int BLOCK_SIZE = 4096;
-        public static int BUFFER_SIZE = 1000;
+        public static int BUFFER_SIZE = 1000*25*10;
         public static string LOG_FILE = "simpledb.log";
 
         private FileManager fm;

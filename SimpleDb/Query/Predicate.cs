@@ -116,11 +116,11 @@ namespace SimpleDB.Query
          * @param fldname the name of the field
          * @return either the constant or null
          */
-        public Constant equatesWithConstant(String fldname)
+        public Constant? equatesWithConstant(String fldname)
         {
             foreach (Term t in terms)
             {
-                Constant c = t.equatesWithConstant(fldname);
+                Constant? c = t.equatesWithConstant(fldname);
                 if (c != null)
                     return c;
             }

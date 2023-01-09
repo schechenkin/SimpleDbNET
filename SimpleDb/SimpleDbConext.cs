@@ -1,6 +1,7 @@
 ﻿using SimpleDb.file;
 using SimpleDB;
 using SimpleDB.Tx;
+using System.Diagnostics;
 
 namespace SimpleDb
 {
@@ -9,7 +10,7 @@ namespace SimpleDb
         Task ExecuteUpdateSql(string sql);
         Task DropDb();
 
-        Task<SelectResult> ExecuteSelectSql(string sql);
+        Task<SelectResult> ExecuteSelectSql(string sql, int limit = 100);
     }
 
     public class SelectResult
@@ -27,8 +28,10 @@ namespace SimpleDb
         public int BlocksRead { get; set; }
         public int BlocksWrite { get; set; }
 
+
         public List<string> Columns { get; set; }
         public List<List<object>> Rows { get; set; } = new List<List<object>>();
+        public long ElapsedMilliseconds { get; set; }
 
         internal void AddRow()
         {
@@ -84,14 +87,18 @@ namespace SimpleDb
             return Task.CompletedTask;
         }
 
-        public Task<SelectResult> ExecuteSelectSql(string sql)
+        public Task<SelectResult> ExecuteSelectSql(string sql, int limit = 100)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             Transaction tx = db.newTx();
             var plan = db.planner().createQueryPlan(sql, tx);
             var schema = plan.schema();
             var columns = schema.ColumnNames();
             var result = new SelectResult(columns);
             var scan = plan.open();
+            int rowsCounter = 0;
             while(scan.next())
             {
                 result.AddRow();
@@ -121,12 +128,20 @@ namespace SimpleDb
                         }
                     }
                 }
+
+                rowsCounter++;
+
+                if (rowsCounter >= limit)
+                    break;
             }
 
             tx.Commit();
 
+            stopwatch.Stop();
+
             result.BlocksRead = blocksReadWriteTracker.BlocksRead;
             result.BlocksWrite = blocksReadWriteTracker.BlocksWrite;
+            result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
 
             return Task.FromResult(result);
         }

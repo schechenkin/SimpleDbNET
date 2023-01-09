@@ -3,27 +3,27 @@ using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
+using SimpleDB.Query;
 using SimpleDB.Record;
 using SimpleDB.Tx;
 using System.Diagnostics;
 
 public class Program
 {
+    static string A_column = "A";
+    static string B_column = "B";
+
     public static void Main(string[] args)
     {
         var fileManager = new FileManager("TableScanTest", 4096, new EmptyBlocksReadWriteTracker(), false);
         var logManager = new LogManager(fileManager, "log");
-        var bufferManager = new BufferManager(fileManager, logManager, 1000);
+        var bufferManager = new BufferManager(fileManager, logManager, 500);
         var lockTable = new LockTable();
         Random random = new Random();
 
         Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable);
 
         Transaction tx = newTx();
-
-        string A_column = "A";
-        string B_column = "B";
-        //string text = "rec5000";
 
         Schema sch = new Schema();
         sch.AddIntColumn(A_column);
@@ -32,19 +32,7 @@ public class Program
 
         //Filling the table
         TableScan tableScan = new TableScan(tx, "T", layout);
-        /*for (int i = 0; i < 400_000; i++)
-        {
-            tableScan.insert();
-            //int n = random.Next(0, 400_000);
-            int n = i;
-            tableScan.setInt(A_column, n);
-            tableScan.setString(B_column, "rec" + n);
-
-            if (i % 5000 == 0)
-                Console.WriteLine($"{i} records inserted");
-        }
-        tx.Commit();
-        Console.WriteLine("all records inserted");*/
+        //CreateRecords(tx, A_column, B_column, tableScan);
 
         //Deleting these records, whose A-values are less than 25
         /*int deleteCount = 0;
@@ -59,39 +47,71 @@ public class Program
             }
         }*/
 
+        DoMeasurement(tableScan);
+        //DoMeasurement(tableScan);
+        //DoMeasurement(tableScan);
+        tableScan.close();
+        tx.Commit();
+
+    }
+
+    private static void DoMeasurement(TableScan tableScan)
+    {
+        tableScan.beforeFirst();
         Console.WriteLine("start scan");
-        int remaining = 0;
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
+        DoSelectScan(tableScan);
+        stopwatch.Stop();
+        Console.WriteLine($"time ms {stopwatch.ElapsedMilliseconds}");
+    }
+
+    private static void CreateRecords(Transaction tx, TableScan tableScan)
+    {
+        for (int i = 0; i < 400_000; i++)
+        {
+            tableScan.insert();
+            //int n = random.Next(0, 400_000);
+            int n = i;
+            tableScan.setInt(A_column, n);
+            tableScan.setString(B_column, "rec" + n);
+
+            if (i % 5000 == 0)
+                Console.WriteLine($"{i} records inserted");
+        }
+        tx.Commit();
+        Console.WriteLine("all records inserted");
+    }
+
+    private static void DoSelectScan(TableScan tableScan)
+    {
+        Term term = new Term(new Expression(A_column), new Expression(new Constant(79871)));
+        Predicate pred = new Predicate(term);
+        Scan selectScan = new SelectScan(tableScan, pred);
+
+        while (selectScan.next())
+        {
+            int a = selectScan.getInt(A_column);
+            string b = selectScan.getString(B_column);
+
+            Console.WriteLine($"A = {a}, b = {b}");
+        }
+    }
+
+    private static void DoTableScan(TableScan tableScan)
+    {
         tableScan.beforeFirst();
         while (tableScan.next())
         {
             int a = tableScan.getInt(A_column);
-            if(a == 79871)
+            if (a == 79871)
             {
-                Console.WriteLine("79871");
+                string b = tableScan.getString(B_column);
+                Console.WriteLine($"A = {a}, b = {b}");
             }
             if (a < 0)
                 throw new Exception();
-            //Console.WriteLine(a);
-            string b = tableScan.getString(B_column);
-            if (string.IsNullOrEmpty(b))
-                throw new Exception();
-            var rid = tableScan.getRid();
-            if (rid.blockNumber() < 0)
-                throw new Exception();
-
-            //if (remaining > 100_000)
-            //    break;
-
-            remaining++;
         }
-        tableScan.close();
-        stopwatch.Stop();
-        tx.Commit();
-
-        Console.WriteLine($"scan complete {remaining} records");
-        Console.WriteLine($"time ms {stopwatch.ElapsedMilliseconds}");
     }
 
     internal class EmptyBlocksReadWriteTracker : IBlocksReadWriteTracker

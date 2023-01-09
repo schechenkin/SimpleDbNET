@@ -6,9 +6,12 @@ namespace SimpleDB.Data
     public class BufferManager
     {
         private Buffer[] m_Bufferpool;
+        private Dictionary<BlockId, Buffer> m_BlockToBufferMap = new Dictionary<BlockId, Buffer>();
+        private Dictionary<Buffer, BlockId> m_BufferToBlockMap = new Dictionary<Buffer, BlockId>();
         private int m_AvailableBufferCounter;
         private object mutex = new object();
         private static TimeSpan MAX_WAIT_TIME = new TimeSpan(0, 0, 10); // 10 seconds
+
 
         /**
          * Creates a buffer manager having the specified number 
@@ -65,6 +68,7 @@ namespace SimpleDB.Data
                 if (!buffer.IsPinned)
                 {
                     m_AvailableBufferCounter++;
+
                     //notifyAll();
                 }
             }
@@ -114,10 +118,28 @@ namespace SimpleDB.Data
             var buffer = FindBufferContainsBlock(blockId);
             if (buffer == null)
             {
-                buffer = ChooseUnpinnedBuffer();
+                buffer = ChooseFreeBuffer();
+                if(buffer is null)
+                    buffer = ChooseUnpinnedBuffer();
                 if (buffer == null)
                     return null;
                 buffer.AssignToBlock(blockId);
+
+                //тут получается 2 разных блока указывают на 1 буффер
+
+                //нужно найти запись в словаре в которой некий блок указывает на этот буфер и удалить ее
+                if(m_BlockToBufferMap.ContainsValue(buffer))
+                {
+                    foreach (var kvp in m_BlockToBufferMap)
+                    {
+                        if (kvp.Value == buffer)
+                        {
+                            m_BlockToBufferMap.Remove(kvp.Key);
+                            break;
+                        }
+                    }
+                }
+                m_BlockToBufferMap[blockId] = buffer;
             }
             if (!buffer.IsPinned)
                 m_AvailableBufferCounter--;
@@ -127,12 +149,24 @@ namespace SimpleDB.Data
 
         private Buffer? FindBufferContainsBlock(BlockId blockId)
         {
-            foreach (Buffer buffer in m_Bufferpool)
+            /*foreach (Buffer buffer in m_Bufferpool)
             {
                 BlockId b = buffer.BlockId;
                 if (b != null && b.Equals(blockId))
                     return buffer;
-            }
+            }*/
+
+            if (m_BlockToBufferMap.ContainsKey(blockId))
+                return m_BlockToBufferMap[blockId];
+
+            return null;
+        }
+
+        private Buffer? ChooseFreeBuffer()
+        {
+            foreach (Buffer buffer in m_Bufferpool)
+                if (buffer.BlockId is null)
+                    return buffer;
             return null;
         }
 

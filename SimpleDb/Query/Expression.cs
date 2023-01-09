@@ -9,7 +9,7 @@ namespace SimpleDB.Query
 {
     public class Expression
     {
-        private Constant val = null;
+        private Constant? val = null;
         private String fldname = null;
 
         public Expression(Constant val)
@@ -34,9 +34,9 @@ namespace SimpleDB.Query
                 return s.getVal(fldname);
 
             if(val != null)
-                return val;
+                return val.Value;
 
-            return Constant.Null();
+            throw new Exception("unknown behaviour");
         }
 
         /**
@@ -56,7 +56,7 @@ namespace SimpleDB.Query
          */
         public Constant asConstant()
         {
-            return val;
+            return val.Value;
         }
 
         /**

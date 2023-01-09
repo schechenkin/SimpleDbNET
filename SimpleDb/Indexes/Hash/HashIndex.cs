@@ -11,7 +11,7 @@ namespace SimpleDB.Indexes.Hash
 		private Transaction tx;
 		private String idxname;
 		private Layout layout;
-		private Constant searchkey = null;
+		private Constant searchkey = Constant.Null();
 		private TableScan ts = null;
 
 		/**

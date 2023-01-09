@@ -10,7 +10,7 @@ namespace SimpleDB.file
         private readonly int blocksPerFile;
 
         private bool isNew;
-        private readonly Dictionary<string, List<FileStream>> openFiles = new Dictionary<string, List<FileStream>>();
+        private readonly Dictionary<string, List<DbFile>> openFiles = new Dictionary<string, List<DbFile>>();
 
         public FileManager(string dbDirectory, int blocksize, IBlocksReadWriteTracker blocksReadWriteTracker, bool recreate = false, int blocksPerFile = 1024)
         {
@@ -38,13 +38,13 @@ namespace SimpleDB.file
             foreach(var tableFilePath in Directory.GetFiles(dbDirectory, "*.tbl"))
             {
                 var tableFileName = Path.GetFileName(tableFilePath);
-                openFiles.Add(tableFileName, new List<FileStream>());
-                openFiles[tableFileName].Add(new FileStream(Path.Combine(dbDirectory, tableFileName), FileMode.OpenOrCreate));
+                openFiles.Add(tableFileName, new List<DbFile>());
+                openFiles[tableFileName].Add(new DbFile(Path.Combine(dbDirectory, tableFileName)));
 
                 var tableName = Path.GetFileNameWithoutExtension(tableFileName);
                 foreach(var chunkFilePath in Directory.GetFiles(dbDirectory, $"{tableName}.tbl_*"))
                 {
-                    openFiles[tableFileName].Add(new FileStream(chunkFilePath, FileMode.OpenOrCreate));
+                    openFiles[tableFileName].Add(new DbFile(chunkFilePath));
                 }
             }
 
@@ -57,11 +57,11 @@ namespace SimpleDB.file
         /// <param name="page"></param>
         public void ReadBlock(BlockId blockId, Page page)
         {
-            var fileStream = GetFileStream(blockId.FileName, blockId.Number);
-            lock (fileStream)
+            var dbFile = GetDbFile(blockId.FileName, blockId.Number);
+            lock (dbFile.Stream)
             {
-                fileStream.Seek((blockId.Number % blocksPerFile) * blocksize, SeekOrigin.Begin);
-                fileStream.Read(page.GetBuffer(), 0, blocksize);
+                dbFile.Stream.Seek((blockId.Number % blocksPerFile) * blocksize, SeekOrigin.Begin);
+                dbFile.Stream.Read(page.GetBuffer(), 0, blocksize);
                 blocksReadWriteTracker.TrackBlockRead();
             }
         }
@@ -73,12 +73,12 @@ namespace SimpleDB.file
         /// <param name="blockId"></param>
         public void WritePage(Page page, BlockId blockId)
         {
-            var fileStream = GetFileStream(blockId.FileName, blockId.Number);
-            lock (fileStream)
+            var dbFile = GetDbFile(blockId.FileName, blockId.Number);
+            lock (dbFile.Stream)
             {
-                fileStream.Seek((blockId.Number % blocksPerFile) * blocksize, SeekOrigin.Begin);
-                fileStream.Write(page.GetBuffer(), 0, blocksize);
-                fileStream.Flush(true);
+                dbFile.Stream.Seek((blockId.Number % blocksPerFile) * blocksize, SeekOrigin.Begin);
+                dbFile.Stream.Write(page.GetBuffer(), 0, blocksize);
+                dbFile.Stream.Flush(true);
                 blocksReadWriteTracker.TrackBlockWrite();
             }
         }
@@ -89,12 +89,13 @@ namespace SimpleDB.file
             var blockId = BlockId.New(filename, newBlockNumber);
             byte[] bytes = new byte[blocksize];
 
-            var fileStream = GetFileStream(filename, newBlockNumber);
-            lock (fileStream)
+            var dbFile = GetDbFile(filename, newBlockNumber);
+            lock (dbFile.Stream)
             {
-                fileStream.Seek((blockId.Number % blocksPerFile) * blocksize, SeekOrigin.Begin);
-                fileStream.Write(bytes);
-                fileStream.Flush(true);
+                dbFile.Stream.Seek((blockId.Number % blocksPerFile) * blocksize, SeekOrigin.Begin);
+                dbFile.Stream.Write(bytes);
+                dbFile.RecalculateLength();
+                dbFile.Stream.Flush(true);
                 return blockId;
             }
         }
@@ -122,9 +123,9 @@ namespace SimpleDB.file
         {
             foreach(var file in openFiles)
             {
-                foreach(FileStream chunk in file.Value)
+                foreach(DbFile chunk in file.Value)
                 {
-                    chunk.Close();
+                    chunk.Stream.Close();
                 }
             }
 
@@ -138,22 +139,22 @@ namespace SimpleDB.file
             foreach (var tableFilePath in Directory.GetFiles(dbDirectory, "*.tbl"))
             {
                 var tableFileName = Path.GetFileName(tableFilePath);
-                openFiles.Add(tableFileName, new List<FileStream>());
-                openFiles[tableFileName].Add(new FileStream(Path.Combine(dbDirectory, tableFileName), FileMode.OpenOrCreate));
+                openFiles.Add(tableFileName, new List<DbFile>());
+                openFiles[tableFileName].Add(new DbFile(Path.Combine(dbDirectory, tableFileName)));
 
                 var tableName = Path.GetFileNameWithoutExtension(tableFileName);
                 foreach (var chunkFilePath in Directory.GetFiles(dbDirectory, $"{tableName}.tbl_*"))
                 {
-                    openFiles[tableFileName].Add(new FileStream(chunkFilePath, FileMode.OpenOrCreate));
+                    openFiles[tableFileName].Add(new DbFile(chunkFilePath));
                 }
             }
         }
 
-        private FileStream GetFileStream(string filename, int blockNumber)
+        private DbFile GetDbFile(string filename, int blockNumber)
         {
             if (!openFiles.ContainsKey(filename))
             {
-                openFiles.Add(filename, new List<FileStream>());
+                openFiles.Add(filename, new List<DbFile>());
             }
 
             int part = blockNumber / blocksPerFile;
@@ -165,7 +166,7 @@ namespace SimpleDB.file
                     throw new Exception("bad part num");
                 
                 string chunkFileName = part > 0 ? $"{filename}_{part}" : filename;
-                var fileStream = new FileStream(Path.Combine(dbDirectory, chunkFileName), FileMode.OpenOrCreate);
+                var fileStream = new DbFile(Path.Combine(dbDirectory, chunkFileName));
                 lock(fileChunks)
                 {
                     fileChunks.Add(fileStream);

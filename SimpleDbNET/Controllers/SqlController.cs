@@ -37,8 +37,8 @@ namespace SimpleDbNET.Api.Controllers
             }
         }
 
-        [HttpPost("test")]
-        public async Task<ActionResult> Run2([FromServices] ISimpleDbServer db, [FromServices] ILogger<SqlController> logger, [FromBody] string sql)
+        [HttpGet("test")]
+        public async Task<ActionResult> Run2([FromServices] ISimpleDbServer db, [FromServices] ILogger<SqlController> logger, [FromQuery] string sql)
         {
             try
             {
@@ -57,6 +57,20 @@ namespace SimpleDbNET.Api.Controllers
                 logger.LogError("error execute sql: " + sql, ex.Message);
                 throw;
             }
+        }
+
+        [HttpGet("test/select/flight")]
+        public Task<ActionResult> SelectFlight([FromServices] ISimpleDbServer db, [FromServices] ILogger<SqlController> logger)
+        {
+            Console.WriteLine("SelectFlight");
+            return Run2(db, logger, "select flight_id, flight_no, scheduled_departure,  scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival, update_ts from flight where flight_id = 278663");
+        }
+
+        [HttpGet("test/select/account")]
+        public Task<ActionResult> SelectAccount([FromServices] ISimpleDbServer db, [FromServices] ILogger<SqlController> logger)
+        {
+            Console.WriteLine("SelectAccount");
+            return Run2(db, logger, "select account_id, login, first_name, last_name from account where account_id = 37407");
         }
     }
 }

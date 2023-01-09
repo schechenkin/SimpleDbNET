@@ -82,5 +82,10 @@ namespace SimpleDB.Data
         {
             m_PinsCount--;
         }
+
+        public override string ToString()
+        {
+            return $"BlockId={BlockId}, IsPinned={IsPinned}";
+        }
     }
 }

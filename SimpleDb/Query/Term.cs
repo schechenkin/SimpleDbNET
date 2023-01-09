@@ -38,6 +38,8 @@ namespace SimpleDB.Query
          */
         public bool isSatisfied(Scan s)
         {
+            //todo: huge count allocations!
+            
             Constant lhsval = lhs.evaluate(s);
             Constant rhsval = rhs != null ? rhs.evaluate(s) : Constant.Null();
 
@@ -95,7 +97,7 @@ namespace SimpleDB.Query
          * @param fldname the name of the field
          * @return either the constant or null
          */
-        public Constant equatesWithConstant(String fldname)
+        public Constant? equatesWithConstant(String fldname)
         {
             if (lhs.isFieldName() &&
                 lhs.asFieldName().Equals(fldname) &&

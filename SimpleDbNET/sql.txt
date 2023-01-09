@@ -1,13 +1,130 @@
-﻿create table account (
-    account_id int not null,
-    login varchar(32) not null,
-    first_name varchar(16) not null,
-    last_name varchar(16) not null,
-    frequent_flyer_id int,
-    update_ts dateTime
-)
+﻿select account_id, login, first_name, last_name from account where account_id = 37407
 
-insert into account (account_id, login, first_name, last_name, frequent_flyer_id, update_ts)
-values (31287, 'A.POPE31287@magic.email', 'AIDEN', 'POPE', null, '2020-05-01 06:54:27.691089-05');
+{
+  "blocksRead": 18388,
+  "blocksWrite": 1,
+  "columns": [
+    "account_id",
+    "login",
+    "first_name",
+    "last_name"
+  ],
+  "rows": [
+    [
+      37407,
+      "M.WATT37407@magic.email",
+      "MIGUEL",
+      "WATT"
+    ]
+  ],
+  "elapsedMilliseconds": 1145
+}
 
-//199856	LOCK199856@magic.email	ANGEL	LOCK	70868	2020-07-21 11:17:19.761835-05
+select flight_id, flight_no, scheduled_departure,  scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival, update_ts from flight where flight_id = 278663
+
+{
+  "blocksRead": 29711,
+  "blocksWrite": 1,
+  "columns": [
+    "flight_id",
+    "flight_no",
+    "scheduled_departure",
+    "scheduled_arrival",
+    "departure_airport",
+    "arrival_airport",
+    "status",
+    "aircraft_code",
+    "actual_departure",
+    "actual_arrival",
+    "update_ts"
+  ],
+  "rows": [
+    [
+      278663,
+      "3739",
+      "12.08.2020 13:05:00",
+      "12.08.2020 13:55:00",
+      "SDJ",
+      "NRT",
+      "Canceled",
+      "733",
+      "12.08.2020 13:05:00",
+      "12.08.2020 13:49:41",
+      "null"
+    ]
+  ],
+  "elapsedMilliseconds": 1861
+}
+
+select pass_id, passenger_id, booking_leg_id, seat, boarding_time, precheck, update_ts from boarding_pass where passenger_id = 4484037
+
+{
+  "blocksRead": 477243,
+  "blocksWrite": 1,
+  "columns": [
+    "pass_id",
+    "passenger_id",
+    "booking_leg_id",
+    "seat",
+    "boarding_time",
+    "precheck",
+    "update_ts"
+  ],
+  "rows": [
+    [
+      13328577,
+      4484037,
+      3710696,
+      "8E",
+      "07.07.2020 12:05:00",
+      0,
+      "07.07.2020 8:18:44"
+    ],
+    [
+      17386499,
+      4484037,
+      3710697,
+      "3E",
+      "17.07.2020 17:40:00",
+      0,
+      "17.07.2020 11:43:45"
+    ],
+    [
+      17931238,
+      4484037,
+      3710698,
+      "2A",
+      "18.07.2020 23:15:00",
+      0,
+      "18.07.2020 10:51:56"
+    ],
+    [
+      18326777,
+      4484037,
+      3710699,
+      "2A",
+      "19.07.2020 23:40:00",
+      0,
+      "19.07.2020 17:32:43"
+    ],
+    [
+      12728173,
+      4484037,
+      3710694,
+      "10A",
+      "05.07.2020 20:40:00",
+      0,
+      "05.07.2020 12:26:26"
+    ],
+    [
+      13148851,
+      4484037,
+      3710695,
+      "17E",
+      "06.07.2020 23:55:00",
+      0,
+      "06.07.2020 14:36:19"
+    ]
+  ],
+  "elapsedMilliseconds": 41440
+}

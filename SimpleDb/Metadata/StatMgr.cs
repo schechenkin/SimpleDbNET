@@ -75,13 +75,13 @@ namespace SimpleDB.Metadata
         {
             int numRecs = 0;
             int numblocks = 0;
-            TableScan ts = new TableScan(tx, tblname, layout);
+            /*TableScan ts = new TableScan(tx, tblname, layout);
             while (ts.next())
             {
                 numRecs++;
                 numblocks = ts.getRid().blockNumber() + 1;
             }
-            ts.close();
+            ts.close();*/
             return new StatInfo(numblocks, numRecs);
         }
     }

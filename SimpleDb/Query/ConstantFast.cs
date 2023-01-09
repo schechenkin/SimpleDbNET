@@ -1,26 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace SimpleDB.Query
+namespace SimpleDb.Query
 {
-    public readonly struct Constant : IComparable
+    public readonly struct ConstantFast
     {
         private readonly int? ival = null;
         private readonly String sval = null;
         private readonly DateTime? dateTimeVal = null;
 
-        public static Constant Null() => new Constant();
-
-        public Constant(int ival)
+        public ConstantFast(int ival)
         {
             this.ival = ival;
         }
 
-        public Constant(String sval)
+        public ConstantFast(String sval)
         {
             this.sval = sval;
         }
 
-        public Constant(DateTime dval)
+        public ConstantFast(DateTime dval)
         {
             this.dateTimeVal = dval;
         }
@@ -42,13 +44,13 @@ namespace SimpleDB.Query
 
         public override bool Equals(Object obj)
         {
-            Constant c = (Constant)obj;
+            ConstantFast c = (ConstantFast)obj;
             return (ival != null) ? ival.Equals(c.ival) : sval.Equals(c.sval);
         }
 
         public int CompareTo(Object obj)
         {
-            return (ival != null) ? ival.Value.CompareTo(((Constant)obj).ival) : sval.CompareTo(((Constant)obj).sval);
+            return (ival != null) ? ival.Value.CompareTo(((ConstantFast)obj).ival) : sval.CompareTo(((ConstantFast)obj).sval);
         }
 
         public override int GetHashCode()
@@ -59,7 +61,7 @@ namespace SimpleDB.Query
             if (sval != null)
                 return sval.GetHashCode();
 
-            if(dateTimeVal.HasValue)
+            if (dateTimeVal.HasValue)
                 return dateTimeVal.Value.GetHashCode();
 
             throw new Exception("unable to calculate GetHashCode");
