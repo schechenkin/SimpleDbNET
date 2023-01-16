@@ -31,18 +31,18 @@ namespace SimpleDB.Tx
          * Pin the block and keep track of the buffer internally.
          * @param blk a reference to the disk block
          */
-        internal void pin(BlockId blk)
+        internal void pin(in BlockId blockId)
         {
-            Buffer buff = bm.PinBlock(blk);
-            buffers[blk] = buff;
-            pins.Add(blk);
+            Buffer buff = bm.PinBlock(blockId);
+            buffers[blockId] = buff;
+            pins.Add(blockId);
         }
 
         /**
          * Unpin the specified block.
          * @param blk a reference to the disk block
          */
-        internal void unpin(BlockId blockId)
+        internal void unpin(in BlockId blockId)
         {
             Buffer buffer = buffers[blockId];
             bm.UnpinBuffer(buffer);

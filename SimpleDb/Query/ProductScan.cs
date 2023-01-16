@@ -1,4 +1,5 @@
-﻿using SimpleDB.file;
+﻿using SimpleDb.Query;
+using SimpleDB.file;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -96,6 +97,14 @@ namespace SimpleDB.Query
                 return s1.getVal(fldname);
             else
                 return s2.getVal(fldname);
+        }
+
+        public ConstantRefStruct getVal2(string fldname)
+        {
+            if (s1.hasField(fldname))
+                return s1.getVal2(fldname);
+            else
+                return s2.getVal2(fldname);
         }
 
         /**

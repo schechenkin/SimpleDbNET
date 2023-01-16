@@ -8,7 +8,7 @@ namespace SimpleDb.Transactions.Concurrency
     {
         private static TimeSpan MAX_WAIT_TIME = TimeSpan.FromSeconds(10);
 
-        private Hashtable locks = new Hashtable();
+        private Dictionary<BlockId, int> locks = new Dictionary<BlockId, int>();
 
         /**
          * Grant an SLock on the specified block.
@@ -21,7 +21,7 @@ namespace SimpleDb.Transactions.Concurrency
          * @param blk a reference to the disk block
          */
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void sLock(BlockId blockId)
+        public void sLock(in BlockId blockId)
         {
             DateTime timestamp = DateTime.Now;
             while (hasXlock(blockId) && !WaitingTooLong(timestamp))
@@ -47,7 +47,7 @@ namespace SimpleDb.Transactions.Concurrency
          * @param blk a reference to the disk block
          */
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void xLock(BlockId blockId)
+        public void xLock(in BlockId blockId)
         {
             DateTime timestamp = DateTime.Now;
             while (hasOtherSLocks(blockId) && !WaitingTooLong(timestamp))
@@ -68,7 +68,7 @@ namespace SimpleDb.Transactions.Concurrency
          * @param blk a reference to the disk block
          */
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public void unlock(BlockId blockId)
+        public void unlock(in BlockId blockId)
         {
             int lockValue = getLockVal(blockId);
             if (lockValue > 1)
@@ -80,12 +80,12 @@ namespace SimpleDb.Transactions.Concurrency
             }
         }
 
-        private bool hasXlock(BlockId blockId)
+        private bool hasXlock(in BlockId blockId)
         {
             return getLockVal(blockId) < 0;
         }
 
-        private bool hasOtherSLocks(BlockId blockId)
+        private bool hasOtherSLocks(in BlockId blockId)
         {
             return getLockVal(blockId) > 1;
         }
@@ -95,7 +95,7 @@ namespace SimpleDb.Transactions.Concurrency
             return DateTime.Now - starttime > MAX_WAIT_TIME;
         }
 
-        private int getLockVal(BlockId blk)
+        private int getLockVal(in BlockId blk)
         {
             if (locks.ContainsKey(blk))
                 return (int)locks[blk];

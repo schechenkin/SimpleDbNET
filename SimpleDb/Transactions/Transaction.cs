@@ -89,7 +89,7 @@ namespace SimpleDB.Tx
          * The transaction manages the buffer for the client.
          * @param blk a reference to the disk block
          */
-        public void PinBlock(BlockId blockId)
+        public void PinBlock(in BlockId blockId)
         {
             txBuffers.pin(blockId);
         }
@@ -100,7 +100,7 @@ namespace SimpleDB.Tx
          * and unpins it.
          * @param blk a reference to the disk block
          */
-        public void UnpinBlock(BlockId blockId)
+        public void UnpinBlock(in BlockId blockId)
         {
             txBuffers.unpin(blockId);
         }
@@ -114,7 +114,7 @@ namespace SimpleDB.Tx
          * @param offset the byte offset within the block
          * @return the integer stored at that offset
          */
-        public int GetInt(BlockId blockId, int offset)
+        public int GetInt(in BlockId blockId, int offset)
         {
             concurrencyManager.RequestSharedLock(blockId);
             Buffer buff = txBuffers.getBuffer(blockId);
@@ -130,28 +130,28 @@ namespace SimpleDB.Tx
          * @param offset the byte offset within the block
          * @return the string stored at that offset
          */
-        public string GetString(BlockId blockId, int offset)
+        public string GetString(in BlockId blockId, int offset)
         {
             concurrencyManager.RequestSharedLock(blockId);
             Buffer buffer = txBuffers.getBuffer(blockId);
             return buffer.Page.GetString(offset);
         }
 
-        public DateTime GetDateTime(BlockId blockId, int offset)
+        public DateTime GetDateTime(in BlockId blockId, int offset)
         {
             concurrencyManager.RequestSharedLock(blockId);
             Buffer buffer = txBuffers.getBuffer(blockId);
             return buffer.Page.GetDateTime(offset);
         }
 
-        public bool CompareString(BlockId blockId, int offset, StringConstant val)
+        public bool CompareString(in BlockId blockId, int offset, StringConstant val)
         {
             concurrencyManager.RequestSharedLock(blockId);
             Buffer buffer = txBuffers.getBuffer(blockId);
             return buffer.Page.StringCompare(offset, val);
         }
 
-        public bool GetBitValue(BlockId blockId, int offset, int bitLocation)
+        public bool GetBitValue(in BlockId blockId, int offset, int bitLocation)
         {
             concurrencyManager.RequestSharedLock(blockId);
             Buffer buffer = txBuffers.getBuffer(blockId);
@@ -171,7 +171,7 @@ namespace SimpleDB.Tx
          * @param offset a byte offset within that block
          * @param val the value to be stored
          */
-        public void SetInt(BlockId blockId, int offset, int val, bool okToLog)
+        public void SetInt(in BlockId blockId, int offset, int val, bool okToLog)
         {
             concurrencyManager.RequestExclusiveLock(blockId);
             Buffer buffer = txBuffers.getBuffer(blockId);
@@ -196,7 +196,7 @@ namespace SimpleDB.Tx
          * @param offset a byte offset within that block
          * @param val the value to be stored
          */
-        public void SetString(BlockId blockId, int offset, string val, bool okToLog)
+        public void SetString(in BlockId blockId, int offset, string val, bool okToLog)
         {
             concurrencyManager.RequestExclusiveLock(blockId);
             Buffer buff = txBuffers.getBuffer(blockId);
@@ -208,7 +208,7 @@ namespace SimpleDB.Tx
             buff.SetModified(txNumber, lsn);
         }
 
-        public void SetNull(BlockId blockId, int offset, int bitLocation, bool okToLog)
+        public void SetNull(in BlockId blockId, int offset, int bitLocation, bool okToLog)
         {
             concurrencyManager.RequestExclusiveLock(blockId);
             Buffer buff = txBuffers.getBuffer(blockId);
@@ -220,7 +220,7 @@ namespace SimpleDB.Tx
             buff.SetModified(txNumber, lsn);
         }
 
-        public void SetDateTime(BlockId blockId, int offset, DateTime dateTime, bool okToLog)
+        public void SetDateTime(in BlockId blockId, int offset, DateTime dateTime, bool okToLog)
         {
             concurrencyManager.RequestExclusiveLock(blockId);
             Buffer buff = txBuffers.getBuffer(blockId);

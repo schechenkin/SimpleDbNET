@@ -1,4 +1,5 @@
-﻿using SimpleDB.Record;
+﻿using SimpleDb.Query;
+using SimpleDB.Record;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +36,17 @@ namespace SimpleDB.Query
 
             if(val != null)
                 return val.Value;
+
+            throw new Exception("unknown behaviour");
+        }
+
+        public ConstantRefStruct evaluate2(Scan s)
+        {
+            if (fldname != null)
+                return s.getVal2(fldname);
+
+            if (val != null)
+                return new ConstantRefStruct(val.Value.asInt());
 
             throw new Exception("unknown behaviour");
         }

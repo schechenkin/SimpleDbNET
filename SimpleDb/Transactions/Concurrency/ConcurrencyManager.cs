@@ -7,7 +7,7 @@ namespace SimpleDB.tx.concurrency
     public class ConcurrencyManager
     {
         private LockTable lockTable;
-        private Hashtable locks = new Hashtable();
+        private Dictionary<BlockId, char> locks = new Dictionary<BlockId, char>();
 
         public ConcurrencyManager(LockTable lockTable)
         {
@@ -22,7 +22,7 @@ namespace SimpleDB.tx.concurrency
             locks.Clear();
         }
 
-        internal void RequestSharedLock(BlockId blockId)
+        internal void RequestSharedLock(in BlockId blockId)
         {
             if (!locks.ContainsKey(blockId))
             {
@@ -31,7 +31,7 @@ namespace SimpleDB.tx.concurrency
             }
         }
 
-        internal void RequestExclusiveLock(BlockId blockId)
+        internal void RequestExclusiveLock(in BlockId blockId)
         {
             if (!HasXLock(blockId))
             {
@@ -41,7 +41,7 @@ namespace SimpleDB.tx.concurrency
             }
         }
 
-        private bool HasXLock(BlockId blockId)
+        private bool HasXLock(in BlockId blockId)
         {
             if (!locks.ContainsKey(blockId))
                 return false;

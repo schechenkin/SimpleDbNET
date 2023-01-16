@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SimpleDB.Tx.Recovery
 {
-    public class RecoveryMgr
+    public class RecoveryMgr : IRecoveryManager
     {
         private LogManager lm;
         private BufferManager bm;
@@ -70,7 +70,7 @@ namespace SimpleDB.Tx.Recovery
         public int setInt(Data.Buffer buff, int offset, int newval)
         {
             int oldval = buff.Page.GetInt(offset);
-            BlockId blk = buff.BlockId;
+            BlockId blk = buff.BlockId.Value;
             return SetIntRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 
@@ -83,21 +83,21 @@ namespace SimpleDB.Tx.Recovery
         public int setString(Data.Buffer buff, int offset, string newval)
         {
             string oldval = buff.Page.GetString(offset);
-            BlockId blk = buff.BlockId;
+            BlockId blk = buff.BlockId.Value;
             return SetStringRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 
         public int setDateTime(Data.Buffer buff, int offset, DateTime dateTime)
         {
             DateTime oldval = buff.Page.GetDateTime(offset);
-            BlockId blk = buff.BlockId;
+            BlockId blk = buff.BlockId.Value;
             return SetDateTimeRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 
         internal int SetBit(Data.Buffer buff, int offset, int bitLocation, bool value)
         {
             string oldval = buff.Page.GetString(offset);
-            BlockId blk = buff.BlockId;
+            BlockId blk = buff.BlockId.Value;
             return SetNullRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 

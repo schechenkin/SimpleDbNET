@@ -1,4 +1,5 @@
-﻿using SimpleDB.file;
+﻿using SimpleDb.Query;
+using SimpleDB.file;
 using SimpleDB.Query;
 using SimpleDB.Tx;
 using System;
@@ -75,6 +76,17 @@ namespace SimpleDB.Record
                 return new Constant(getString(fldname));
         }
 
+        public ConstantRefStruct getVal2(string fldname)
+        {
+            if (isNull(fldname))
+                return ConstantRefStruct.Null();
+
+            if (layout.schema().GetSqlType(fldname) == SqlType.INTEGER)
+                return new ConstantRefStruct(getInt(fldname));
+            else
+                return new ConstantRefStruct(getString(fldname));
+        }
+
         public void setNull(string fldname)
         {
             recordPage.setNull(currentslot, fldname);
@@ -92,7 +104,7 @@ namespace SimpleDB.Record
 
         public void close()
         {
-            if(recordPage.block() != null)
+            if(!recordPage.block().isNull())
                 tx.UnpinBlock(recordPage.block());
         }
 

@@ -1,4 +1,5 @@
-﻿using SimpleDB.file;
+﻿using SimpleDb.Query;
+using SimpleDB.file;
 using SimpleDB.Record;
 
 namespace SimpleDB.Query
@@ -52,7 +53,12 @@ namespace SimpleDB.Query
 			return s.getVal(fldname);
 		}
 
-		public bool hasField(String fldname)
+        public ConstantRefStruct getVal2(string fldname)
+        {
+            return s.getVal2(fldname);
+        }
+
+        public bool hasField(String fldname)
 		{
 			return s.hasField(fldname);
 		}

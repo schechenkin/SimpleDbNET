@@ -1,5 +1,7 @@
 ﻿using SimpleDb.file;
+using SimpleDb.Query;
 using SimpleDb.Transactions.Concurrency;
+using SimpleDB;
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
@@ -8,16 +10,30 @@ using SimpleDB.Record;
 using SimpleDB.Tx;
 using System.Diagnostics;
 
+public readonly struct RRS
+{
+    public RRS(int id)
+    {
+        Id = id;
+    }
+
+    public int Id { get; }
+}
+
 public class Program
 {
     static string A_column = "A";
     static string B_column = "B";
+    static Schema sch;
+    static Layout layout;
 
     public static void Main(string[] args)
     {
+        //Dictionary<RRS, string> dict = new Dictionary<RRS, string>();
+        
         var fileManager = new FileManager("TableScanTest", 4096, new EmptyBlocksReadWriteTracker(), false);
         var logManager = new LogManager(fileManager, "log");
-        var bufferManager = new BufferManager(fileManager, logManager, 500);
+        var bufferManager = new BufferManager(fileManager, logManager, 50000);
         var lockTable = new LockTable();
         Random random = new Random();
 
@@ -25,10 +41,10 @@ public class Program
 
         Transaction tx = newTx();
 
-        Schema sch = new Schema();
+        sch = new Schema();
         sch.AddIntColumn(A_column);
         sch.AddStringColumn(B_column, 9);
-        Layout layout = new Layout(sch);
+        layout = new Layout(sch);
 
         //Filling the table
         TableScan tableScan = new TableScan(tx, "T", layout);
@@ -48,10 +64,12 @@ public class Program
         }*/
 
         DoMeasurement(tableScan);
-        //DoMeasurement(tableScan);
-        //DoMeasurement(tableScan);
-        tableScan.close();
-        tx.Commit();
+        Thread.Sleep(1000);
+        DoMeasurement(tableScan);
+        Thread.Sleep(1000);
+        DoMeasurement(tableScan);
+        //tableScan.close();
+        //tx.Commit();
 
     }
 
@@ -62,6 +80,7 @@ public class Program
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
         DoSelectScan(tableScan);
+        //DoTableScan(tableScan);
         stopwatch.Stop();
         Console.WriteLine($"time ms {stopwatch.ElapsedMilliseconds}");
     }
@@ -103,6 +122,16 @@ public class Program
         tableScan.beforeFirst();
         while (tableScan.next())
         {
+            /*if (layout.schema().GetSqlType(A_column) == SqlType.INTEGER)
+            {
+                var cnst = new ConstantRefStruct(tableScan.getInt(A_column));
+                if (cnst.asInt() == 79871)
+                {
+                    string b = tableScan.getString(B_column);
+                    Console.WriteLine($"A = {cnst.asInt()}, b = {b}");
+                }
+            }*/
+
             int a = tableScan.getInt(A_column);
             if (a == 79871)
             {

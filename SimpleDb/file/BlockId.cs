@@ -2,15 +2,14 @@
 
 namespace SimpleDB.file
 {
-    public record BlockId
+    public readonly record struct BlockId
     {
-        public string FileName { get; }
-        public int Number { get; private set; }
+        public readonly string FileName { get; }
+        public readonly int Number { get;  }
 
         public static BlockId New(string fileName, int blockNumber)
         {
             Debug.Assert(blockNumber >= 0);
-
             return new BlockId(fileName, blockNumber);
         }
 
@@ -27,15 +26,14 @@ namespace SimpleDB.file
             Number = blockNumber;
         }
 
+        public bool isNull()
+        {
+            return string.IsNullOrEmpty(FileName);
+        }
+
         public override string ToString()
         {
             return "[file " + FileName + ", block " + Number + "]";
         }
-
-        public void SetNumber(int number)
-        {
-            Number = number;
-        }
     }
-
 }

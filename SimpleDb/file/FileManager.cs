@@ -55,7 +55,7 @@ namespace SimpleDB.file
         /// </summary>
         /// <param name="blockId"></param>
         /// <param name="page"></param>
-        public void ReadBlock(BlockId blockId, Page page)
+        public void ReadBlock(in BlockId blockId, Page page)
         {
             var dbFile = GetDbFile(blockId.FileName, blockId.Number);
             lock (dbFile.Stream)
@@ -71,7 +71,7 @@ namespace SimpleDB.file
         /// </summary>
         /// <param name="page"></param>
         /// <param name="blockId"></param>
-        public void WritePage(Page page, BlockId blockId)
+        public void WritePage(Page page, in BlockId blockId)
         {
             var dbFile = GetDbFile(blockId.FileName, blockId.Number);
             lock (dbFile.Stream)
@@ -108,7 +108,14 @@ namespace SimpleDB.file
             var fileChunks = openFiles[filename];
             lock(fileChunks)
             {
-                return fileChunks.Sum(fileStream => (int)(fileStream.Length / blocksize));
+                long sum = 0;
+                
+                for(int i = 0; i < fileChunks.Count; i++)
+                {
+                    sum += (fileChunks[i].Length / blocksize);
+                }
+                
+                return (int)sum;
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using SimpleDB.file;
 using SimpleDB.log;
+using System.Diagnostics;
 
 namespace SimpleDB.Data
 {
@@ -11,7 +12,7 @@ namespace SimpleDB.Data
         private int m_TransactionNumber = -1;
         private int m_lsn = -1;
         public Page Page { get; private set; }
-        public BlockId BlockId { get; private set; }
+        public BlockId? BlockId { get; private set; }
         public bool IsPinned => m_PinsCount > 0;
 
         public Buffer(FileManager fm, LogManager lm)
@@ -46,11 +47,11 @@ namespace SimpleDB.Data
          * are first written to disk.
          * @param b a reference to the data block
          */
-        internal void AssignToBlock(BlockId blockId)
+        internal void AssignToBlock(in BlockId blockId)
         {
             Flush();
             BlockId = blockId;
-            m_FileManager.ReadBlock(BlockId, Page);
+            m_FileManager.ReadBlock(blockId, Page);
             m_PinsCount = 0;
         }
 
@@ -62,7 +63,8 @@ namespace SimpleDB.Data
             if (m_TransactionNumber >= 0)
             {
                 m_logManager.Flush(m_lsn);
-                m_FileManager.WritePage(Page, BlockId);
+                Debug.Assert(BlockId.HasValue);
+                m_FileManager.WritePage(Page, BlockId.Value);
                 m_TransactionNumber = -1;
             }
         }

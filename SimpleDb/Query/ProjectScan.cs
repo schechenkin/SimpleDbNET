@@ -1,4 +1,5 @@
-﻿using SimpleDB.file;
+﻿using SimpleDb.Query;
+using SimpleDB.file;
 
 namespace SimpleDB.Query
 {
@@ -49,6 +50,14 @@ namespace SimpleDB.Query
         {
             if (hasField(fldname))
                 return s.getVal(fldname);
+            else
+                throw new Exception("field " + fldname + " not found.");
+        }
+
+        public ConstantRefStruct getVal2(string fldname)
+        {
+            if (hasField(fldname))
+                return s.getVal2(fldname);
             else
                 throw new Exception("field " + fldname + " not found.");
         }

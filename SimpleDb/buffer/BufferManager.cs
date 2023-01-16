@@ -7,7 +7,6 @@ namespace SimpleDB.Data
     {
         private Buffer[] m_Bufferpool;
         private Dictionary<BlockId, Buffer> m_BlockToBufferMap = new Dictionary<BlockId, Buffer>();
-        private Dictionary<Buffer, BlockId> m_BufferToBlockMap = new Dictionary<Buffer, BlockId>();
         private int m_AvailableBufferCounter;
         private object mutex = new object();
         private static TimeSpan MAX_WAIT_TIME = new TimeSpan(0, 0, 10); // 10 seconds
@@ -82,7 +81,7 @@ namespace SimpleDB.Data
          * @param blk a reference to a disk block
          * @return the buffer pinned to that block
          */
-        public Buffer PinBlock(BlockId blockId)
+        public Buffer PinBlock(in BlockId blockId)
         {
             lock (mutex)
             {
@@ -113,7 +112,7 @@ namespace SimpleDB.Data
          * @param blk a reference to a disk block
          * @return the pinned buffer
          */
-        private Buffer? TryPinBlock(BlockId blockId)
+        private Buffer? TryPinBlock(in BlockId blockId)
         {
             var buffer = FindBufferContainsBlock(blockId);
             if (buffer == null)
@@ -126,17 +125,13 @@ namespace SimpleDB.Data
                 buffer.AssignToBlock(blockId);
 
                 //тут получается 2 разных блока указывают на 1 буффер
-
                 //нужно найти запись в словаре в которой некий блок указывает на этот буфер и удалить ее
-                if(m_BlockToBufferMap.ContainsValue(buffer))
+                foreach (var kvp in m_BlockToBufferMap)
                 {
-                    foreach (var kvp in m_BlockToBufferMap)
+                    if (kvp.Value == buffer)
                     {
-                        if (kvp.Value == buffer)
-                        {
-                            m_BlockToBufferMap.Remove(kvp.Key);
-                            break;
-                        }
+                        m_BlockToBufferMap.Remove(kvp.Key);
+                        break;
                     }
                 }
                 m_BlockToBufferMap[blockId] = buffer;
@@ -147,19 +142,13 @@ namespace SimpleDB.Data
             return buffer;
         }
 
-        private Buffer? FindBufferContainsBlock(BlockId blockId)
+        private Buffer? FindBufferContainsBlock(in BlockId blockId)
         {
-            /*foreach (Buffer buffer in m_Bufferpool)
-            {
-                BlockId b = buffer.BlockId;
-                if (b != null && b.Equals(blockId))
-                    return buffer;
-            }*/
-
-            if (m_BlockToBufferMap.ContainsKey(blockId))
-                return m_BlockToBufferMap[blockId];
-
-            return null;
+            Buffer buffer = null;
+            if (m_BlockToBufferMap.TryGetValue(blockId, out buffer))
+                return buffer;
+            else
+                return null;
         }
 
         private Buffer? ChooseFreeBuffer()

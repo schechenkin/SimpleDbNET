@@ -1,4 +1,5 @@
-﻿using SimpleDB.Record;
+﻿using SimpleDb.Query;
+using SimpleDB.Record;
 
 namespace SimpleDB.Query
 {
@@ -40,8 +41,8 @@ namespace SimpleDB.Query
         {
             //todo: huge count allocations!
             
-            Constant lhsval = lhs.evaluate(s);
-            Constant rhsval = rhs != null ? rhs.evaluate(s) : Constant.Null();
+            ConstantRefStruct lhsval = lhs.evaluate2(s);
+            ConstantRefStruct rhsval = rhs != null ? rhs.evaluate2(s) : ConstantRefStruct.Null();
 
             return compareOperator switch
             {

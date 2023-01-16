@@ -1,4 +1,5 @@
-﻿using SimpleDB.file;
+﻿using SimpleDb.Query;
+using SimpleDB.file;
 
 namespace SimpleDB.Query
 {
@@ -45,6 +46,7 @@ namespace SimpleDB.Query
          * @return the value of that field, expressed as a Constant.
          */
         public Constant getVal(string fldname);
+        public ConstantRefStruct getVal2(string fldname);
 
         /**
          * Return true if the scan has the specified field.
