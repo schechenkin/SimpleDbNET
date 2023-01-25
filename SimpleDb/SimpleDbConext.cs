@@ -1,5 +1,6 @@
 ﻿using SimpleDb.file;
 using SimpleDB;
+using SimpleDB.Data;
 using SimpleDB.Tx;
 using System.Diagnostics;
 
@@ -9,8 +10,8 @@ namespace SimpleDb
     {
         Task ExecuteUpdateSql(string sql);
         Task DropDb();
-
         Task<SelectResult> ExecuteSelectSql(string sql, int limit = 100);
+        BufferManager.UsageStats GetBufferManagerUsage();
     }
 
     public class SelectResult
@@ -144,6 +145,11 @@ namespace SimpleDb
             result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
 
             return Task.FromResult(result);
+        }
+
+        public BufferManager.UsageStats GetBufferManagerUsage()
+        {
+            return db.bufferMgr().GetUsageStats();
         }
     }
 }

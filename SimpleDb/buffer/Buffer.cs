@@ -9,11 +9,13 @@ namespace SimpleDB.Data
         private FileManager m_FileManager;
         private LogManager m_logManager;
         private int m_PinsCount = 0;
+        private int m_UsageCount = 0;
         private int m_TransactionNumber = -1;
         private int m_lsn = -1;
         public Page Page { get; private set; }
         public BlockId? BlockId { get; private set; }
         public bool IsPinned => m_PinsCount > 0;
+        public int UsageCount => m_UsageCount;
 
         public Buffer(FileManager fm, LogManager lm)
         {
@@ -77,6 +79,18 @@ namespace SimpleDB.Data
             m_PinsCount++;
         }
 
+        internal void IncrementUsageCounter()
+        {
+            if(m_UsageCount < 5)
+                m_UsageCount++;
+        }
+
+        internal void DecrementUsageCounter()
+        {
+            if (m_UsageCount > 0)
+                m_UsageCount--;
+        }
+
         /**
          * Decrease the buffer's pin count.
          */
@@ -87,7 +101,7 @@ namespace SimpleDB.Data
 
         public override string ToString()
         {
-            return $"BlockId={BlockId}, IsPinned={IsPinned}";
+            return $"BlockId={BlockId}, IsPinned={IsPinned}, UsageCount={UsageCount}";
         }
     }
 }

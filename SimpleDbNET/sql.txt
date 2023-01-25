@@ -17,7 +17,7 @@
       "WATT"
     ]
   ],
-  "elapsedMilliseconds": 1145
+  "elapsedMilliseconds": 112
 }
 
 select flight_id, flight_no, scheduled_departure,  scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival, update_ts from flight where flight_id = 278663
@@ -53,13 +53,13 @@ select flight_id, flight_no, scheduled_departure,  scheduled_arrival, departure_
       "null"
     ]
   ],
-  "elapsedMilliseconds": 1861
+  "elapsedMilliseconds": 11045 vs 276
 }
 
 select pass_id, passenger_id, booking_leg_id, seat, boarding_time, precheck, update_ts from boarding_pass where passenger_id = 4484037
 
 {
-  "blocksRead": 477243,
+  "blocksRead": 477236,
   "blocksWrite": 1,
   "columns": [
     "pass_id",
@@ -126,5 +126,5 @@ select pass_id, passenger_id, booking_leg_id, seat, boarding_time, precheck, upd
       "06.07.2020 14:36:19"
     ]
   ],
-  "elapsedMilliseconds": 41440
+  "elapsedMilliseconds": 15618 or 9 sec
 }

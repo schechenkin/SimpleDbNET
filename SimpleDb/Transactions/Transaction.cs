@@ -267,11 +267,6 @@ namespace SimpleDB.Tx
             return fileManager.BlockSize;
         }
 
-        public int availableBuffs()
-        {
-            return bufferManager.GetAvailableBufferCount();
-        }
-
         private static int nextTxNumber()
         {
             lock(mutex)

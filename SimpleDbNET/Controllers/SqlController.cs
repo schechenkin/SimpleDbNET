@@ -72,5 +72,11 @@ namespace SimpleDbNET.Api.Controllers
             Console.WriteLine("SelectAccount");
             return Run2(db, logger, "select account_id, login, first_name, last_name from account where account_id = 37407");
         }
+
+        [HttpGet("buffermanager")]
+        public async Task<ActionResult> GetBufferManagerStats([FromServices] ISimpleDbServer db)
+        {
+            return Ok(db.GetBufferManagerUsage());
+        }
     }
 }
