@@ -83,5 +83,20 @@ namespace SimpleDB.Query
         {
             return !ival.HasValue && sval == null && !dateTimeVal.HasValue;
         }
+
+        internal bool IsInt()
+        {
+            return ival.HasValue;
+        }
+
+        internal bool IsString()
+        {
+            return sval != null;
+        }
+
+        internal bool IsDateTime()
+        {
+            return dateTimeVal.HasValue;
+        }
     }
 }

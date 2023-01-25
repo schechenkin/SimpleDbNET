@@ -17,6 +17,7 @@ namespace SimpleDbNET.UnitTests
             BufferManager bm = new BufferManager(fileManager, logManager, 3);
 
             Buffer buff1 = bm.PinBlock(BlockId.New("testfile", 1));
+            buff1.UsageCount.Should().Be(1);
             Page p = buff1.Page;
             int n = p.GetInt(80);
             bool bitValue = p.GetBit(81, 2);
@@ -31,6 +32,7 @@ namespace SimpleDbNET.UnitTests
             Buffer buff4 = bm.PinBlock(BlockId.New("testfile", 4));
 
             bm.UnpinBuffer(buff2);
+            buff2.IsPinned.Should().BeFalse();
             buff2 = bm.PinBlock(BlockId.New("testfile", 1));
             Page p2 = buff2.Page;
 
@@ -58,7 +60,6 @@ namespace SimpleDbNET.UnitTests
 
             buff[3] = bm.PinBlock(BlockId.New("testfile", 0)); // block 0 pinned twice
             buff[4] = bm.PinBlock(BlockId.New("testfile", 1)); // block 1 repinned
-            System.Console.WriteLine("Available buffers: " + bm.GetAvailableBufferCount());
             try
             {
                 Console.WriteLine("Attempting to pin block 3...");

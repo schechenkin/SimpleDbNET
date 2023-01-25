@@ -38,9 +38,7 @@ namespace SimpleDB.Query
          * @return true if both expressions have the same value in the scan
          */
         public bool isSatisfied(Scan s)
-        {
-            //todo: huge count allocations!
-            
+        {           
             ConstantRefStruct lhsval = lhs.evaluate2(s);
             ConstantRefStruct rhsval = rhs != null ? rhs.evaluate2(s) : ConstantRefStruct.Null();
 

@@ -1,16 +1,17 @@
 ﻿using SimpleDB.file;
 using SimpleDB.log;
+using System.Collections.Generic;
 
 namespace SimpleDB.Data
 {
     public class BufferManager
     {
-        private Buffer[] m_Bufferpool;
+        private List<Buffer> m_Bufferpool;
         private Dictionary<BlockId, Buffer> m_BlockToBufferMap = new Dictionary<BlockId, Buffer>();
-        private int m_AvailableBufferCounter;
         private object mutex = new object();
         private static TimeSpan MAX_WAIT_TIME = new TimeSpan(0, 0, 10); // 10 seconds
-
+        private FreeList m_FreeList;
+        private int clockSweepCurrentIndex = 0;
 
         /**
          * Creates a buffer manager having the specified number 
@@ -21,22 +22,8 @@ namespace SimpleDB.Data
          */
         public BufferManager(FileManager fm, LogManager lm, int numbuffs)
         {
-            m_Bufferpool = new Buffer[numbuffs];
-            m_AvailableBufferCounter = numbuffs;
-            for (int i = 0; i < numbuffs; i++)
-                m_Bufferpool[i] = new Buffer(fm, lm);
-        }
-
-        /**
-         * Returns the number of available (i.e. unpinned) buffers.
-         * @return the number of available buffers
-         */
-        public int GetAvailableBufferCount()
-        {
-            lock(mutex)
-            {
-                return m_AvailableBufferCounter;
-            }
+            m_FreeList = new FreeList(numbuffs, fm, lm);
+            m_Bufferpool = new List<Buffer>(numbuffs);
         }
 
         /**
@@ -66,8 +53,6 @@ namespace SimpleDB.Data
                 buffer.Unpin();
                 if (!buffer.IsPinned)
                 {
-                    m_AvailableBufferCounter++;
-
                     //notifyAll();
                 }
             }
@@ -117,29 +102,35 @@ namespace SimpleDB.Data
             var buffer = FindBufferContainsBlock(blockId);
             if (buffer == null)
             {
-                buffer = ChooseFreeBuffer();
-                if(buffer is null)
+                buffer = ChooseBufferFromFreeList();
+
+                if (buffer is null)
+                {
                     buffer = ChooseUnpinnedBuffer();
+                    if(buffer is not null)
+                        RemoveLinkFromBlockToBufferMap(buffer);
+                }
+                else
+                    m_Bufferpool.Add(buffer);
+
                 if (buffer == null)
                     return null;
-                buffer.AssignToBlock(blockId);
 
-                //тут получается 2 разных блока указывают на 1 буффер
-                //нужно найти запись в словаре в которой некий блок указывает на этот буфер и удалить ее
-                foreach (var kvp in m_BlockToBufferMap)
-                {
-                    if (kvp.Value == buffer)
-                    {
-                        m_BlockToBufferMap.Remove(kvp.Key);
-                        break;
-                    }
-                }
+                buffer.AssignToBlock(blockId);
                 m_BlockToBufferMap[blockId] = buffer;
             }
-            if (!buffer.IsPinned)
-                m_AvailableBufferCounter--;
+
             buffer.Pin();
+            buffer.IncrementUsageCounter();
             return buffer;
+        }
+
+        private void RemoveLinkFromBlockToBufferMap(Buffer buffer)
+        {
+            if(buffer.BlockId.HasValue)
+            {
+                m_BlockToBufferMap.Remove(buffer.BlockId.Value);
+            }
         }
 
         private Buffer? FindBufferContainsBlock(in BlockId blockId)
@@ -151,25 +142,85 @@ namespace SimpleDB.Data
                 return null;
         }
 
-        private Buffer? ChooseFreeBuffer()
+        private Buffer? ChooseBufferFromFreeList()
         {
-            foreach (Buffer buffer in m_Bufferpool)
-                if (buffer.BlockId is null)
-                    return buffer;
-            return null;
+            Buffer? buffer;
+
+            if (m_FreeList.TryGetBuffer(out buffer))
+                return buffer;
+            else
+                return null;
         }
 
         private Buffer? ChooseUnpinnedBuffer()
         {
-            foreach (Buffer buffer in m_Bufferpool)
-                if (!buffer.IsPinned)
-                    return buffer;
-            return null;
+            //тут нужно в бесконечном цикле крутиться по полу буферов в поиске незапиненных буферов
+            //и выходить из него только когда не нашлось ниодного незапиненного с UsageCount > 0
+            while (true)
+            {
+                if (clockSweepCurrentIndex >= m_Bufferpool.Count)
+                    clockSweepCurrentIndex = 0;
+
+                bool anyFound = false;
+                while(clockSweepCurrentIndex < m_Bufferpool.Count)
+                {
+                    Buffer buffer = m_Bufferpool[clockSweepCurrentIndex];
+
+                    if (!buffer.IsPinned)
+                    {
+                        if (buffer.UsageCount == 0)
+                            return buffer;
+                        else
+                            anyFound = true;
+                    }
+
+                    buffer.DecrementUsageCounter();
+
+                    clockSweepCurrentIndex++;
+                }
+
+                if (anyFound == false)
+                    return null;
+            }
         }
 
         public int GetUnpinnedBlocksCount()
         {
             return m_Bufferpool.Where(x => !x.IsPinned).Count();
+        }
+
+        public int GetFreeBlockCount() 
+        {
+            return m_FreeList.BufferCount;
+        }
+
+        public UsageStats GetUsageStats()
+        {
+            lock (mutex)
+            {
+                Dictionary<string, int> blocksCount = new();
+
+                foreach (var group in m_Bufferpool.Where(b => b.BlockId.HasValue).GroupBy(b => b.BlockId.Value.FileName))
+                {
+                    blocksCount.Add(group.Key, group.Count());
+                }
+
+                UsageStats stats = new UsageStats
+                {
+                    FreeBlockCount = GetFreeBlockCount(),
+                    UnpinnedBlockCount = GetUnpinnedBlocksCount(),
+                    BlocksCount = blocksCount
+                };
+
+                return stats;
+            }
+        }
+
+        public class UsageStats
+        {
+            public int FreeBlockCount { get; set; }
+            public int UnpinnedBlockCount { get; set; }
+            public Dictionary<string, int> BlocksCount { get; set; } = new Dictionary<string, int>();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleDB.Query;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,10 +10,24 @@ namespace SimpleDb.Query
     public readonly ref struct ConstantRefStruct
     {
         private readonly int? ival = null;
+        private readonly string? sval = null;
+        private readonly DateTime? dateTimeVal = null;
 
         public static ConstantRefStruct Null() => new ConstantRefStruct();
 
-        public bool IsNull() => ival == null;
+        public bool IsNull() => ival == null && sval == null && dateTimeVal == null;
+
+        public ConstantRefStruct(Constant constant)
+        {
+            if (constant.IsInt())
+                ival = constant.asInt();
+
+            if (constant.IsString())
+                sval = constant.asString();
+
+            if (constant.IsDateTime())
+                dateTimeVal = constant.asDateTime();
+        }
 
         public ConstantRefStruct(int ival)
         {
@@ -21,7 +36,12 @@ namespace SimpleDb.Query
 
         public ConstantRefStruct(string sval)
         {
+            this.sval = sval;
+        }
 
+        public ConstantRefStruct(DateTime dval)
+        {
+            this.dateTimeVal = dval;
         }
 
         public ConstantRefStruct()
@@ -34,15 +54,43 @@ namespace SimpleDb.Query
             return ival.Value;
         }
 
+        public String asString()
+        {
+            return sval;
+        }
+
+        public DateTime asDateTime()
+        {
+            return dateTimeVal.Value;
+        }
+
         public bool Equals(ConstantRefStruct other)
         {
-            return ival == other.ival;
+            if(ival.HasValue)
+                return ival == other.ival;
+
+            if (sval != null)
+                return sval == other.sval;
+
+            if (dateTimeVal.HasValue)
+                return dateTimeVal == other.dateTimeVal;
+
+            return other.IsNull();
+
         }
 
         public int CompareTo(ConstantRefStruct other)
         {
-            //return (ival != null) ? ival.Value.CompareTo(((Constant)obj).ival) : sval.CompareTo(((Constant)obj).sval);
-            return (ival != null) ? ival.Value.CompareTo(other.ival) : 0;
+            if(ival.HasValue)
+                return ival.Value.CompareTo(other.ival);
+
+            if (sval != null)
+                return sval.CompareTo(other.sval);
+
+            if (dateTimeVal.HasValue)
+                return dateTimeVal.Value.CompareTo(other.dateTimeVal);
+
+            return 0;
         }
     }
 }

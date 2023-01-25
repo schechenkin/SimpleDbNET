@@ -1,10 +1,5 @@
 ﻿using SimpleDb.Query;
 using SimpleDB.Record;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleDB.Query
 {
@@ -46,7 +41,7 @@ namespace SimpleDB.Query
                 return s.getVal2(fldname);
 
             if (val != null)
-                return new ConstantRefStruct(val.Value.asInt());
+                return new ConstantRefStruct(val.Value);
 
             throw new Exception("unknown behaviour");
         }
