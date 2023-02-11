@@ -1,4 +1,5 @@
 ﻿using SimpleDB.Indexes;
+using SimpleDB.Indexes.Btree;
 using SimpleDB.Indexes.Hash;
 using SimpleDB.Record;
 using SimpleDB.Tx;
@@ -39,8 +40,8 @@ namespace SimpleDB.Metadata
          */
         public Indexes.Index open()
         {
-            return new HashIndex(tx, idxname, idxLayout);
-            //    return new BTreeIndex(tx, idxname, idxLayout);
+            //return new HashIndex(tx, idxname, idxLayout);
+            return new BTreeIndex(tx, idxname, idxLayout);
         }
 
         /**
@@ -58,8 +59,8 @@ namespace SimpleDB.Metadata
         {
             int rpb = tx.blockSize() / idxLayout.slotSize();
             int numblocks = si.recordsOutput() / rpb;
-            return HashIndex.searchCost(numblocks, rpb);
-            //    return BTreeIndex.searchCost(numblocks, rpb);
+            //return HashIndex.searchCost(numblocks, rpb);
+            return BTreeIndex.searchCost(numblocks, rpb);
         }
 
         /**

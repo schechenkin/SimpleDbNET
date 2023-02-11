@@ -23,7 +23,7 @@ namespace SimpleDbNET.UnitTests.Indexing
         {
             var fileManager = new FileManager("IndexUpdateTest", 1024, new TestBlocksReadWriteTracker(), true);
             var logManager = new LogManager(fileManager, "log");
-            var bufferManager = new BufferManager(fileManager, logManager, 3);
+            var bufferManager = new BufferManager(fileManager, logManager, 1000);
             var lockTable = new LockTable();
 
             Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable);
@@ -41,17 +41,12 @@ namespace SimpleDbNET.UnitTests.Indexing
             Plan studentPlan = new TablePlan(tx, "student", mdm);
             UpdateScan studentscan = (UpdateScan)studentPlan.open();
 
-            studentscan.insert();
-            studentscan.setInt("Id", 1);
-            studentscan.setString("Name", "Sam");
-
-            studentscan.insert();
-            studentscan.setInt("Id", 2);
-            studentscan.setString("Name", "Bob");
-
-            studentscan.insert();
-            studentscan.setInt("Id", 3);
-            studentscan.setString("Name", "Tom");
+            for(int i = 1; i <= 100; i++) 
+            {
+                studentscan.insert();
+                studentscan.setInt("Id", i);
+                studentscan.setString("Name", $"Name_{i}");
+            }
 
             mdm.createIndex("studentId", "student", "Id", tx);
             mdm.createIndex("studentName", "student", "Name", tx);
@@ -75,15 +70,15 @@ namespace SimpleDbNET.UnitTests.Indexing
                 indexes["Name"].insert(new Constant(tableScan.getString("Name")), tableScan.getRid());
             }
 
-            //find name with Id = 2
+            //find name with Id = 49
             var idIndex = indexes["Id"];
-            idIndex.beforeFirst(new Constant(2));
+            idIndex.beforeFirst(new Constant(49));
             idIndex.next().Should().BeTrue();
             var idRid = idIndex.getDataRid();
 
             tableScan.moveToRid(idRid);
             string name = tableScan.getString("Name");
-            name.Should().Be("Bob");
+            name.Should().Be($"Name_{49}");
 
             tableScan.close();
             tx.Commit();
