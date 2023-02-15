@@ -8,7 +8,7 @@ namespace SimpleDB.Plan
 {
     internal class TablePlan : Plan
     {
-        private String tblname;
+        private string tblname;
         private Transaction tx;
         private Layout layout;
         private StatInfo si;
@@ -19,13 +19,15 @@ namespace SimpleDB.Plan
          * @param tblname the name of the table
          * @param tx the calling transaction
          */
-        public TablePlan(Transaction tx, String tblname, MetadataMgr md)
+        public TablePlan(Transaction tx, string tblname, MetadataMgr md)
         {
             this.tblname = tblname;
             this.tx = tx;
             layout = md.getLayout(tblname, tx);
             si = md.getStatInfo(tblname, layout, tx);
         }
+
+        public string tableName => tblname;
 
         /**
          * Creates a table scan for this query.
@@ -61,7 +63,7 @@ namespace SimpleDB.Plan
          * which is obtainable from the statistics manager.
          * @see simpledb.plan.Plan#distinctValues(java.lang.String)
          */
-        public int distinctValues(String fldname)
+        public int distinctValues(string fldname)
         {
             return si.distinctValues(fldname);
         }

@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using SimpleDb.Indexes.Planner;
 using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
 using SimpleDB.file;
@@ -28,7 +29,7 @@ namespace SimpleDbNET.UnitTests
             MetadataMgr mdm = new MetadataMgr(true, tx);
 
             QueryPlanner qp = new BasicQueryPlanner(mdm);
-            UpdatePlanner up = new BasicUpdatePlanner(mdm);
+            UpdatePlanner up = new IndexUpdatePlanner(mdm);
             Planner planner = new Planner(qp, up);
 
             String cmd = "create table T1(A int not null, B varchar(9))";

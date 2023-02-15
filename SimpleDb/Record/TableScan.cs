@@ -69,7 +69,7 @@ namespace SimpleDB.Record
         {
             if (isNull(fldname))
                 return Constant.Null();
-
+            //TODO datetimes
             if (layout.schema().GetSqlType(fldname) == SqlType.INTEGER)
                 return new Constant(getInt(fldname));
             else
@@ -81,6 +81,7 @@ namespace SimpleDB.Record
             if (isNull(fldname))
                 return ConstantRefStruct.Null();
 
+            //TODO datetimes
             if (layout.schema().GetSqlType(fldname) == SqlType.INTEGER)
                 return new ConstantRefStruct(getInt(fldname));
             else

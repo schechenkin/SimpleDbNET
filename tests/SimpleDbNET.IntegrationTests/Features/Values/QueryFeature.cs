@@ -22,6 +22,41 @@ namespace SimpleDbNET.IntegrationTests.Features.Values
         public TestDbFixture Db { get; }
 
         [Scenario]
+        public async Task Index_test()
+        {
+            await Runner
+                .AddAsyncSteps(
+                    Db.Given_empty_db
+                )
+                .AddAsyncStep("Given sudents table with 100 records", async _ =>
+                {
+                    _response = await Users.AnonimousClient.ExecuteSql("create table Students(Id int, Name varchar(10))");
+
+                     for (int i = 1; i <= 100; i++)
+                    {
+                        _response = await Users.AnonimousClient.ExecuteSql($"insert into Students(Id, Name) values ({i}, 'firstName{i}')");
+                        EnsureSuccessStatusCode();
+                    }
+                })
+                .AddAsyncStep("Given index on column Id", async _ =>
+                {
+                    _response = await Users.AnonimousClient.ExecuteSql("create index StudentIdIndex on Students (Id)");
+                    EnsureSuccessStatusCode();
+                })
+                .AddAsyncStep("When sql select by Id = 42", async _ =>
+                {
+                    _response = await Users.AnonimousClient.ExecuteSql("select Id, Name from Students where Id = 42");
+                    EnsureSuccessStatusCode();
+                })
+                .AddAsyncStep("Then response contains 1 row", async _ =>
+                {
+                    var selectResult = await _response.BodyAs<SelectResult>();
+                    selectResult.Rows.Count.Should().Be(1);
+                })
+                .RunAsync();
+        }
+
+        [Scenario]
         public async Task Insert_and_select_test()
         {
             await Runner

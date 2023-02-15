@@ -62,7 +62,6 @@ namespace SimpleDbNET.UnitTests.Indexing
 
             //Fill indexes
             TableScan tableScan = new TableScan(tx, "student", layout);
-
             tableScan.beforeFirst();
             while (tableScan.next())
             {

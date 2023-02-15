@@ -1,4 +1,5 @@
 ﻿using SimpleDb.file;
+using SimpleDb.Indexes.Planner;
 using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
 using SimpleDB.file;
@@ -58,9 +59,9 @@ namespace SimpleDB
             tx.Commit();
 
             QueryPlanner qp = new BasicQueryPlanner(mdm);
-            UpdatePlanner up = new BasicUpdatePlanner(mdm);
+            //UpdatePlanner up = new BasicUpdatePlanner(mdm);
             //    QueryPlanner qp = new HeuristicQueryPlanner(mdm);
-            //    UpdatePlanner up = new IndexUpdatePlanner(mdm);
+            UpdatePlanner up = new IndexUpdatePlanner(mdm);
             mPlanner = new Planner(qp, up);
         }
 
