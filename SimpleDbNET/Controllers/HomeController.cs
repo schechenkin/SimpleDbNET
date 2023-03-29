@@ -10,7 +10,7 @@ namespace SimpleDbNET.Api.Controllers
     {
         [HttpGet]
         public ActionResult Index()
-        {
+        {           
             using (MiniProfiler.Current.Step("Example Step"))
             {
                 using (MiniProfiler.Current.Step("Sub timing"))

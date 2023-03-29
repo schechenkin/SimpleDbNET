@@ -1,3 +1,4 @@
+using Serilog;
 using SimpleDbNET.Api;
 
 public class Program
@@ -12,7 +13,7 @@ public class Program
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
             .ConfigureWebHostDefaults(webBuilder =>
-            {
+            {               
                 webBuilder
                     .UseStartup<Startup>();
             });

@@ -1,4 +1,5 @@
-﻿using SimpleDb.file;
+﻿using Microsoft.Extensions.Logging;
+using SimpleDb.file;
 using SimpleDB;
 using SimpleDB.Data;
 using SimpleDB.Tx;
@@ -64,18 +65,23 @@ namespace SimpleDb
     {
         private Server db;
         private IBlocksReadWriteTracker blocksReadWriteTracker;
+        private readonly ILoggerFactory loggerFactory;
+        private ILogger<SimpleDbConext> logger;
 
-        public SimpleDbConext(IBlocksReadWriteTracker blocksReadWriteTracker)
+        public SimpleDbConext(IBlocksReadWriteTracker blocksReadWriteTracker, ILoggerFactory loggerFactory)
         {
-            db = new Server("database", blocksReadWriteTracker);
+            db = new Server("database", blocksReadWriteTracker, loggerFactory);
+            
+            logger = loggerFactory.CreateLogger<SimpleDbConext>();
             this.blocksReadWriteTracker = blocksReadWriteTracker;
+            this.loggerFactory = loggerFactory;
         }
 
         public Task DropDb()
         {
             db.fileMgr().CloseFiles();
 
-            db = new Server("database", blocksReadWriteTracker, true);
+            db = new Server("database", blocksReadWriteTracker, loggerFactory, true);
             return Task.CompletedTask;
         }
 
@@ -94,57 +100,63 @@ namespace SimpleDb
             stopwatch.Start();
 
             Transaction tx = db.newTx();
-            var plan = db.planner().createQueryPlan(sql, tx);
-            var schema = plan.schema();
-            var columns = schema.ColumnNames();
-            var result = new SelectResult(columns);
-            var scan = plan.open();
-            int rowsCounter = 0;
-            while(scan.next())
-            {
-                result.AddRow();
 
-                foreach(var column in columns)
+            using (logger.BeginScope("TransactionId {transactionId}", tx.Number))
+            {
+                logger.LogDebug("ExecuteSelectSql {sql}", sql);
+                
+                var plan = db.planner().createQueryPlan(sql, tx);
+                var schema = plan.schema();
+                var columns = schema.ColumnNames();
+                var result = new SelectResult(columns);
+                var scan = plan.open();
+                int rowsCounter = 0;
+                while(scan.next())
                 {
-                    if (scan.isNull(column))
+                    result.AddRow();
+
+                    foreach(var column in columns)
                     {
-                        result.AddNullColumn(column);
-                    }
-                    else
-                    {
-                        var sqlType = schema.GetSqlType(column);
-                        switch (sqlType)
+                        if (scan.isNull(column))
                         {
-                            case SqlType.INTEGER:
-                                result.AddIntColumn(column, scan.getInt(column));
-                                break;
-                            case SqlType.VARCHAR:
-                                result.AddStringColumn(column, scan.getString(column));
-                                break;
-                            case SqlType.DATETIME:
-                                result.AddDateTimeColumn(column, scan.getDateTime(column));
-                                break;
-                            default:
-                                throw new NotImplementedException();
+                            result.AddNullColumn(column);
+                        }
+                        else
+                        {
+                            var sqlType = schema.GetSqlType(column);
+                            switch (sqlType)
+                            {
+                                case SqlType.INTEGER:
+                                    result.AddIntColumn(column, scan.getInt(column));
+                                    break;
+                                case SqlType.VARCHAR:
+                                    result.AddStringColumn(column, scan.getString(column));
+                                    break;
+                                case SqlType.DATETIME:
+                                    result.AddDateTimeColumn(column, scan.getDateTime(column));
+                                    break;
+                                default:
+                                    throw new NotImplementedException();
+                            }
                         }
                     }
+
+                    rowsCounter++;
+
+                    if (rowsCounter >= limit)
+                        break;
                 }
 
-                rowsCounter++;
+                tx.Commit();
 
-                if (rowsCounter >= limit)
-                    break;
+                stopwatch.Stop();
+
+                result.BlocksRead = blocksReadWriteTracker.BlocksRead;
+                result.BlocksWrite = blocksReadWriteTracker.BlocksWrite;
+                result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
+
+                return Task.FromResult(result);
             }
-
-            tx.Commit();
-
-            stopwatch.Stop();
-
-            result.BlocksRead = blocksReadWriteTracker.BlocksRead;
-            result.BlocksWrite = blocksReadWriteTracker.BlocksWrite;
-            result.ElapsedMilliseconds = stopwatch.ElapsedMilliseconds;
-
-            return Task.FromResult(result);
         }
 
         public BufferManager.UsageStats GetBufferManagerUsage()

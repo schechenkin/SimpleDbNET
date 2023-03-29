@@ -13,6 +13,7 @@ using SimpleDB.Metadata;
 using SimpleDB.Plan;
 using SimpleDB.Query;
 using FluentAssertions;
+using SimpleDbNET.UnitTests.Fixtures;
 
 namespace SimpleDbNET.UnitTests.Indexing
 {
@@ -21,12 +22,12 @@ namespace SimpleDbNET.UnitTests.Indexing
         [Fact]
         public void Test()
         {
-            var fileManager = new FileManager("IndexUpdateTest", 1024, new TestBlocksReadWriteTracker(), true);
-            var logManager = new LogManager(fileManager, "log");
-            var bufferManager = new BufferManager(fileManager, logManager, 1000);
+            var fileManager = new FileManager("IndexUpdateTest", 1024, new TestBlocksReadWriteTracker(), TestLoggerFactory.Instance, true);
+            var logManager = new LogManager(fileManager, "log", TestLoggerFactory.Instance);
+            var bufferManager = new BufferManager(fileManager, logManager, 1000, TestLoggerFactory.Instance);
             var lockTable = new LockTable();
 
-            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable);
+            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable, TestLoggerFactory.Instance);
 
             Transaction tx = newTx();
             MetadataMgr mdm = new MetadataMgr(true, tx);

@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
 using SimpleDB.file;
@@ -6,6 +7,7 @@ using SimpleDB.log;
 using SimpleDB.Query;
 using SimpleDB.Record;
 using SimpleDB.Tx;
+using SimpleDbNET.UnitTests.Fixtures;
 using Xunit;
 
 
@@ -13,15 +15,16 @@ namespace SimpleDbNET.UnitTests
 {
     public class ScanTests
     {
+
         [Fact]
         public void ProductScanTest()
         {
-            var fileManager = new FileManager("ProductScanTest", 400, new TestBlocksReadWriteTracker(), true);
-            var logManager = new LogManager(fileManager, "log");
-            var bufferManager = new BufferManager(fileManager, logManager, 3);
+            var fileManager = new FileManager("ProductScanTest", 400, new TestBlocksReadWriteTracker(), TestLoggerFactory.Instance, true);
+            var logManager = new LogManager(fileManager, "log", TestLoggerFactory.Instance);
+            var bufferManager = new BufferManager(fileManager, logManager, 3, TestLoggerFactory.Instance);
             var lockTable = new LockTable();
 
-            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable);
+            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable, TestLoggerFactory.Instance);
 
             Transaction tx = newTx();
 
@@ -100,12 +103,12 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void SelectScanTest()
         {
-            var fileManager = new FileManager("SelectScanTest", 400, new TestBlocksReadWriteTracker(), true);
-            var logManager = new LogManager(fileManager, "log");
-            var bufferManager = new BufferManager(fileManager, logManager, 3);
+            var fileManager = new FileManager("SelectScanTest", 400, new TestBlocksReadWriteTracker(), TestLoggerFactory.Instance, true);
+            var logManager = new LogManager(fileManager, "log", TestLoggerFactory.Instance);
+            var bufferManager = new BufferManager(fileManager, logManager, 3, TestLoggerFactory.Instance);
             var lockTable = new LockTable();
 
-            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable);
+            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable, TestLoggerFactory.Instance);
 
             Transaction tx = newTx();
 
@@ -163,12 +166,12 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void ProjectScanTest()
         {
-            var fileManager = new FileManager("ProjectScanTest", 400, new TestBlocksReadWriteTracker(), true);
-            var logManager = new LogManager(fileManager, "log");
-            var bufferManager = new BufferManager(fileManager, logManager, 3);
+            var fileManager = new FileManager("ProjectScanTest", 400, new TestBlocksReadWriteTracker(), TestLoggerFactory.Instance, true);
+            var logManager = new LogManager(fileManager, "log", TestLoggerFactory.Instance);
+            var bufferManager = new BufferManager(fileManager, logManager, 3, TestLoggerFactory.Instance);
             var lockTable = new LockTable();
 
-            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable);
+            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable, TestLoggerFactory.Instance);
 
             Transaction tx = newTx();
 

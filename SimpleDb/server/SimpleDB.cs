@@ -1,4 +1,5 @@
-﻿using SimpleDb.file;
+﻿using Microsoft.Extensions.Logging;
+using SimpleDb.file;
 using SimpleDb.Indexes.Planner;
 using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
@@ -23,6 +24,7 @@ namespace SimpleDB
         private MetadataMgr mdm;
         private Planner mPlanner;
         private LockTable lockTable;
+        ILoggerFactory loggerFactory;
 
         /**
          * A constructor useful for debugging.
@@ -30,12 +32,14 @@ namespace SimpleDB
          * @param blocksize the block size
          * @param buffsize the number of buffers
          */
-        public Server(string dirname, int blocksize, int buffsize, IBlocksReadWriteTracker blocksReadWriteTracker, bool recreate = false)
+        public Server(string dirname, int blocksize, int buffsize, IBlocksReadWriteTracker blocksReadWriteTracker, ILoggerFactory loggerFactory, bool recreate = false)
         {
-            fm = new FileManager(dirname, blocksize, blocksReadWriteTracker, recreate, 262144);
-            lm = new LogManager(fm, LOG_FILE);
-            bm = new BufferManager(fm, lm, buffsize);
+            fm = new FileManager(dirname, blocksize, blocksReadWriteTracker, loggerFactory, recreate, 262144);
+            lm = new LogManager(fm, LOG_FILE, loggerFactory);
+            bm = new BufferManager(fm, lm, buffsize, loggerFactory);
+
             lockTable = new LockTable();
+            this.loggerFactory = loggerFactory;
         }
 
         /**
@@ -43,8 +47,8 @@ namespace SimpleDB
          * 3-arg constructor, it also initializes the metadata tables.
          * @param dirname the name of the database directory
          */
-        public Server(string dirname, IBlocksReadWriteTracker blocksReadWriteTracker, bool recreate = false)
-            :this(dirname, BLOCK_SIZE, BUFFER_SIZE, blocksReadWriteTracker, recreate)
+        public Server(string dirname, IBlocksReadWriteTracker blocksReadWriteTracker, ILoggerFactory loggerFactory, bool recreate = false)
+            :this(dirname, BLOCK_SIZE, BUFFER_SIZE, blocksReadWriteTracker, loggerFactory, recreate)
         {
             Transaction tx = newTx();
             bool isnew = fm.IsNew();
@@ -60,14 +64,14 @@ namespace SimpleDB
 
             QueryPlanner qp = new BasicQueryPlanner(mdm);
             //UpdatePlanner up = new BasicUpdatePlanner(mdm);
-            //    QueryPlanner qp = new HeuristicQueryPlanner(mdm);
+            //QueryPlanner qp = new HeuristicQueryPlanner(mdm);
             UpdatePlanner up = new IndexUpdatePlanner(mdm);
             mPlanner = new Planner(qp, up);
         }
 
         public Transaction newTx()
         {
-            return new Transaction(fm, lm, bm, lockTable);
+            return new Transaction(fm, lm, bm, lockTable, loggerFactory);
         }
 
 

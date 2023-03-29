@@ -8,7 +8,7 @@ namespace SimpleDB.Tx.Recovery
         private int txnum;
 
         /**
-         * Create a new setint log record.
+         * Create a new setnull log record.
          * @param bb the bytebuffer containing the log values
          */
         public SetNullRecord(Page p)

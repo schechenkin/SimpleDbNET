@@ -1,10 +1,7 @@
-﻿using SimpleDB.Data;
+﻿using Microsoft.Extensions.Logging;
+using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleDB.Tx.Recovery
 {
@@ -15,12 +12,16 @@ namespace SimpleDB.Tx.Recovery
         private Transaction tx;
         private int txnum;
 
+        private readonly ILogger<RecoveryMgr> logger;
+
         /**
          * Create a recovery manager for the specified transaction.
          * @param txnum the ID of the specified transaction
          */
-        public RecoveryMgr(Transaction tx, int txnum, LogManager lm, BufferManager bm)
+        public RecoveryMgr(Transaction tx, int txnum, LogManager lm, BufferManager bm, ILoggerFactory loggerFactory)
         {
+            logger = loggerFactory.CreateLogger<RecoveryMgr>();
+            
             this.tx = tx;
             this.txnum = txnum;
             this.lm = lm;
@@ -33,6 +34,8 @@ namespace SimpleDB.Tx.Recovery
          */
         public void commit()
         {
+            logger.LogInformation("Commit");
+            
             bm.FlushAll(txnum);
             int lsn = CommitRecord.writeToLog(lm, txnum);
             lm.Flush(lsn);
@@ -43,6 +46,8 @@ namespace SimpleDB.Tx.Recovery
          */
         public void rollback()
         {
+            logger.LogInformation("Rollback");
+            
             doRollback();
             bm.FlushAll(txnum);
             int lsn = RollbackRecord.writeToLog(lm, txnum);
@@ -55,6 +60,8 @@ namespace SimpleDB.Tx.Recovery
          */
         public void recover()
         {
+            logger.LogInformation("recover");
+            
             doRecover();
             bm.FlushAll(txnum);
             int lsn = CheckpointRecord.writeToLog(lm);
@@ -71,6 +78,8 @@ namespace SimpleDB.Tx.Recovery
         {
             int oldval = buff.Page.GetInt(offset);
             BlockId blk = buff.BlockId.Value;
+
+            logger.LogDebug("Write to log SetIntRecord");
             return SetIntRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 
@@ -84,6 +93,8 @@ namespace SimpleDB.Tx.Recovery
         {
             string oldval = buff.Page.GetString(offset);
             BlockId blk = buff.BlockId.Value;
+
+            logger.LogDebug("Write to log SetStringRecord");
             return SetStringRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 
@@ -91,6 +102,8 @@ namespace SimpleDB.Tx.Recovery
         {
             DateTime oldval = buff.Page.GetDateTime(offset);
             BlockId blk = buff.BlockId.Value;
+
+            logger.LogDebug("Write to log SetDateTimeRecord");
             return SetDateTimeRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 
@@ -98,6 +111,8 @@ namespace SimpleDB.Tx.Recovery
         {
             string oldval = buff.Page.GetString(offset);
             BlockId blk = buff.BlockId.Value;
+
+            logger.LogDebug("Write to log SetNullRecord");
             return SetNullRecord.writeToLog(lm, txnum, blk, offset, oldval);
         }
 

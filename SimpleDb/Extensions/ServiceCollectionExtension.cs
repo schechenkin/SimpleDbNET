@@ -8,8 +8,10 @@ namespace SimpleDb.Extensions
     {
         public static IServiceCollection AddSimpleDb(this IServiceCollection services, IConfiguration configuration, IBlocksReadWriteTracker blocksReadWriteTracker)
         {
-            services.AddSingleton<ISimpleDbServer>(new SimpleDbConext(blocksReadWriteTracker));
+            
             services.AddSingleton(blocksReadWriteTracker);
+            services.AddSingleton<SimpleDbConext>();
+            services.AddSingleton<ISimpleDbServer, SimpleDbConext>();
 
             return services;
         }

@@ -1,4 +1,5 @@
-﻿using SimpleDB.file;
+﻿using Microsoft.Extensions.Logging;
+using SimpleDB.file;
 
 namespace SimpleDB.log
 {
@@ -6,6 +7,7 @@ namespace SimpleDB.log
     {
         private readonly FileManager m_FileManager;
         private readonly string m_Logfile;
+        private readonly ILogger<LogManager> logger;
         private Page m_LogPage;
         private BlockId m_CurrentBlockId;
         private int m_LatestLSN = 0;
@@ -19,10 +21,11 @@ namespace SimpleDB.log
          * @param FileMgr the file manager
          * @param logfile the name of the log file
          */
-        public LogManager(FileManager fileManager, string logfile)
+        public LogManager(FileManager fileManager, string logfile, ILoggerFactory loggerFactory)
         {
             m_FileManager = fileManager;
             m_Logfile = logfile;
+            this.logger = loggerFactory.CreateLogger<LogManager>();
             byte[] b = new byte[fileManager.BlockSize];
             m_LogPage = new Page(b);
             int logsize = fileManager.GetBlocksCount(logfile);
@@ -45,6 +48,8 @@ namespace SimpleDB.log
          */
         public void Flush(int lsn)
         {
+            logger.LogInformation("Flush lsn {lsn}", lsn);
+
             if (lsn >= m_LastSavedLSN)
                 Flush();
         }
@@ -69,6 +74,8 @@ namespace SimpleDB.log
          */
         public int Append(byte[] logRecord)
         {
+            logger.LogInformation("Append {length} bytes", logRecord.Length);
+            
             lock(logManagerLock)
             {
                 int boundary = m_LogPage.GetInt(0);
@@ -95,6 +102,7 @@ namespace SimpleDB.log
         private BlockId AppendNewBlock()
         {
             BlockId blk = m_FileManager.AppendNewBlock(m_Logfile);
+            logger.LogDebug("Append new block {blockId}", blk);
             m_LogPage.SetInt(0, m_FileManager.BlockSize);
             m_FileManager.WritePage(m_LogPage, blk);
             return blk;
@@ -106,6 +114,7 @@ namespace SimpleDB.log
         private void Flush()
         {
             m_FileManager.WritePage(m_LogPage, m_CurrentBlockId);
+            logger.LogDebug("Update LastSavedLSN {LastSavedLSN} with LatestLSN {LatestLSN}", m_LastSavedLSN, m_LatestLSN);
             m_LastSavedLSN = m_LatestLSN;
         }
     }

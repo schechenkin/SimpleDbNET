@@ -128,3 +128,5 @@ select pass_id, passenger_id, booking_leg_id, seat, boarding_time, precheck, upd
   ],
   "elapsedMilliseconds": 15618 or 9 sec
 }
+
+create index on tableName (column)

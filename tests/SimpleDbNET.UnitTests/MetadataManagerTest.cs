@@ -7,6 +7,7 @@ using SimpleDB.log;
 using SimpleDB.Metadata;
 using SimpleDB.Record;
 using SimpleDB.Tx;
+using SimpleDbNET.UnitTests.Fixtures;
 using Xunit;
 
 namespace SimpleDbNET.UnitTests
@@ -16,13 +17,13 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void Test()
         {
-            var fileManager = new FileManager("MetadataManagerTest", 400, new TestBlocksReadWriteTracker(), true);
-            var logManager = new LogManager(fileManager, "log");
-            var bufferManager = new BufferManager(fileManager, logManager, 3);
+            var fileManager = new FileManager("MetadataManagerTest", 400, new TestBlocksReadWriteTracker(), TestLoggerFactory.Instance, true);
+            var logManager = new LogManager(fileManager, "log", TestLoggerFactory.Instance);
+            var bufferManager = new BufferManager(fileManager, logManager, 3, TestLoggerFactory.Instance);
             var lockTable = new LockTable();
             Random random = new Random();
 
-            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable);
+            Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable, TestLoggerFactory.Instance);
             
             Transaction tx = newTx();
             MetadataMgr mdm = new MetadataMgr(true, tx);

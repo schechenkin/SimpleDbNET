@@ -2,6 +2,7 @@
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
+using SimpleDbNET.UnitTests.Fixtures;
 using Xunit;
 using Buffer = SimpleDB.Data.Buffer;
 
@@ -12,9 +13,9 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void Buffers_test()
         {
-            var fileManager = new FileManager("buffertest", 400, new TestBlocksReadWriteTracker(), true);
-            var logManager = new LogManager(fileManager, "log");
-            BufferManager bm = new BufferManager(fileManager, logManager, 3);
+            var fileManager = new FileManager("buffertest", 400, new TestBlocksReadWriteTracker(), TestLoggerFactory.Instance, true);
+            var logManager = new LogManager(fileManager, "log", TestLoggerFactory.Instance);
+            BufferManager bm = new BufferManager(fileManager, logManager, 3, TestLoggerFactory.Instance);
 
             Buffer buff1 = bm.PinBlock(BlockId.New("testfile", 1));
             buff1.UsageCount.Should().Be(1);
@@ -46,9 +47,9 @@ namespace SimpleDbNET.UnitTests
         //[Fact]
         public void BufferMgrTest()
         {
-            var fileManager = new FileManager("buffermngtest", 400, new TestBlocksReadWriteTracker(), true);
-            var logManager = new LogManager(fileManager, "log");
-            BufferManager bm = new BufferManager(fileManager, logManager, 3);
+            var fileManager = new FileManager("buffermngtest", 400, new TestBlocksReadWriteTracker(), TestLoggerFactory.Instance, true);
+            var logManager = new LogManager(fileManager, "log", TestLoggerFactory.Instance);
+            BufferManager bm = new BufferManager(fileManager, logManager, 3, TestLoggerFactory.Instance);
 
             Buffer[] buff = new Buffer[6];
             buff[0] = bm.PinBlock(BlockId.New("testfile", 0));

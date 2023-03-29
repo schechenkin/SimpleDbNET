@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Serilog;
 using SimpleDb.Extensions;
 using SimpleDbNET.Api.Tracking;
 using StackExchange.Profiling.Storage;
@@ -21,6 +22,15 @@ namespace SimpleDbNET.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddLogging(logging => {
+                var logger = new LoggerConfiguration()
+                            .ReadFrom.Configuration(_configuration)
+                            .Enrich.FromLogContext()
+                            .CreateLogger();
+                        logging.ClearProviders();
+                        logging.AddSerilog(logger);
+            });
+            
             services
                 .AddControllers(config => { })
                 .AddJsonOptions(options =>
@@ -60,8 +70,8 @@ namespace SimpleDbNET.Api
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouting()
-                .UseMiniProfiler()
+            app.UseMiniProfiler()
+                .UseRouting()
                 .UseSwagger(options =>
                 {
                     options.SerializeAsV2 = true;

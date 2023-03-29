@@ -1,4 +1,5 @@
-﻿using SimpleDb.Transactions.Concurrency;
+﻿using Microsoft.Extensions.Logging;
+using SimpleDb.Transactions.Concurrency;
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
@@ -20,6 +21,9 @@ namespace SimpleDB.Tx
         private int txNumber;
         private BufferList txBuffers;
         private static Mutex mutex = new Mutex();
+        private ILogger<Transaction> logger;
+
+        public int Number => txNumber;
 
         /**
          * Create a new transaction and its associated 
@@ -33,14 +37,16 @@ namespace SimpleDB.Tx
          * {@link simpledb.server.SimpleDB#initFileLogAndBufferMgr(String)} or
          * is called first.
          */
-        public Transaction(FileManager fileManager, LogManager logManager, BufferManager bufferManager, LockTable lockTable)
+        public Transaction(FileManager fileManager, LogManager logManager, BufferManager bufferManager, LockTable lockTable, ILoggerFactory loggerFactory)
         {
             this.fileManager = fileManager;
             this.bufferManager = bufferManager;
             txNumber = nextTxNumber();
-            recoveryManager = new RecoveryMgr(this, txNumber, logManager, bufferManager);
+            recoveryManager = new RecoveryMgr(this, txNumber, logManager, bufferManager, loggerFactory);
             concurrencyManager = new ConcurrencyManager(lockTable);
             txBuffers = new BufferList(bufferManager);
+
+            logger = loggerFactory.CreateLogger<Transaction>();
         }
 
         /**
@@ -51,6 +57,8 @@ namespace SimpleDB.Tx
          */
         public void Commit()
         {
+            logger.LogInformation("Commit transaction");
+
             recoveryManager.commit();
             concurrencyManager.Release();
             txBuffers.unpinAll();
@@ -65,6 +73,8 @@ namespace SimpleDB.Tx
          */
         public void Rollback()
         {
+            logger.LogInformation("Rollback transaction");
+            
             recoveryManager.rollback();
             concurrencyManager.Release();
             txBuffers.unpinAll();
@@ -80,6 +90,8 @@ namespace SimpleDB.Tx
          */
         public void Recover()
         {
+            logger.LogInformation("Recover");
+            
             bufferManager.FlushAll(txNumber);
             recoveryManager.recover();
         }
@@ -91,6 +103,8 @@ namespace SimpleDB.Tx
          */
         public void PinBlock(in BlockId blockId)
         {
+            logger.LogDebug("Pin block {blockId}", blockId);
+            
             txBuffers.pin(blockId);
         }
 
@@ -102,6 +116,8 @@ namespace SimpleDB.Tx
          */
         public void UnpinBlock(in BlockId blockId)
         {
+            logger.LogDebug("Unpin block {blockId}", blockId);
+            
             txBuffers.unpin(blockId);
         }
 
@@ -257,6 +273,8 @@ namespace SimpleDB.Tx
          */
         public BlockId append(string filename)
         {
+            logger.LogInformation("Append a new block to the end of file {filename}", filename);
+            
             BlockId dummyblk = BlockId.Dummy(filename);
             concurrencyManager.RequestExclusiveLock(dummyblk);
             return fileManager.AppendNewBlock(filename);

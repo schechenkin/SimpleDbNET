@@ -1,4 +1,5 @@
-﻿using SimpleDB.file;
+﻿using Microsoft.Extensions.Logging;
+using SimpleDB.file;
 using SimpleDB.log;
 using System.Collections.Generic;
 
@@ -12,6 +13,7 @@ namespace SimpleDB.Data
         private static TimeSpan MAX_WAIT_TIME = new TimeSpan(0, 0, 10); // 10 seconds
         private FreeList m_FreeList;
         private int clockSweepCurrentIndex = 0;
+        private ILogger<BufferManager> logger;
 
         /**
          * Creates a buffer manager having the specified number 
@@ -20,10 +22,11 @@ namespace SimpleDB.Data
          * {@link simpledb.log.LogMgr LogMgr} object.
          * @param numbuffs the number of buffer slots to allocate
          */
-        public BufferManager(FileManager fm, LogManager lm, int numbuffs)
+        public BufferManager(FileManager fm, LogManager lm, int numbuffs, ILoggerFactory loggerFactory)
         {
             m_FreeList = new FreeList(numbuffs, fm, lm);
             m_Bufferpool = new List<Buffer>(numbuffs);
+            logger = loggerFactory.CreateLogger<BufferManager>();
         }
 
         /**
@@ -32,11 +35,16 @@ namespace SimpleDB.Data
          */
         public void FlushAll(int txnum)
         {
+            logger.LogInformation("Flush all buffers");
+            
             lock (mutex)
             {
                 foreach (Buffer buff in m_Bufferpool)
                     if (buff.modifyingTx() == txnum)
+                    {
+                        logger.LogDebug("Flush buffer {blockId}", buff.BlockId);
                         buff.Flush();
+                    }
             }
         }
 
@@ -48,12 +56,19 @@ namespace SimpleDB.Data
          */
         public void UnpinBuffer(Buffer buffer)
         {
+            logger.LogDebug("Unpin buffer with {blockId}", buffer.BlockId);
+            
             lock (mutex)
             {
                 buffer.Unpin();
                 if (!buffer.IsPinned)
                 {
+                    logger.LogTrace("Buffer with {blockId} not pinned anymore", buffer.BlockId);
                     //notifyAll();
+                }
+                else
+                {
+                    logger.LogTrace("Buffer with {blockId} has {pinCount} pinns left", buffer.BlockId, buffer.UsageCount);
                 }
             }
         }
@@ -68,17 +83,23 @@ namespace SimpleDB.Data
          */
         public Buffer PinBlock(in BlockId blockId)
         {
+            logger.LogDebug("Pin block {blockId}", blockId);
+
             lock (mutex)
             {
                 DateTime timestamp = DateTime.Now;
                 var buff = TryPinBlock(blockId);
                 while (buff == null && !WaitingTooLong(timestamp))
                 {
+                    logger.LogTrace("buffer not found, sleep...");
                     Thread.Sleep(100);
                     buff = TryPinBlock(blockId);
                 }
                 if (buff == null)
+                {
+                    logger.LogDebug("waiting too long for buffer to pin block {blockId}");
                     throw new BufferAbortException();
+                }
                 return buff;
             }
         }

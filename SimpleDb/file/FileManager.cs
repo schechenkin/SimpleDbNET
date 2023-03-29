@@ -1,4 +1,5 @@
-﻿using SimpleDb.file;
+﻿using Microsoft.Extensions.Logging;
+using SimpleDb.file;
 
 namespace SimpleDB.file
 {
@@ -8,16 +9,18 @@ namespace SimpleDB.file
         private readonly int blocksize;
         private readonly IBlocksReadWriteTracker blocksReadWriteTracker;
         private readonly int blocksPerFile;
+        private readonly ILogger<FileManager> logger;
 
         private bool isNew;
         private readonly Dictionary<string, List<DbFile>> openFiles = new Dictionary<string, List<DbFile>>();
 
-        public FileManager(string dbDirectory, int blocksize, IBlocksReadWriteTracker blocksReadWriteTracker, bool recreate = false, int blocksPerFile = 1024)
+        public FileManager(string dbDirectory, int blocksize, IBlocksReadWriteTracker blocksReadWriteTracker, ILoggerFactory loggerFactory, bool recreate = false, int blocksPerFile = 1024)
         {
             this.dbDirectory = dbDirectory;
             this.blocksize = blocksize;
             this.blocksPerFile = blocksPerFile;
             this.blocksReadWriteTracker = blocksReadWriteTracker;
+            this.logger = loggerFactory.CreateLogger<FileManager>();
 
             if (recreate && Directory.Exists(dbDirectory))
             {
@@ -57,6 +60,8 @@ namespace SimpleDB.file
         /// <param name="page"></param>
         public void ReadBlock(in BlockId blockId, Page page)
         {
+            logger.LogInformation("Read data from block {blockId} into page", blockId);
+            
             var dbFile = GetDbFile(blockId.FileName, blockId.Number);
             lock (dbFile.Stream)
             {
@@ -73,6 +78,7 @@ namespace SimpleDB.file
         /// <param name="blockId"></param>
         public void WritePage(Page page, in BlockId blockId)
         {
+            logger.LogInformation("Write page data to file block {blockId}", blockId);
             var dbFile = GetDbFile(blockId.FileName, blockId.Number);
             lock (dbFile.Stream)
             {
@@ -85,6 +91,8 @@ namespace SimpleDB.file
 
         public BlockId AppendNewBlock(string filename)
         {
+            logger.LogInformation("Append new block to file {filename}", filename);
+
             int newBlockNumber = GetBlocksCount(filename);
             var blockId = BlockId.New(filename, newBlockNumber);
             byte[] bytes = new byte[blocksize];

@@ -2,6 +2,7 @@
 using SimpleDB.Data;
 using SimpleDB.file;
 using SimpleDB.log;
+using SimpleDbNET.UnitTests.Fixtures;
 using Xunit;
 
 namespace SimpleDbNET.UnitTests
@@ -11,9 +12,9 @@ namespace SimpleDbNET.UnitTests
         [Fact]
         public void PinUnpinBlockTest()
         {
-            var fileManager = new FileManager("PinBlockTest", 400, new TestBlocksReadWriteTracker(), true);
-            var logManager = new LogManager(fileManager, "log");
-            var bufferManager = new BufferManager(fileManager, logManager, 3);
+            var fileManager = new FileManager("PinBlockTest", 400, new TestBlocksReadWriteTracker(), TestLoggerFactory.Instance, true);
+            var logManager = new LogManager(fileManager, "log", TestLoggerFactory.Instance);
+            var bufferManager = new BufferManager(fileManager, logManager, 3, TestLoggerFactory.Instance);
             bufferManager.GetFreeBlockCount().Should().Be(3);
 
             //pin block

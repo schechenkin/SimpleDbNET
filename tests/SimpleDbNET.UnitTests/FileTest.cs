@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using SimpleDB.file;
+using SimpleDbNET.UnitTests.Fixtures;
 using Xunit;
 
 namespace SimpleDbNET.UnitTests
@@ -10,7 +11,7 @@ namespace SimpleDbNET.UnitTests
         public void When_write_at_the_beginning_of_the_file()
         {
             //given
-            var fileManager = new FileManager("filetest", 400, new TestBlocksReadWriteTracker(), true);
+            var fileManager = new FileManager("filetest", 400, new TestBlocksReadWriteTracker(), TestLoggerFactory.Instance, true);
             BlockId firstBlock = BlockId.New("testfile", 0);
             Page page = new Page(fileManager.BlockSize);
 
@@ -49,7 +50,7 @@ namespace SimpleDbNET.UnitTests
         public void When_write_at_the_2nd_chunk_of_the_file()
         {
             //given
-            var fileManager = new FileManager("filetest_chunks", 400, new TestBlocksReadWriteTracker(), true, 2);
+            var fileManager = new FileManager("filetest_chunks", 400, new TestBlocksReadWriteTracker(), TestLoggerFactory.Instance, true, 2);
             BlockId firstBlock = BlockId.New("testfile", 0);
             Page page = new Page(fileManager.BlockSize);
             page.SetInt(0, 42);
