@@ -7,7 +7,6 @@ using SimpleDB.log;
 using SimpleDB.Metadata;
 using SimpleDB.Plan;
 using SimpleDB.Tx;
-using System;
 
 namespace SimpleDB
 {
@@ -53,6 +52,7 @@ namespace SimpleDB
             else
             {
                 Console.WriteLine("recovering existing database");
+                tx.Recover();
             }
             mdm = new MetadataMgr(isnew, tx);
 
@@ -60,7 +60,7 @@ namespace SimpleDB
 
             QueryPlanner qp = new BasicQueryPlanner(mdm);
             //UpdatePlanner up = new BasicUpdatePlanner(mdm);
-            //    QueryPlanner qp = new HeuristicQueryPlanner(mdm);
+            //QueryPlanner qp = new HeuristicQueryPlanner(mdm);
             UpdatePlanner up = new IndexUpdatePlanner(mdm);
             mPlanner = new Planner(qp, up);
         }

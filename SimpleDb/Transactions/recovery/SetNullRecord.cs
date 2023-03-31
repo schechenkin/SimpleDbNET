@@ -1,5 +1,6 @@
 ﻿using SimpleDB.file;
 using SimpleDB.log;
+using System.Buffers;
 
 namespace SimpleDB.Tx.Recovery
 {
@@ -60,10 +61,17 @@ namespace SimpleDB.Tx.Recovery
             int opos = bpos + sizeof(int);
             int vpos = opos + sizeof(int);
             int reclen = vpos + Page.CalculateStringStoringSize(val);
-            byte[] rec = new byte[reclen];
+            byte[] rec = ArrayPool<byte>.Shared.Rent(reclen);
             Page p = new Page(rec);
             p.SetInt(0, (int)LogRecord.Type.SETNULL);
-            return lm.Append(rec);
+            var lsn = lm.Append(rec);
+            ArrayPool<byte>.Shared.Return(rec);
+            return lsn;
+        }
+
+        public void apply(Transaction tx)
+        {
+            throw new NotImplementedException();
         }
     }
 }

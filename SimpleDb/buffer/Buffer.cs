@@ -2,6 +2,8 @@
 using SimpleDB.log;
 using System.Diagnostics;
 
+
+
 namespace SimpleDB.Data
 {
     public class Buffer
@@ -101,7 +103,7 @@ namespace SimpleDB.Data
 
         public override string ToString()
         {
-            return $"BlockId={BlockId}, IsPinned={IsPinned}, UsageCount={UsageCount}";
+            return $"BlockId={BlockId}, IsPinned={IsPinned}, lsn={m_lsn}, tid={m_TransactionNumber}";
         }
     }
 }

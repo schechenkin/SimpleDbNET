@@ -26,6 +26,8 @@ namespace SimpleDB.Tx.Recovery
          */
         void undo(Transaction tx);
 
+        void apply(Transaction tx);
+
         public enum Type
         {
             CHECKPOINT = 0,

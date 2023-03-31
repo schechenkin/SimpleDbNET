@@ -1,6 +1,7 @@
 ﻿using SimpleDB.file;
 using SimpleDB.log;
 using System;
+using System.Buffers;
 
 namespace SimpleDB.Tx.Recovery
 {
@@ -34,7 +35,7 @@ namespace SimpleDB.Tx.Recovery
          */
         public void undo(Transaction tx) { }
 
-        public String toString()
+        public override String ToString()
         {
             return "<START " + txnum + ">";
         }
@@ -47,11 +48,17 @@ namespace SimpleDB.Tx.Recovery
          */
         public static int writeToLog(LogManager lm, int txnum)
         {
-            byte[] rec = new byte[2 * sizeof(int)];
+            byte[] rec = ArrayPool<byte>.Shared.Rent(2 * sizeof(int));
             Page p = new Page(rec);
             p.SetInt(0, (int)LogRecord.Type.START);
             p.SetInt(sizeof(int), txnum);
-            return lm.Append(rec);
+            var lsn = lm.Append(rec);
+            ArrayPool<byte>.Shared.Return(rec);
+            return lsn;
+        }
+
+        public void apply(Transaction tx)
+        {
         }
     }
 }

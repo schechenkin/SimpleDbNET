@@ -10,8 +10,8 @@ namespace SimpleDB.Tx.Recovery
 {
     public class RecoveryMgr : IRecoveryManager
     {
-        private LogManager lm;
-        private BufferManager bm;
+        private LogManager logManager;
+        private BufferManager bufferManager;
         private Transaction tx;
         private int txnum;
 
@@ -23,8 +23,8 @@ namespace SimpleDB.Tx.Recovery
         {
             this.tx = tx;
             this.txnum = txnum;
-            this.lm = lm;
-            this.bm = bm;
+            this.logManager = lm;
+            this.bufferManager = bm;
             StartRecord.writeToLog(lm, txnum);
         }
 
@@ -33,9 +33,9 @@ namespace SimpleDB.Tx.Recovery
          */
         public void commit()
         {
-            bm.FlushAll(txnum);
-            int lsn = CommitRecord.writeToLog(lm, txnum);
-            lm.Flush(lsn);
+            //bufferManager.FlushAll(txnum);
+            int lsn = CommitRecord.writeToLog(logManager, txnum);
+            logManager.Flush(lsn);
         }
 
         /**
@@ -44,9 +44,9 @@ namespace SimpleDB.Tx.Recovery
         public void rollback()
         {
             doRollback();
-            bm.FlushAll(txnum);
-            int lsn = RollbackRecord.writeToLog(lm, txnum);
-            lm.Flush(lsn);
+            bufferManager.FlushAll(txnum);
+            int lsn = RollbackRecord.writeToLog(logManager, txnum);
+            logManager.Flush(lsn);
         }
 
         /**
@@ -55,10 +55,12 @@ namespace SimpleDB.Tx.Recovery
          */
         public void recover()
         {
-            doRecover();
-            bm.FlushAll(txnum);
-            int lsn = CheckpointRecord.writeToLog(lm);
-            lm.Flush(lsn);
+            var commitedTxs = RevertNotFinishedTransactionsChanges();
+            ApplyAllTransactionsFromBeginning(commitedTxs);
+
+            bufferManager.FlushAll(txnum);
+            int lsn = CheckpointRecord.writeToLog(logManager);
+            logManager.Flush(lsn);
         }
 
         /**
@@ -71,7 +73,7 @@ namespace SimpleDB.Tx.Recovery
         {
             int oldval = buff.Page.GetInt(offset);
             BlockId blk = buff.BlockId.Value;
-            return SetIntRecord.writeToLog(lm, txnum, blk, offset, oldval);
+            return SetIntRecord.writeToLog(logManager, txnum, blk, offset, oldval, newval);
         }
 
         /**
@@ -84,21 +86,21 @@ namespace SimpleDB.Tx.Recovery
         {
             string oldval = buff.Page.GetString(offset);
             BlockId blk = buff.BlockId.Value;
-            return SetStringRecord.writeToLog(lm, txnum, blk, offset, oldval);
+            return SetStringRecord.writeToLog(logManager, txnum, blk, offset, oldval, newval);
         }
 
         public int setDateTime(Data.Buffer buff, int offset, DateTime dateTime)
         {
             DateTime oldval = buff.Page.GetDateTime(offset);
             BlockId blk = buff.BlockId.Value;
-            return SetDateTimeRecord.writeToLog(lm, txnum, blk, offset, oldval);
+            return SetDateTimeRecord.writeToLog(logManager, txnum, blk, offset, oldval, dateTime);
         }
 
         internal int SetBit(Data.Buffer buff, int offset, int bitLocation, bool value)
         {
             string oldval = buff.Page.GetString(offset);
             BlockId blk = buff.BlockId.Value;
-            return SetNullRecord.writeToLog(lm, txnum, blk, offset, oldval);
+            return SetNullRecord.writeToLog(logManager, txnum, blk, offset, oldval);
         }
 
         /**
@@ -110,7 +112,7 @@ namespace SimpleDB.Tx.Recovery
          */
         private void doRollback()
         {
-            var iter = lm.GetIterator();
+            var iter = logManager.GetIterator();
             while (iter.HasNext())
             {
                 byte[] bytes = iter.Next();
@@ -125,28 +127,51 @@ namespace SimpleDB.Tx.Recovery
         }
 
         /**
-         * Do a complete database recovery.
-         * The method iterates through the log records.
          * Whenever it finds a log record for an unfinished
          * transaction, it calls undo() on that record.
          * The method stops when it encounters a CHECKPOINT record
          * or the end of the log.
          */
-        private void doRecover()
+        private List<int> RevertNotFinishedTransactionsChanges()
         {
             var finishedTxs = new List<int>();
-            var iter = lm.GetIterator();
+            var commitedTxs = new List<int>();
+            var iter = logManager.GetIterator();
             while (iter.HasNext())
             {
                 byte[] bytes = iter.Next();
                 LogRecord rec = LogRecord.createLogRecord(bytes);
                 if (rec.op() == LogRecord.Type.CHECKPOINT)
-                    return;
+                    return commitedTxs;
                 if (rec.op() == LogRecord.Type.COMMIT || rec.op() == LogRecord.Type.ROLLBACK)
+                {
                     finishedTxs.Add(rec.txNumber());
+                    if(rec.op() == LogRecord.Type.COMMIT)
+                    {
+                        commitedTxs.Add(rec.txNumber());
+                    }
+                }
                 else if (!finishedTxs.Contains(rec.txNumber()))
                     rec.undo(tx);
             }
+
+            return commitedTxs;
         }
+
+        private void ApplyAllTransactionsFromBeginning(List<int> commitedTxs)
+        {
+            var iter = logManager.GetReverseIterator();
+            while (iter.HasNext())
+            {
+                byte[] bytes = iter.Next();
+                LogRecord rec = LogRecord.createLogRecord(bytes);
+                var txNum = rec.txNumber();
+                if(commitedTxs.Contains(txNum))
+                {
+                    rec.apply(tx);
+                }
+            }
+        }
+
     }
 }

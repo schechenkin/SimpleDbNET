@@ -3,6 +3,7 @@ using SimpleDB.log;
 using SimpleDB.Tx;
 using SimpleDB.Tx.Recovery;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,7 +37,7 @@ namespace SimpleDB.Tx.Recovery
          */
         public void undo(Transaction tx) { }
 
-        public String toString()
+        public override String ToString()
         {
             return "<CHECKPOINT>";
         }
@@ -49,10 +50,16 @@ namespace SimpleDB.Tx.Recovery
          */
         public static int writeToLog(LogManager lm)
         {
-            byte[] rec = new byte[sizeof(int)];
+            byte[] rec = ArrayPool<byte>.Shared.Rent(sizeof(int));
             Page p = new Page(rec);
             p.SetInt(0, (int)LogRecord.Type.CHECKPOINT);
-            return lm.Append(rec);
+            var lsn = lm.Append(rec);
+            ArrayPool<byte>.Shared.Return(rec);
+            return lsn;
+        }
+
+        public void apply(Transaction tx)
+        {
         }
     }
 }

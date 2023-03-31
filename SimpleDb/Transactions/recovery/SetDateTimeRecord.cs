@@ -3,6 +3,7 @@ using SimpleDB.log;
 using SimpleDB.Tx;
 using SimpleDB.Tx.Recovery;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,8 @@ namespace SimpleDB.Tx.Recovery
 {
     internal class SetDateTimeRecord : LogRecord
     {
-        private int txnum, offset, val;
+        private int txnum, offset;
+        private DateTime oldVal, newVal;
         private BlockId blk;
 
         /**
@@ -30,8 +32,10 @@ namespace SimpleDB.Tx.Recovery
             blk = BlockId.New(filename, blknum);
             int opos = bpos + sizeof(int);
             offset = p.GetInt(opos);
-            int vpos = opos + sizeof(int);
-            val = p.GetInt(vpos);
+            int oldvpos = opos + sizeof(int);
+            oldVal = p.GetDateTime(oldvpos);
+            int newvpos = oldvpos + sizeof(long);
+            newVal = p.GetDateTime(newvpos);
         }
 
         public LogRecord.Type op()
@@ -44,9 +48,9 @@ namespace SimpleDB.Tx.Recovery
             return txnum;
         }
 
-        public String toString()
+        public override String ToString()
         {
-            return "<SETDATETIME " + txnum + " " + blk + " " + offset + " " + val + ">";
+            return "<SETDATETIME " + txnum + " " + blk + " " + offset + " " + oldVal + " " + newVal + ">";
         }
 
         /**
@@ -59,7 +63,7 @@ namespace SimpleDB.Tx.Recovery
         public void undo(Transaction tx)
         {
             tx.PinBlock(blk);
-            tx.SetInt(blk, offset, val, false); // don't log the undo!
+            tx.SetDateTime(blk, offset, oldVal, false); // don't log the undo!
             tx.UnpinBlock(blk);
         }
 
@@ -71,22 +75,33 @@ namespace SimpleDB.Tx.Recovery
          * integer value at that offset.
          * @return the LSN of the last log value
          */
-        public static int writeToLog(LogManager lm, int txnum, BlockId blk, int offset, DateTime val)
+        public static int writeToLog(LogManager lm, int txnum, BlockId blk, int offset, DateTime oldVal, DateTime newVal)
         {
             int tpos = sizeof(int);
             int fpos = tpos + sizeof(int);
             int bpos = fpos + Page.CalculateStringStoringSize(blk.FileName);
             int opos = bpos + sizeof(int);
-            int vpos = opos + sizeof(int);
-            byte[] rec = new byte[vpos + sizeof(long)];
+            int oldvpos = opos + sizeof(int);
+            int newvpos = oldvpos + sizeof(long);
+            byte[] rec = ArrayPool<byte>.Shared.Rent(newvpos + sizeof(long));
             Page p = new Page(rec);
             p.SetInt(0, (int)LogRecord.Type.SETDATETIME);
             p.SetInt(tpos, txnum);
             p.SetString(fpos, blk.FileName);
             p.SetInt(bpos, (int)blk.Number);
             p.SetInt(opos, offset);
-            p.SetDateTime(vpos, val);
-            return lm.Append(rec);
+            p.SetDateTime(oldvpos, oldVal);
+            p.SetDateTime(newvpos, newVal);
+            var lsn = lm.Append(rec);
+            ArrayPool<byte>.Shared.Return(rec);
+            return lsn;
+        }
+
+        public void apply(Transaction tx)
+        {
+            tx.PinBlock(blk);
+            tx.SetDateTime(blk, offset, newVal, false);
+            tx.UnpinBlock(blk);
         }
     }
 }

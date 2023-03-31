@@ -25,6 +25,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueryPlannerTest", "tests\Q
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostgresSQLFileParser", "PostgresSQLFileParser\PostgresSQLFileParser.csproj", "{87636228-DE1B-44CE-B1B3-5D05CDACFCD4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Playground", "tests\Playground\Playground.csproj", "{299D3624-7FED-4816-8451-06FFA1F3D1C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{87636228-DE1B-44CE-B1B3-5D05CDACFCD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87636228-DE1B-44CE-B1B3-5D05CDACFCD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87636228-DE1B-44CE-B1B3-5D05CDACFCD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{299D3624-7FED-4816-8451-06FFA1F3D1C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{299D3624-7FED-4816-8451-06FFA1F3D1C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{299D3624-7FED-4816-8451-06FFA1F3D1C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{299D3624-7FED-4816-8451-06FFA1F3D1C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +87,7 @@ Global
 		{6A19B53E-6738-4A24-91F8-2EA4F2B168AA} = {40298062-D525-4150-96B0-990B9FFF40C8}
 		{12043ECA-7329-42C5-90AB-CC9097B082FC} = {40298062-D525-4150-96B0-990B9FFF40C8}
 		{87636228-DE1B-44CE-B1B3-5D05CDACFCD4} = {287F93D6-AC67-45CD-A32D-30E5EE73AF91}
+		{299D3624-7FED-4816-8451-06FFA1F3D1C8} = {40298062-D525-4150-96B0-990B9FFF40C8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BB2E4502-D8DA-4450-94F2-12256B56A71F}

@@ -277,5 +277,10 @@ namespace SimpleDB.Tx
             return nextTransactionNumber;
 
         }
+
+        public Buffer GetBuffer(in BlockId blockId)
+        {
+            return txBuffers.getBuffer(blockId);
+        }
     }
 }

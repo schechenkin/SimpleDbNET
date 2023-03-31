@@ -1,4 +1,5 @@
 ﻿using SimpleDb.file;
+using System.Buffers;
 
 namespace SimpleDB.file
 {
@@ -50,6 +51,19 @@ namespace SimpleDB.file
 
         }
 
+        public void OpenLogFile(string fileName)
+        {
+            if(File.Exists(Path.Combine(dbDirectory, fileName)))
+            {
+                openFiles.Add(fileName, new List<DbFile>());
+                openFiles[fileName].Add(new DbFile(Path.Combine(dbDirectory, fileName)));
+                foreach (var chunkFilePath in Directory.GetFiles(dbDirectory, $"{fileName}_*"))
+                {
+                    openFiles[fileName].Add(new DbFile(chunkFilePath));
+                }
+            }
+        }
+
         /// <summary>
         /// Read data from file block into page
         /// </summary>
@@ -87,13 +101,14 @@ namespace SimpleDB.file
         {
             int newBlockNumber = GetBlocksCount(filename);
             var blockId = BlockId.New(filename, newBlockNumber);
-            byte[] bytes = new byte[blocksize];
+            byte[] bytes = ArrayPool<byte>.Shared.Rent(blocksize);
 
             var dbFile = GetDbFile(filename, newBlockNumber);
             lock (dbFile.Stream)
             {
                 dbFile.Stream.Seek((blockId.Number % blocksPerFile) * blocksize, SeekOrigin.Begin);
                 dbFile.Stream.Write(bytes);
+                ArrayPool<byte>.Shared.Return(bytes);
                 dbFile.RecalculateLength();
                 dbFile.Stream.Flush(true);
                 return blockId;

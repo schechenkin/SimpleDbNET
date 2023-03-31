@@ -135,7 +135,7 @@ namespace SimpleDB.Data
 
         private Buffer? FindBufferContainsBlock(in BlockId blockId)
         {
-            Buffer buffer = null;
+            Buffer? buffer = null;
             if (m_BlockToBufferMap.TryGetValue(blockId, out buffer))
                 return buffer;
             else
@@ -214,6 +214,31 @@ namespace SimpleDB.Data
 
                 return stats;
             }
+        }
+
+        public void PrintBufferPool()
+        {
+            Console.WriteLine("buffers:");
+            foreach(var buffer in m_Bufferpool)
+            {
+                Console.WriteLine(buffer.ToString());
+            }
+        }
+
+        public void Print()
+        {
+            var usageStats = GetUsageStats();
+
+            Console.WriteLine();
+            Console.WriteLine($"stats:");
+            Console.WriteLine($"FreeBlockCount {usageStats.FreeBlockCount}");
+            Console.WriteLine($"UnpinnedBlockCount {usageStats.UnpinnedBlockCount}");
+            foreach (var kvp in usageStats.BlocksCount)
+            {
+                Console.WriteLine($"Table {kvp.Key} count {kvp.Value}");
+            }
+
+            PrintBufferPool();
         }
 
         public class UsageStats

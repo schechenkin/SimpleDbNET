@@ -1,4 +1,5 @@
 ﻿using SimpleDB.file;
+using SimpleDB.Tx.Recovery;
 
 namespace SimpleDB.log
 {
@@ -23,8 +24,8 @@ namespace SimpleDB.log
         {
             m_FileManager = fileManager;
             m_Logfile = logfile;
-            byte[] b = new byte[fileManager.BlockSize];
-            m_LogPage = new Page(b);
+            fileManager.OpenLogFile(m_Logfile);
+            m_LogPage = new Page(fileManager.BlockSize);
             int logsize = fileManager.GetBlocksCount(logfile);
             if (logsize == 0)
                 m_CurrentBlockId = AppendNewBlock();
@@ -53,6 +54,12 @@ namespace SimpleDB.log
         {
             Flush();
             return new LogIterator(m_FileManager, m_CurrentBlockId);
+        }
+
+        internal LogReverseIterator GetReverseIterator()
+        {
+            Flush();
+            return new LogReverseIterator(m_FileManager, BlockId.New(m_Logfile, 0));
         }
 
         /**
@@ -103,10 +110,23 @@ namespace SimpleDB.log
         /**
          * Write the buffer to the log file.
          */
-        private void Flush()
+        internal void Flush()
         {
             m_FileManager.WritePage(m_LogPage, m_CurrentBlockId);
             m_LastSavedLSN = m_LatestLSN;
+        }
+
+        internal void Print()
+        {
+            Console.WriteLine();
+            Console.WriteLine("Log records:");
+            var iter = GetIterator();
+            while (iter.HasNext())
+            {
+                byte[] bytes = iter.Next();
+                LogRecord rec = LogRecord.createLogRecord(bytes);
+                Console.WriteLine(rec.ToString());
+            }
         }
     }
 }

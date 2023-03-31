@@ -1,12 +1,13 @@
 ﻿using SimpleDB.file;
 using SimpleDB.log;
+using System.Buffers;
 
 namespace SimpleDB.Tx.Recovery
 {
     internal class SetStringRecord : LogRecord
     {
         private int txnum, offset;
-        private string val;
+        private string oldVal, newVal;
         private BlockId blk;
 
         /**
@@ -24,8 +25,10 @@ namespace SimpleDB.Tx.Recovery
             blk = BlockId.New(filename, blknum);
             int opos = bpos + sizeof(int);
             offset = p.GetInt(opos);
-            int vpos = opos + sizeof(int);
-            val = p.GetString(vpos);
+            int oldvpos = opos + sizeof(int);
+            oldVal = p.GetString(oldvpos);
+            int newvpos = oldvpos + Page.CalculateStringStoringSize(oldVal);
+            newVal = p.GetString(newvpos);
         }
 
         public LogRecord.Type op()
@@ -38,9 +41,9 @@ namespace SimpleDB.Tx.Recovery
             return txnum;
         }
 
-        public string toString()
+        public override string ToString()
         {
-            return "<SETSTRING " + txnum + " " + blk + " " + offset + " " + val + ">";
+            return "<SETSTRING " + txnum + " " + blk + " " + offset + " " + oldVal + " " + newVal + ">";
         }
 
         /**
@@ -53,7 +56,7 @@ namespace SimpleDB.Tx.Recovery
         public void undo(Transaction tx)
         {
             tx.PinBlock(blk);
-            tx.SetString(blk, offset, val, false); // don't log the undo!
+            tx.SetString(blk, offset, oldVal, false); // don't log the undo!
             tx.UnpinBlock(blk);
         }
 
@@ -65,23 +68,36 @@ namespace SimpleDB.Tx.Recovery
          * integer value at that offset.
          * @return the LSN of the last log value
          */
-        public static int writeToLog(LogManager lm, int txnum, BlockId blk, int offset, string val)
+        public static int writeToLog(LogManager lm, int txnum, BlockId blk, int offset, string oldVal, string newVal)
         {
             int tpos = sizeof(int);
             int fpos = tpos + sizeof(int);
             int bpos = fpos + Page.CalculateStringStoringSize(blk.FileName);
             int opos = bpos + sizeof(int);
-            int vpos = opos + sizeof(int);
-            int reclen = vpos + Page.CalculateStringStoringSize(val);
-            byte[] rec = new byte[reclen];
+            int oldvpos = opos + sizeof(int);
+            int newvpos = oldvpos + Page.CalculateStringStoringSize(oldVal);
+            int reclen = newvpos + Page.CalculateStringStoringSize(newVal);
+
+            byte[] rec = ArrayPool<byte>.Shared.Rent(reclen);
             Page p = new Page(rec);
             p.SetInt(0, (int)LogRecord.Type.SETSTRING);
             p.SetInt(tpos, txnum);
             p.SetString(fpos, blk.FileName);
             p.SetInt(bpos, (int)blk.Number);
             p.SetInt(opos, offset);
-            p.SetString(vpos, val);
-            return lm.Append(rec);
+            p.SetString(oldvpos, oldVal);
+            p.SetString(newvpos, newVal);
+
+            var lsn = lm.Append(rec);
+            ArrayPool<byte>.Shared.Return(rec);
+            return lsn;
+        }
+
+        public void apply(Transaction tx)
+        {
+            tx.PinBlock(blk);
+            tx.SetString(blk, offset, newVal, false);
+            tx.UnpinBlock(blk);
         }
     }
 }

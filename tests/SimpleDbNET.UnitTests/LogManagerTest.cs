@@ -8,7 +8,7 @@ namespace SimpleDbNET.UnitTests
     public class LogManagerTest
     {
         [Fact]
-        public void Should_return_SLN_when_add_record()
+         public void Should_return_SLN_when_add_record()
         {
             //given
             var fileManager = new FileManager("loglsntest", 400, new TestBlocksReadWriteTracker(), true);
@@ -17,8 +17,8 @@ namespace SimpleDbNET.UnitTests
             logManager.GetIterator().HasNext().Should().BeFalse();
 
             //when
-            logManager.Append(new byte[100]);
-            logManager.Append(new byte[200]);
+            logManager.Append(new byte[100]).Should().Be(1);
+            logManager.Append(new byte[200]).Should().Be(2);
             var lsn = logManager.Append(new byte[250]);
 
             //then
@@ -28,7 +28,7 @@ namespace SimpleDbNET.UnitTests
         }
         
         [Fact]
-        public void When_add_and_iterate()
+        public void When_iterate_log()
         {
             //given
             var fileManager = new FileManager("logtest", 400, new TestBlocksReadWriteTracker(), true);
@@ -39,6 +39,8 @@ namespace SimpleDbNET.UnitTests
             //when
             addRecordsToLog(1, 35, logManager);
 
+            logManager.CurrentBlockId.Number.Should().Be(2);
+
             //then
             int counter = 35;
             foreach(byte[] rec in logManager.GetIterator())
@@ -48,6 +50,32 @@ namespace SimpleDbNET.UnitTests
                 record.Text.Should().Be($"Text {counter}");
 
                 counter--;
+            }
+        }
+
+        [Fact]
+        public void When_iterate_via_reverse_iterator()
+        {
+            //given
+            var fileManager = new FileManager("logtestreverse", 400, new TestBlocksReadWriteTracker(), true);
+            var logManager = new LogManager(fileManager, "log");
+
+            logManager.GetReverseIterator().HasNext().Should().BeFalse();
+
+            //when
+            addRecordsToLog(1, 35, logManager);
+
+            logManager.CurrentBlockId.Number.Should().Be(2);
+
+            //then
+            int counter = 1;
+            foreach (byte[] rec in logManager.GetReverseIterator())
+            {
+                var record = Record.FromBytes(rec);
+                record.Id.Should().Be(counter);
+                record.Text.Should().Be($"Text {counter}");
+
+                counter++;
             }
         }
 
