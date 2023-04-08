@@ -122,16 +122,10 @@ public readonly struct Page
         return new ReadOnlySpan<byte>(buffer, offset + sizeof(Int32), length);
     }
 
-    public bool StringCompare(int offset, in DbString text)
+    private Memory<byte> GetStringBytes2(int offset)
     {
         int length = GetInt(offset);
-        if (length != text.BytesLength())
-            return false;
-
-        var stringBytes = new ReadOnlySpan<byte>(buffer, offset + sizeof(Int32), length);
-        var textBytes = text.AsSpan();
-
-        return stringBytes.SequenceEqual(textBytes);
+        return new Memory<byte>(buffer, offset + sizeof(Int32), length);
     }
 
     public void SetBytes(int offset, byte[] bytes)
@@ -148,8 +142,8 @@ public readonly struct Page
 
     public DbString GetDbString(int offset)
     {
-        ReadOnlySpan<byte> bytes = GetStringBytes(offset);
-        return CHARSET.GetString(bytes);
+        Memory<byte> bytes = GetStringBytes2(offset);
+        return new DbString(bytes);
     }
 
 

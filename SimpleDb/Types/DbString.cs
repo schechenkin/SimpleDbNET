@@ -6,46 +6,88 @@ namespace SimpleDb.Types;
 
 public struct DbString
 {
-    private readonly string value;
-    private byte[]? bytes;
+    string? value;
+    Memory<byte> memory;
+    bool fromString;
+    byte[]? buffer;
+    
     public static implicit operator DbString(string str) => new DbString(str);
 
     public DbString(string str)
     {
         value = str;
+        fromString = true;
+    }
+
+    public DbString(in Memory<byte> bytes)
+    {
+        this.memory = bytes;
+        fromString = false;
     }
 
     public int BytesLength()
     {       
-        if(bytes is null)
+        if(value != null)
             return Page.CHARSET.GetByteCount(value);
         else
-            return bytes.Length;
+            return memory.Length;
     }
 
     public int Length()
     {       
-        return value.Length;
+        return GetString().Length;
     }
 
 
-    public ReadOnlySpan<byte> AsSpan()
+    public Memory<byte> AsSpan()
+    {       
+        return memory;
+    }
+
+    private Memory<byte> GetMemory()
     {
-        if(bytes is null)
+        if(fromString)
         {
-            bytes = Page.CHARSET.GetBytes(value);
+            if(buffer is null)
+            {
+                Debug.Assert(value != null);
+                buffer = Page.CHARSET.GetBytes(value);
+                memory = new Memory<byte>(buffer);
+            }
         }
-        
-        return bytes.AsSpan();
+        return memory;
     }
 
-    public byte[] GetBytes()
+    public bool Equals(in DbString other)
     {
-        if(bytes is null)
-            bytes = Page.CHARSET.GetBytes(value);
+        if(fromString && other.fromString)
+        {
+            Debug.Assert(value != null);
+            return value.Equals(other.value);
+        }
+        else
+        {
+            if(GetMemory().Length != other.GetMemory().Length)
+                return false;
 
-        return bytes;
+            return GetMemory().Span.SequenceEqual(other.GetMemory().Span);
+        }
     }
 
-    public string GetString() => value;
+    public static bool operator ==(in DbString lhs, in DbString rhs)
+    {
+        return lhs.Equals(rhs);
+    }
+
+    public static bool operator !=(in DbString lhs, in DbString rhs) => !(lhs == rhs);
+
+    public string GetString()
+    {
+        if(value is null)
+        {
+            value = Page.CHARSET.GetString(memory.Span);
+        }
+
+        return value;
+    }
 }

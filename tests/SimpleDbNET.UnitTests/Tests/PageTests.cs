@@ -42,7 +42,8 @@ public class PageTests
         DbString str = "hello world";
 
         sut.SetValue(10, str);
-        sut.GetDbString(10).Should().Be(str);
+        var dbString = sut.GetDbString(10);
+        Assert.True(sut.GetDbString(10) == str);
     }
 
     [Fact]
@@ -81,16 +82,5 @@ public class PageTests
         sut.SetBytes(10, new byte[] { 1,2,3 });
 
         sut.GetBytesArray(10).Should().BeEquivalentTo(new byte[] { 1,2,3 });
-    }
-
-    [Fact]
-    public void SetString_StringCompare()
-    {
-        var sut = new Page(128);
-        string str = "hello world";
-
-        sut.SetString(10, str);
-        sut.StringCompare(10, new SimpleDb.Types.DbString(str)).Should().BeTrue();
-        sut.StringCompare(10, new SimpleDb.Types.DbString("random")).Should().BeFalse();
     }
 }
