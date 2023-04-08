@@ -1,10 +1,10 @@
-﻿using SimpleDB.Metadata;
-using SimpleDB.Query;
-using SimpleDB.Record;
-using SimpleDB.Tx;
+﻿using SimpleDb.Metadata;
+using SimpleDb.Query;
+using SimpleDb.Record;
+using SimpleDb.Transactions;
 using System;
 
-namespace SimpleDB.Plan
+namespace SimpleDb.Plan
 {
     internal class TablePlan : Plan
     {

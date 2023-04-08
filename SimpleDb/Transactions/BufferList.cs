@@ -1,12 +1,11 @@
-﻿using SimpleDB.Data;
-using SimpleDB.file;
-using Buffer = SimpleDB.Data.Buffer;
+using SimpleDb.Buffers;
+using SimpleDb.File;
 
-namespace SimpleDB.Tx
-{
+namespace SimpleDb.Transactions;
+
     internal class BufferList
     {
-        private Dictionary<BlockId, Buffer> buffers = new Dictionary<BlockId, Buffer>();
+        private Dictionary<BlockId, SimpleDb.Buffers.Buffer> buffers = new Dictionary<BlockId, SimpleDb.Buffers.Buffer>();
         private List<BlockId> pins = new List<BlockId>();
         private BufferManager bm;
 
@@ -22,7 +21,7 @@ namespace SimpleDB.Tx
          * @param blk a reference to the disk block
          * @return the buffer pinned to that block
          */
-        internal Buffer getBuffer(BlockId blk)
+        internal SimpleDb.Buffers.Buffer getBuffer(BlockId blk)
         {
             return buffers[blk];
         }
@@ -33,7 +32,7 @@ namespace SimpleDB.Tx
          */
         internal void pin(in BlockId blockId)
         {
-            Buffer buff = bm.PinBlock(blockId);
+            SimpleDb.Buffers.Buffer buff = bm.PinBlock(blockId);
             buffers[blockId] = buff;
             pins.Add(blockId);
         }
@@ -44,7 +43,7 @@ namespace SimpleDB.Tx
          */
         internal void unpin(in BlockId blockId)
         {
-            Buffer buffer = buffers[blockId];
+            SimpleDb.Buffers.Buffer buffer = buffers[blockId];
             bm.UnpinBuffer(buffer);
             pins.Remove(blockId);
             if (!pins.Contains(blockId))
@@ -58,11 +57,10 @@ namespace SimpleDB.Tx
         {
             foreach (BlockId blk in pins)
             {
-                Buffer buff = buffers[blk];
+                SimpleDb.Buffers.Buffer buff = buffers[blk];
                 bm.UnpinBuffer(buff);
             }
             buffers.Clear();
             pins.Clear();
         }
     }
-}

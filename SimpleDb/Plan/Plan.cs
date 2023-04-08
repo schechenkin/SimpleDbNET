@@ -1,12 +1,12 @@
-﻿using SimpleDB.Query;
-using SimpleDB.Record;
+﻿using SimpleDb.Query;
+using SimpleDb.Record;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimpleDB.Plan
+namespace SimpleDb.Plan
 {
     public interface Plan
     {

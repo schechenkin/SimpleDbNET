@@ -1,12 +1,12 @@
-﻿using SimpleDB.QueryParser;
-using SimpleDB.Tx;
+﻿using SimpleDb.QueryParser;
+using SimpleDb.Transactions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimpleDB.Plan
+namespace SimpleDb.Plan
 {
     public interface UpdatePlanner
     {

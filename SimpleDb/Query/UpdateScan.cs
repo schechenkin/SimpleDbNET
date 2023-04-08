@@ -1,7 +1,8 @@
-﻿using SimpleDB.Record;
+﻿using SimpleDb.Record;
+using SimpleDb.Types;
 using System;
 
-namespace SimpleDB.Query
+namespace SimpleDb.Query
 {
     public interface UpdateScan : Scan
     {
@@ -10,45 +11,36 @@ namespace SimpleDB.Query
          * @param fldname the name of the field
          * @param val the new value, expressed as a Constant
          */
-        public void setVal(String fldname, Constant val);
+        public void SetValue(String fldname, Constant val);
 
         /**
          * Modify the field value of the current record.
          * @param fldname the name of the field
          * @param val the new integer value
          */
-        public void setInt(String fldname, int val);
-
-        /**
-         * Modify the field value of the current record.
-         * @param fldname the name of the field
-         * @param val the new string value
-         */
-        public void setString(String fldname, String val);
-
-        public void setDateTime(String fldname, DateTime dateTime);
+        public void SetValue<T>(String fldname, T val);
 
         /**
          * Insert a new record somewhere in the scan.
          */
-        public void insert();
+        public void Insert();
 
         /**
          * Delete the current record from the scan.
          */
-        public void delete();
+        public void Delete();
 
         /**
          * Return the id of the current record.
          * @return the id of the current record
          */
-        public RID getRid();
+        public RID GetRid();
 
         /**
          * Position the scan so that the current record has
          * the specified id.
          * @param rid the id of the desired record
          */
-        public void moveToRid(RID rid);
+        public void MoveToRid(RID rid);
     }
 }

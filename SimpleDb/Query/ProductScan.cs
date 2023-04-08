@@ -1,12 +1,13 @@
 ﻿using SimpleDb.Query;
-using SimpleDB.file;
+using SimpleDb.File;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SimpleDb.Types;
 
-namespace SimpleDB.Query
+namespace SimpleDb.Query
 {
     public class ProductScan : Scan
     {
@@ -21,7 +22,7 @@ namespace SimpleDB.Query
         {
             this.s1 = s1;
             this.s2 = s2;
-            beforeFirst();
+            BeforeFirst();
         }
 
         /**
@@ -31,11 +32,11 @@ namespace SimpleDB.Query
          * is positioned before its first record.
          * @see simpledb.query.Scan#beforeFirst()
          */
-        public void beforeFirst()
+        public void BeforeFirst()
         {
-            s1.beforeFirst();
-            s1.next();
-            s2.beforeFirst();
+            s1.BeforeFirst();
+            s1.Next();
+            s2.BeforeFirst();
         }
 
         /**
@@ -46,14 +47,14 @@ namespace SimpleDB.Query
          * If there are no more LHS records, the method returns false.
          * @see simpledb.query.Scan#next()
          */
-        public bool next()
+        public bool Next()
         {
-            if (s2.next())
+            if (s2.Next())
                 return true;
             else
             {
-                s2.beforeFirst();
-                return s2.next() && s1.next();
+                s2.BeforeFirst();
+                return s2.Next() && s1.Next();
             }
         }
 
@@ -63,12 +64,12 @@ namespace SimpleDB.Query
          * contains the field.
          * @see simpledb.query.Scan#getInt(java.lang.String)
          */
-        public int getInt(String fldname)
+        public int GetInt(String fldname)
         {
-            if (s1.hasField(fldname))
-                return s1.getInt(fldname);
+            if (s1.HasField(fldname))
+                return s1.GetInt(fldname);
             else
-                return s2.getInt(fldname);
+                return s2.GetInt(fldname);
         }
 
         /** 
@@ -77,12 +78,12 @@ namespace SimpleDB.Query
          * contains the field.
          * @see simpledb.query.Scan#getString(java.lang.String)
          */
-        public String getString(String fldname)
+        public String GetString(String fldname)
         {
-            if (s1.hasField(fldname))
-                return s1.getString(fldname);
+            if (s1.HasField(fldname))
+                return s1.GetString(fldname);
             else
-                return s2.getString(fldname);
+                return s2.GetString(fldname);
         }
 
         /** 
@@ -91,64 +92,64 @@ namespace SimpleDB.Query
          * contains the field.
          * @see simpledb.query.Scan#getVal(java.lang.String)
          */
-        public Constant getVal(String fldname)
+        public Constant GetValue(String fldname)
         {
-            if (s1.hasField(fldname))
-                return s1.getVal(fldname);
+            if (s1.HasField(fldname))
+                return s1.GetValue(fldname);
             else
-                return s2.getVal(fldname);
+                return s2.GetValue(fldname);
         }
 
-        public ConstantRefStruct getVal2(string fldname)
+        /*public ConstantRefStruct getVal2(string fldname)
         {
             if (s1.hasField(fldname))
                 return s1.getVal2(fldname);
             else
                 return s2.getVal2(fldname);
-        }
+        }*/
 
         /**
          * Returns true if the specified field is in
          * either of the underlying scans.
          * @see simpledb.query.Scan#hasField(java.lang.String)
          */
-        public bool hasField(String fldname)
+        public bool HasField(String fldname)
         {
-            return s1.hasField(fldname) || s2.hasField(fldname);
+            return s1.HasField(fldname) || s2.HasField(fldname);
         }
 
         /**
          * Close both underlying scans.
          * @see simpledb.query.Scan#close()
          */
-        public void close()
+        public void Close()
         {
-            s1.close();
-            s2.close();
+            s1.Close();
+            s2.Close();
         }
 
-        public bool CompareString(string fldname, StringConstant val)
+        /*public bool CompareString(string fldname, StringConstant val)
         {
             if (s1.hasField(fldname))
                 return s1.CompareString(fldname, val);
             else
                 return s2.CompareString(fldname, val);
+        }*/
+
+        public DateTime GetDateTime(string fldname)
+        {
+            if (s1.HasField(fldname))
+                return s1.GetDateTime(fldname);
+            else
+                return s2.GetDateTime(fldname);
         }
 
-        public DateTime getDateTime(string fldname)
+        public bool IsNull(string fldname)
         {
-            if (s1.hasField(fldname))
-                return s1.getDateTime(fldname);
+            if (s1.HasField(fldname))
+                return s1.IsNull(fldname);
             else
-                return s2.getDateTime(fldname);
-        }
-
-        public bool isNull(string fldname)
-        {
-            if (s1.hasField(fldname))
-                return s1.isNull(fldname);
-            else
-                return s2.isNull(fldname);
+                return s2.IsNull(fldname);
         }
     }
 }

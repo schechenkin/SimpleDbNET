@@ -1,52 +1,49 @@
-﻿using SimpleDb.Transactions.Concurrency;
-using SimpleDB.file;
-using System.Collections;
+using SimpleDb.File;
 
-namespace SimpleDB.tx.concurrency
+namespace SimpleDb.Transactions.Concurrency;
+
+public class ConcurrencyManager
 {
-    public class ConcurrencyManager
+    private LockTable lockTable;
+    private Dictionary<BlockId, char> locks = new Dictionary<BlockId, char>();
+
+    public ConcurrencyManager(LockTable lockTable)
     {
-        private LockTable lockTable;
-        private Dictionary<BlockId, char> locks = new Dictionary<BlockId, char>();
+        this.lockTable = lockTable;
+    }
 
-        public ConcurrencyManager(LockTable lockTable)
+    internal void Release()
+    {
+        foreach (BlockId blockId in locks.Keys)
+            lockTable.unlock(blockId);
+
+        locks.Clear();
+    }
+
+    internal void RequestSharedLock(in BlockId blockId)
+    {
+        if (!locks.ContainsKey(blockId))
         {
-            this.lockTable = lockTable;
+            lockTable.sLock(blockId);
+            locks[blockId] = 'S';
         }
+    }
 
-        internal void Release()
+    internal void RequestExclusiveLock(in BlockId blockId)
+    {
+        if (!HasXLock(blockId))
         {
-            foreach (BlockId blockId in locks.Keys)
-                lockTable.unlock(blockId);
-
-            locks.Clear();
+            RequestSharedLock(blockId);
+            lockTable.xLock(blockId);
+            locks[blockId] = 'X';
         }
+    }
 
-        internal void RequestSharedLock(in BlockId blockId)
-        {
-            if (!locks.ContainsKey(blockId))
-            {
-                lockTable.sLock(blockId);
-                locks[blockId] = 'S';
-            }
-        }
+    private bool HasXLock(in BlockId blockId)
+    {
+        if (!locks.ContainsKey(blockId))
+            return false;
 
-        internal void RequestExclusiveLock(in BlockId blockId)
-        {
-            if (!HasXLock(blockId))
-            {
-                RequestSharedLock(blockId);
-                lockTable.xLock(blockId);
-                locks[blockId] = 'X';
-            }
-        }
-
-        private bool HasXLock(in BlockId blockId)
-        {
-            if (!locks.ContainsKey(blockId))
-                return false;
-
-            return (char)locks[blockId] == 'X';
-        }
+        return (char)locks[blockId] == 'X';
     }
 }

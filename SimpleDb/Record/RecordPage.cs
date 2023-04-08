@@ -1,8 +1,9 @@
-﻿using SimpleDB.file;
-using SimpleDB.Tx;
+﻿using SimpleDb.File;
+using SimpleDb.Transactions;
+using SimpleDb.Types;
 using System;
 
-namespace SimpleDB.Record
+namespace SimpleDb.Record
 {
     public struct RecordPage
     {
@@ -11,7 +12,7 @@ namespace SimpleDB.Record
         private BlockId blk;
         private Layout layout;
 
-        public RecordPage(Transaction tx, BlockId blk, Layout layout)
+        public RecordPage(Transaction tx, in BlockId blk, Layout layout)
         {
             this.tx = tx;
             this.blk = blk;
@@ -48,46 +49,24 @@ namespace SimpleDB.Record
             int fldpos = offset(slot) + layout.offset(fldname);
             return tx.GetDateTime(blk, fldpos);
         }
-        /**
-         * Store an integer at the specified field
-         * of the specified slot.
-         * @param fldname the name of the field
-         * @param val the integer value stored in that field
-         */
-        public void setInt(int slot, String fldname, int val)
-        {
-            int fldpos = offset(slot) + layout.offset(fldname);
-            tx.SetInt(blk, fldpos, val, true);
-        }
 
-        public bool CompareString(int slot, string fldname, StringConstant val)
+        public void SetValue<T>(int slot, String fldname, T value)
         {
             int fldpos = offset(slot) + layout.offset(fldname);
-            return tx.CompareString(blk, fldpos, val);
-        }
-
-        /**
-         * Store a string at the specified field
-         * of the specified slot.
-         * @param fldname the name of the field
-         * @param val the string value stored in that field
-         */
-        public void setString(int slot, String fldname, String val)
-        {
-            int fldpos = offset(slot) + layout.offset(fldname);
-            tx.SetString(blk, fldpos, val, true);
-        }
-
-        public void setDateTime(int slot, String fldname, DateTime dateTime)
-        {
-            int fldpos = offset(slot) + layout.offset(fldname);
-            tx.SetDateTime(blk, fldpos, dateTime, true);
+            tx.SetValue(blk, fldpos, value, true);
+            setNotNull(slot, fldname);
         }
 
         public void setNull(int slot, String fldname)
         {
             var index = layout.bitLocation(fldname);
-            tx.SetNull(blk, offset(slot) + Layout.NullBytesFlagsOffset, index, true);
+            tx.SetBit(blk, offset(slot) + Layout.NullBytesFlagsOffset, index, true, true);
+        }
+
+        private void setNotNull(int slot, String fldname)
+        {
+            var index = layout.bitLocation(fldname);
+            tx.SetBit(blk, offset(slot) + Layout.NullBytesFlagsOffset, index, false, true);
         }
 
         public bool isNull(int slot, String fldname)
@@ -110,15 +89,15 @@ namespace SimpleDB.Record
             int slot = 0;
             while (isValidSlot(slot))
             {
-                tx.SetInt(blk, offset(slot), EMPTY, false);
+                tx.SetValue(blk, offset(slot), EMPTY, false);
                 Schema sch = layout.schema();
                 foreach (string fldname in sch.ColumnNames())
                 {
                     int fldpos = offset(slot) + layout.offset(fldname);
                     if (sch.GetSqlType(fldname) == SqlType.INTEGER)
-                        tx.SetInt(blk, fldpos, 0, false);
+                        tx.SetValue(blk, fldpos, 0, false);
                     else
-                        tx.SetString(blk, fldpos, "", false);
+                        tx.SetValue(blk, fldpos, "", false);
                 }
                 slot++;
             }
@@ -149,7 +128,7 @@ namespace SimpleDB.Record
          */
         private void setFlag(int slot, int flag)
         {
-            tx.SetInt(blk, offset(slot), flag, true);
+            tx.SetValue(blk, offset(slot), flag, true);
         }
 
         private int searchAfter(int slot, int flag)

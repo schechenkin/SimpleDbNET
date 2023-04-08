@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+namespace SimpleDb.Transactions.Concurrency;
 
-namespace SimpleDb.Transactions.Concurrency
+public class LockAbortException : Exception
 {
-    public class LockAbortException : Exception
-    {
-    }
 }

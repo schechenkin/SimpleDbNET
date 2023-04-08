@@ -1,8 +1,8 @@
-﻿using SimpleDB.QueryParser;
-using SimpleDB.Tx;
+﻿using SimpleDb.QueryParser;
+using SimpleDb.Transactions;
 using System;
 
-namespace SimpleDB.Plan
+namespace SimpleDb.Plan
 {
     public class Planner
     {

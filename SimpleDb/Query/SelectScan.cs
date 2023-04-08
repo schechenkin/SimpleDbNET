@@ -1,12 +1,12 @@
 ﻿using SimpleDb.Query;
-using SimpleDB.file;
-using SimpleDB.Record;
+using SimpleDb.Record;
+using SimpleDb.Types;
 
 namespace SimpleDB.Query
 {
     public class SelectScan : Scan
     {
-		private Scan s;
+		private Scan innerScan;
 		private Predicate pred;
 
 		/**
@@ -15,116 +15,99 @@ namespace SimpleDB.Query
 		 * @param s the scan of the underlying query
 		 * @param pred the selection predicate
 		 */
-		public SelectScan(Scan s, Predicate pred)
+		public SelectScan(Scan scan, Predicate pred)
 		{
-			this.s = s;
+			this.innerScan = scan;
 			this.pred = pred;
 		}
 
 		// Scan methods
 
-		public void beforeFirst()
+		public void BeforeFirst()
 		{
-			s.beforeFirst();
+			innerScan.BeforeFirst();
 		}
 
-		public bool next()
+		public bool Next()
 		{
-			while (s.next())
+			while (innerScan.Next())
 			{
-				if (pred.isSatisfied(s))
+				if (pred.isSatisfied(innerScan))
 					return true;
 			}
 			return false;
 		}
 
-		public int getInt(String fldname)
+		public int GetInt(String fldname)
 		{
-			return s.getInt(fldname);
+			return innerScan.GetInt(fldname);
 		}
 
-		public String getString(String fldname)
+		public String GetString(String fldname)
 		{
-			return s.getString(fldname);
+			return innerScan.GetString(fldname);
 		}
 
-		public Constant getVal(String fldname)
+		public Constant GetValue(String fldname)
 		{
-			return s.getVal(fldname);
+			return innerScan.GetValue(fldname);
 		}
 
-        public ConstantRefStruct getVal2(string fldname)
+        /*public ConstantRefStruct getVal2(string fldname)
         {
             return s.getVal2(fldname);
-        }
+        }*/
 
-        public bool hasField(String fldname)
+        public bool HasField(String fldname)
 		{
-			return s.hasField(fldname);
+			return innerScan.HasField(fldname);
 		}
 
-		public void close()
+		public void Close()
 		{
-			s.close();
+			innerScan.Close();
 		}
 
-		// UpdateScan methods
-
-		public void setInt(String fldname, int val)
-		{
-			UpdateScan us = (UpdateScan)s;
-			us.setInt(fldname, val);
-		}
-
-		public void setString(String fldname, String val)
-		{
-			UpdateScan us = (UpdateScan)s;
-			us.setString(fldname, val);
-		}
+		// UpdateScan method
 
 		public void setVal(String fldname, Constant val)
 		{
-			UpdateScan us = (UpdateScan)s;
-			us.setVal(fldname, val);
+			UpdateScan us = (UpdateScan)innerScan;
+			us.SetValue(fldname, val);
 		}
 
 		public void delete()
 		{
-			UpdateScan us = (UpdateScan)s;
-			us.delete();
+			UpdateScan us = (UpdateScan)innerScan;
+			us.Delete();
 		}
 
 		public void insert()
 		{
-			UpdateScan us = (UpdateScan)s;
-			us.insert();
+			UpdateScan us = (UpdateScan)innerScan;
+			us.Insert();
 		}
 
 		public RID getRid()
 		{
-			UpdateScan us = (UpdateScan)s;
-			return us.getRid();
+			UpdateScan us = (UpdateScan)innerScan;
+			return us.GetRid();
 		}
 
 		public void moveToRid(RID rid)
 		{
-			UpdateScan us = (UpdateScan)s;
-			us.moveToRid(rid);
+			UpdateScan us = (UpdateScan)innerScan;
+			us.MoveToRid(rid);
 		}
 
-		public bool CompareString(string fldname, StringConstant val)
-		{
-			throw new NotImplementedException();
-		}
-
-        public DateTime getDateTime(string fldname)
+        public DateTime GetDateTime(string fldname)
         {
-			return s.getDateTime(fldname);
+			return innerScan.GetDateTime(fldname);
 		}
 
-        public bool isNull(string fldname)
+        public bool IsNull(string fldname)
         {
-            return s.isNull(fldname);
+            return innerScan.IsNull(fldname);
         }
     }
 }

@@ -1,9 +1,10 @@
-﻿using SimpleDB.Query;
-using SimpleDB.Record;
+﻿using SimpleDb.Query;
+using SimpleDb.Record;
+using SimpleDB.Query;
 using System;
 using System.Collections.Generic;
 
-namespace SimpleDB.Plan
+namespace SimpleDb.Plan
 {
     public class ProjectPlan : Plan
     {

@@ -1,6 +1,7 @@
-﻿using SimpleDB.file;
-using SimpleDB.Record;
-using SimpleDB.Tx;
+﻿using SimpleDb.File;
+using SimpleDb.Record;
+using SimpleDb.Transactions;
+using SimpleDb.Types;
 using System;
 using System.Collections.Generic;
 
@@ -53,24 +54,24 @@ namespace SimpleDB.Metadata
             Layout layout = new Layout(sch);
             // insert one record into tblcat
             TableScan tcat = new TableScan(tx, "tblcat", tcatLayout);
-            tcat.insert();
-            tcat.setString("tblname", tblname);
-            tcat.setInt("slotsize", layout.slotSize());
-            tcat.close();
+            tcat.Insert();
+            tcat.SetValue("tblname", tblname);
+            tcat.SetValue("slotsize", layout.slotSize());
+            tcat.Close();
 
             // insert a record into fldcat for each field
             TableScan fcat = new TableScan(tx, "fldcat", fcatLayout);
             foreach (String fldname in sch.ColumnNames())
             {
-                fcat.insert();
-                fcat.setString("tblname", tblname);
-                fcat.setString("fldname", fldname);
-                fcat.setInt("type", (int)sch.GetSqlType(fldname));
-                fcat.setInt("length", sch.GetColumnLength(fldname));
-                fcat.setInt("offset", layout.offset(fldname));
-                fcat.setInt("nullable", sch.IsNullable(fldname) ? 1 : 0);
+                fcat.Insert();
+                fcat.SetValue("tblname", tblname);
+                fcat.SetValue("fldname", fldname);
+                fcat.SetValue("type", (int)sch.GetSqlType(fldname));
+                fcat.SetValue("length", sch.GetColumnLength(fldname));
+                fcat.SetValue("offset", layout.offset(fldname));
+                fcat.SetValue("nullable", sch.IsNullable(fldname) ? 1 : 0);
             }
-            fcat.close();
+            fcat.Close();
         }
 
         /**
@@ -83,31 +84,40 @@ namespace SimpleDB.Metadata
         public Layout getLayout(string tblname, Transaction tx)
         {
             int size = -1;
-            StringConstant tblnameConstant = new StringConstant(tblname);
+            DbString tblnameConstant = new DbString(tblname);
             TableScan tcat = new TableScan(tx, "tblcat", tcatLayout);
-            while (tcat.next())
-                if (tcat.CompareString("tblname", tblnameConstant))
+            while (tcat.Next())
+            {
+                //if (tcat.CompareString("tblname", tblnameConstant))
+                var x = tcat.GetString("tblname");
+                var dbTableName = tcat.GetValue("tblname");
+                if (tcat.GetValue("tblname") == tblnameConstant)
                 {
-                    size = tcat.getInt("slotsize");
+                    size = tcat.GetInt("slotsize");
                     break;
                 }
-            tcat.close();
+            }
+            tcat.Close();
 
             Schema sch = new Schema();
             Dictionary<string, int> offsets = new();
             TableScan fcat = new TableScan(tx, "fldcat", fcatLayout);
 
-            while (fcat.next())
-                if (fcat.CompareString("tblname", tblnameConstant))
+            while (fcat.Next())
+            {
+                //if (fcat.CompareString("tblname", tblnameConstant))
+                var dbtblname = fcat.GetValue("tblname") ;
+                if (fcat.GetValue("tblname") == tblnameConstant)
                 {
-                    String fldname = fcat.getString("fldname");
-                    int fldtype = fcat.getInt("type");
-                    int fldlen = fcat.getInt("length");
-                    int offset = fcat.getInt("offset");
+                    String fldname = fcat.GetString("fldname");
+                    int fldtype = fcat.GetInt("type");
+                    int fldlen = fcat.GetInt("length");
+                    int offset = fcat.GetInt("offset");
                     offsets[fldname] = offset;
                     sch.AddColumn(fldname, (SqlType)fldtype, fldlen);
                 }
-            fcat.close();
+            }
+            fcat.Close();
             return new Layout(sch, offsets, size);
         }
     }

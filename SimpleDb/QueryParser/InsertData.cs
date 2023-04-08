@@ -1,6 +1,6 @@
-﻿using SimpleDB.Query;
+﻿using SimpleDb.Types;
 
-namespace SimpleDB.QueryParser
+namespace SimpleDb.QueryParser
 {
     public class InsertData
     {

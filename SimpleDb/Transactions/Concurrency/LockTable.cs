@@ -1,10 +1,9 @@
-﻿using SimpleDB.file;
-using System.Collections;
+using SimpleDb.File;
 using System.Runtime.CompilerServices;
 
-namespace SimpleDb.Transactions.Concurrency
-{
-    public class LockTable
+namespace SimpleDb.Transactions.Concurrency;
+
+public class LockTable
     {
         private static TimeSpan MAX_WAIT_TIME = TimeSpan.FromSeconds(10);
 
@@ -103,4 +102,3 @@ namespace SimpleDb.Transactions.Concurrency
             return 0;
         }
     }
-}

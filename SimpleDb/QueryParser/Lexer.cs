@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Primitives;
-using SimpleDb.QueryParser;
 
-namespace SimpleDB.QueryParser
+namespace SimpleDb.QueryParser
 {
     class Lexer
     {
@@ -143,7 +142,7 @@ namespace SimpleDB.QueryParser
 
             String s = enumerator.Current.ToString(); //constants are not converted to lower case
             nextToken();
-            return s;
+            return s.Trim('\'');
         }
 
         public DateTime eatDateTimeConstant()

@@ -1,11 +1,11 @@
-﻿using Playground;
-using System.Buffers;
+﻿
+using BenchmarkDotNet.Running;
+using Playground;
 
 public class Program
 {
     public static void Main(string[] args)
     {
-        //new RevertNotCommitedChangesTest().Run();
-        new TableScanInsert().Run();
+        var summary = BenchmarkRunner.Run<StructsBenchmark>();
     }
 }

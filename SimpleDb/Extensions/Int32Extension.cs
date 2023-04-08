@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 namespace SimpleDb.Extensions
 {
@@ -79,6 +79,16 @@ namespace SimpleDb.Extensions
             {
                 destination[offset + i] = (byte)(source >> (8 * j));
             }
+        }
+
+        public static void CopyToByteArrayLE(this bool source, byte[] destination, int offset)
+        {
+            Debug.Assert(destination != null, "Destination array cannot be null");
+
+            // check if there is enough space for all the 8 bytes we will copy
+            Debug.Assert(destination.Length >= offset + 8, "Not enough room in the destination array");
+
+            destination[offset] = source ? (byte)1 : (byte)0;
         }
     }
 }

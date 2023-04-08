@@ -1,6 +1,4 @@
 ﻿using Microsoft.AspNetCore.Server.Kestrel.Core;
-using SimpleDb.Extensions;
-using SimpleDbNET.Api.Tracking;
 using StackExchange.Profiling.Storage;
 using System.Text.Json.Serialization;
 
@@ -42,7 +40,7 @@ namespace SimpleDbNET.Api
                 options.SuppressAsyncSuffixInActionNames = false;
             });
 
-            services.AddSimpleDb(Configuration, new BlocksReadWriteTracker());
+            //services.AddSimpleDb(Configuration, new BlocksReadWriteTracker());
 
             ConfigureMiniProfiler(services);
 
@@ -77,18 +75,6 @@ namespace SimpleDbNET.Api
                     endpoints.MapControllerRoute("default_route", "{controller=Home}/{action=Index}/{id?}");
 
                     endpoints.MapRazorPages();
-                    endpoints.MapGet("/named-endpoint", async httpContext =>
-                    {
-                        var endpointName = httpContext.GetEndpoint().DisplayName;
-                        await httpContext.Response.WriteAsync($"Content from an endpoint named {endpointName}");
-                    }).WithDisplayName("Named Endpoint");
-
-                    endpoints.MapGet("implicitly-named-endpoint", async httpContext =>
-                    {
-                        var endpointName = httpContext.GetEndpoint().DisplayName;
-                        await httpContext.Response.WriteAsync($"Content from an endpoint named {endpointName}");
-                    });
-
                     endpoints.MapHealthChecks("/health");
                 });
         }

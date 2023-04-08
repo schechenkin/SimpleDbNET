@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SimpleDB.Record
+namespace SimpleDb.Record
 {
     public readonly ref struct RID
     {

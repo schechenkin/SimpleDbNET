@@ -1,17 +1,9 @@
-﻿using SimpleDb.Indexes.Planner;
-using SimpleDB.Indexes;
-using SimpleDB.Metadata;
-using SimpleDB.Query;
-using SimpleDB.QueryParser;
-using SimpleDB.QueryPlan;
-using SimpleDB.Tx;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SimpleDb.Metadata;
+using SimpleDb.QueryParser;
+using SimpleDb.Transactions;
+using SimpleDb.Types;
 
-namespace SimpleDB.Plan
+namespace SimpleDb.Plan
 {
     internal class BasicQueryPlanner : QueryPlanner
     {
@@ -33,7 +25,7 @@ namespace SimpleDB.Plan
             List<Plan> plans = new List<Plan>();
             foreach (String tblname in queryData.tables())
             {
-                String viewdef = mdm.getViewDef(tblname, tx);
+                String? viewdef = mdm.getViewDef(tblname, tx);
                 if (viewdef != null)
                 { // Recursively plan the view.
                     Parser parser = new Parser(viewdef);
@@ -51,33 +43,7 @@ namespace SimpleDB.Plan
                 p = new ProductPlan(p, nextplan);
 
             //Step 3: Add a selection plan for the predicate
-            //посмотреть на предикат и по возможности заменить на IndexSelectPlan
-            if(p is TablePlan tablePlan)
-            {
-                var predicate = queryData.pred();
-                var indexes = mdm.getIndexInfo(tablePlan.tableName, tx);
-                bool indexFound = false;
-                foreach(var columnName in indexes.Keys)
-                {
-                    Constant? val = predicate.equatesWithConstant(columnName);
-                    if (val != null)
-                    {
-                        IndexInfo ii = indexes[columnName];
-                        p = new IndexSelectPlan(p, ii, val.Value);
-                        indexFound = true;
-                        break;
-                    }
-                }
-
-                if(!indexFound)
-                {
-                    p = new SelectPlan(tablePlan, predicate);
-                }
-            }
-            else
-            {
-                p = new SelectPlan(p, queryData.pred());
-            }
+            p = new SelectPlan(p, queryData.pred());
 
             //Step 4: Project on the field names
             p = new ProjectPlan(p, queryData.fields());

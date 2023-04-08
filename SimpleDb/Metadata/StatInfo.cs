@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimpleDB.Metadata
+namespace SimpleDb.Metadata
 {
     public class StatInfo
     {

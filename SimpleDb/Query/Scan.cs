@@ -1,7 +1,8 @@
 ﻿using SimpleDb.Query;
-using SimpleDB.file;
+using SimpleDb.File;
+using SimpleDb.Types;
 
-namespace SimpleDB.Query
+namespace SimpleDb.Query
 {
     public interface Scan
     {
@@ -9,13 +10,13 @@ namespace SimpleDB.Query
          * Position the scan before its first record. A
          * subsequent call to next() will return the first record.
          */
-        public void beforeFirst();
+        public void BeforeFirst();
 
         /**
          * Move the scan to the next record.
          * @return false if there is no next record
          */
-        public bool next();
+        public bool Next();
 
         /**
          * Return the value of the specified integer field 
@@ -23,7 +24,7 @@ namespace SimpleDB.Query
          * @param fldname the name of the field
          * @return the field's integer value in the current record
          */
-        public int getInt(string fldname);
+        public int GetInt(string fldname);
 
         /**
          * Return the value of the specified string field 
@@ -31,13 +32,11 @@ namespace SimpleDB.Query
          * @param fldname the name of the field
          * @return the field's string value in the current record
          */
-        public string getString(string fldname);
+        public string GetString(string fldname);
 
-        public bool CompareString(string fldname, StringConstant val);
+        public DateTime GetDateTime(string fldname);
 
-        public DateTime getDateTime(string fldname);
-
-        public bool isNull(string fldname);
+        public bool IsNull(string fldname);
 
         /**
          * Return the value of the specified field in the current record.
@@ -45,19 +44,18 @@ namespace SimpleDB.Query
          * @param fldname the name of the field
          * @return the value of that field, expressed as a Constant.
          */
-        public Constant getVal(string fldname);
-        public ConstantRefStruct getVal2(string fldname);
+        public Constant GetValue(string fldname);
 
         /**
          * Return true if the scan has the specified field.
          * @param fldname the name of the field
          * @return true if the scan has that field
          */
-        public bool hasField(string fldname);
+        public bool HasField(string fldname);
 
         /**
          * Close the scan and its subscans, if any. 
          */
-        public void close();
+        public void Close();
     }
 }

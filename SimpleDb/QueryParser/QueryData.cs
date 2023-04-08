@@ -1,11 +1,11 @@
-﻿using SimpleDB.Query;
+﻿using SimpleDb.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimpleDB.QueryParser
+namespace SimpleDb.QueryParser
 {
     public class QueryData
     {

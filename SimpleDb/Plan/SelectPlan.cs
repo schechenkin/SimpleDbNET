@@ -1,12 +1,8 @@
-﻿using SimpleDB.Query;
-using SimpleDB.Record;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SimpleDb.Query;
+using SimpleDb.Record;
+using SimpleDB.Query;
 
-namespace SimpleDB.Plan
+namespace SimpleDb.Plan
 {
     internal class SelectPlan : Plan
     {
@@ -72,7 +68,7 @@ namespace SimpleDB.Plan
                 return 1;
             else
             {
-                String fldname2 = pred.equatesWithField(fldname);
+                String? fldname2 = pred.equatesWithField(fldname);
                 if (fldname2 != null)
                     return Math.Min(p.distinctValues(fldname),
                                     p.distinctValues(fldname2));

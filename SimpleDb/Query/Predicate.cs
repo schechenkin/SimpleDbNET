@@ -1,12 +1,13 @@
-﻿using SimpleDB.QueryPlan;
-using SimpleDB.Record;
+﻿using SimpleDb.Plan;
+using SimpleDb.Record;
+using SimpleDb.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimpleDB.Query
+namespace SimpleDb.Query
 {
     public class Predicate
     {
@@ -58,7 +59,7 @@ namespace SimpleDB.Query
          * @param p the query's plan
          * @return the integer reduction factor.
          */
-        public int reductionFactor(Plan.Plan p)
+        public int reductionFactor(SimpleDb.Plan.Plan p)
         {
             int factor = 1;
             foreach (Term t in terms)
@@ -71,7 +72,7 @@ namespace SimpleDB.Query
          * @param sch the schema
          * @return the subpredicate applying to the schema
          */
-        public Predicate selectSubPred(Schema sch)
+        public Predicate? selectSubPred(Schema sch)
         {
             Predicate result = new Predicate();
             foreach (Term t in terms)
@@ -91,7 +92,7 @@ namespace SimpleDB.Query
          * @param sch2 the second schema
          * @return the subpredicate whose terms apply to the union of the two schemas but not either schema separately.
          */
-        public Predicate joinSubPred(Schema sch1, Schema sch2)
+        public Predicate? joinSubPred(Schema sch1, Schema sch2)
         {
             Predicate result = new Predicate();
             Schema newsch = new Schema();
@@ -135,11 +136,11 @@ namespace SimpleDB.Query
          * @param fldname the name of the field
          * @return the name of the other field, or null
          */
-        public String equatesWithField(String fldname)
+        public String? equatesWithField(String fldname)
         {
             foreach (Term t in terms)
             {
-                String s = t.equatesWithField(fldname);
+                String? s = t.equatesWithField(fldname);
                 if (s != null)
                     return s;
             }

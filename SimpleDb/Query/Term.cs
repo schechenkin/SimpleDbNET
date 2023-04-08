@@ -1,13 +1,16 @@
-﻿using SimpleDb.Query;
-using SimpleDB.Record;
+using System.Diagnostics;
+using SimpleDb.Query;
+using SimpleDb.Record;
+using SimpleDb.Types;
 
-namespace SimpleDB.Query
-{
-    public class Term
+namespace SimpleDb.Query;
+
+public class Term
     {
         public enum CompareOperator { Equal, More, Less, IsNull, IsNotNull };
         
-        private Expression lhs, rhs;
+        private Expression lhs;
+        private Expression? rhs;
         private CompareOperator compareOperator;
 
         /**
@@ -23,8 +26,10 @@ namespace SimpleDB.Query
             this.compareOperator = CompareOperator.Equal;
         }
 
-        public Term(Expression lhs, Expression rhs, CompareOperator compareOperator)
+        public Term(Expression lhs, Expression? rhs, CompareOperator compareOperator)
         {
+            Debug.Assert((rhs == null && (compareOperator == CompareOperator.IsNull || compareOperator == CompareOperator.IsNotNull)) || rhs != null);
+            
             this.lhs = lhs;
             this.rhs = rhs;
             this.compareOperator = compareOperator;
@@ -39,16 +44,16 @@ namespace SimpleDB.Query
          */
         public bool isSatisfied(Scan s)
         {           
-            ConstantRefStruct lhsval = lhs.evaluate2(s);
-            ConstantRefStruct rhsval = rhs != null ? rhs.evaluate2(s) : ConstantRefStruct.Null();
+            Constant lhsval = lhs.evaluate(s);
+            Constant rhsval = rhs != null ? rhs.evaluate(s) : Constant.Null();
 
             return compareOperator switch
             {
                 CompareOperator.Equal => rhsval.Equals(lhsval),
                 CompareOperator.More => lhsval.CompareTo(rhsval) > 0,
                 CompareOperator.Less => lhsval.CompareTo(rhsval) < 0,
-                CompareOperator.IsNull => lhsval.IsNull(),
-                CompareOperator.IsNotNull => !lhsval.IsNull(),
+                CompareOperator.IsNull => lhsval.IsNull,
+                CompareOperator.IsNotNull => !lhsval.IsNull,
                 _ => throw new ArgumentException("Invalid compareOperator", nameof(compareOperator)),
             };
         }
@@ -64,7 +69,7 @@ namespace SimpleDB.Query
         public int reductionFactor(Plan.Plan p)
         {
             String lhsName, rhsName;
-            if (lhs.isFieldName() && rhs.isFieldName())
+            if (lhs.isFieldName() && rhs != null && rhs.isFieldName())
             {
                 lhsName = lhs.asFieldName();
                 rhsName = rhs.asFieldName();
@@ -76,13 +81,13 @@ namespace SimpleDB.Query
                 lhsName = lhs.asFieldName();
                 return p.distinctValues(lhsName);
             }
-            if (rhs.isFieldName())
+            if (rhs != null && rhs.isFieldName())
             {
                 rhsName = rhs.asFieldName();
                 return p.distinctValues(rhsName);
             }
-            // otherwise, the term equates constants
-            if (lhs.asConstant().Equals(rhs.asConstant()))
+            // otherwise, the term equates constants or Is null check
+            if (rhs is null || lhs.asConstant().Equals(rhs.asConstant()))
                 return 1;
             else
                 return int.MaxValue;
@@ -100,9 +105,9 @@ namespace SimpleDB.Query
         {
             if (lhs.isFieldName() &&
                 lhs.asFieldName().Equals(fldname) &&
-                !rhs.isFieldName())
+                rhs !=null && !rhs.isFieldName())
                 return rhs.asConstant();
-            else if (rhs.isFieldName() &&
+            else if (rhs != null && rhs.isFieldName() &&
                      rhs.asFieldName().Equals(fldname) &&
                      !lhs.isFieldName())
                 return lhs.asConstant();
@@ -118,13 +123,13 @@ namespace SimpleDB.Query
          * @param fldname the name of the field
          * @return either the name of the other field, or null
          */
-        public String equatesWithField(String fldname)
+        public String? equatesWithField(String fldname)
         {
             if (lhs.isFieldName() &&
                 lhs.asFieldName().Equals(fldname) &&
-                rhs.isFieldName())
+                rhs != null && rhs.isFieldName())
                 return rhs.asFieldName();
-            else if (rhs.isFieldName() &&
+            else if (rhs != null && rhs.isFieldName() &&
                      rhs.asFieldName().Equals(fldname) &&
                      lhs.isFieldName())
                 return lhs.asFieldName();
@@ -140,7 +145,7 @@ namespace SimpleDB.Query
          */
         public bool appliesTo(Schema sch)
         {
-            return lhs.appliesTo(sch) && rhs.appliesTo(sch);
+            return lhs.appliesTo(sch) && rhs != null && rhs.appliesTo(sch);
         }
 
         public override String ToString()
@@ -161,4 +166,3 @@ namespace SimpleDB.Query
             }
         }
     }
-}

@@ -1,10 +1,8 @@
-﻿using SimpleDB.Record;
-using SimpleDB.Tx;
-using System;
-using System.Collections.Generic;
-using System.Threading;
+﻿using SimpleDb.Record;
+using SimpleDb.Transactions;
+using SimpleDB.Metadata;
 
-namespace SimpleDB.Metadata
+namespace SimpleDb.Metadata
 {
     class StatMgr
     {
@@ -61,14 +59,14 @@ namespace SimpleDB.Metadata
             numcalls = 0;
             Layout tcatlayout = tblMgr.getLayout("tblcat", tx);
             TableScan tcat = new TableScan(tx, "tblcat", tcatlayout);
-            while (tcat.next())
+            while (tcat.Next())
             {
-                string tblname = tcat.getString("tblname");
+                string tblname = tcat.GetString("tblname");
                 Layout layout = tblMgr.getLayout(tblname, tx);
                 StatInfo si = calcTableStats(tblname, layout, tx);
                 tablestats[tblname] = si;
             }
-            tcat.close();
+            tcat.Close();
         }
 
         private StatInfo calcTableStats(string tblname, Layout layout, Transaction tx)

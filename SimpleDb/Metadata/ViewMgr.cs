@@ -1,6 +1,7 @@
-﻿using SimpleDB.file;
-using SimpleDB.Record;
-using SimpleDB.Tx;
+﻿using SimpleDb.File;
+using SimpleDb.Record;
+using SimpleDb.Transactions;
+using SimpleDb.Types;
 using System;
 
 namespace SimpleDB.Metadata
@@ -28,25 +29,26 @@ namespace SimpleDB.Metadata
         {
             Layout layout = tblMgr.getLayout("viewcat", tx);
             TableScan ts = new TableScan(tx, "viewcat", layout);
-            ts.insert();
-            ts.setString("viewname", vname);
-            ts.setString("viewdef", vdef);
-            ts.close();
+            ts.Insert();
+            ts.SetValue("viewname", vname);
+            ts.SetValue("viewdef", vdef);
+            ts.Close();
         }
 
         public string? getViewDef(String vname, Transaction tx)
         {
             string? result = null;
             Layout layout = tblMgr.getLayout("viewcat", tx);
-            StringConstant vnameConstant = new StringConstant(vname);
+            DbString vnameConstant = new DbString(vname);
             TableScan ts = new TableScan(tx, "viewcat", layout);
-            while (ts.next())
-                if (ts.CompareString("viewname", vnameConstant))
+            while (ts.Next())
+                //if (ts.CompareString("viewname", vnameConstant))
+                if (ts.GetValue("viewname")  == vnameConstant)
                 {
-                    result = ts.getString("viewdef");
+                    result = ts.GetString("viewdef");
                     break;
                 }
-            ts.close();
+            ts.Close();
             return result;
         }
     }

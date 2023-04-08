@@ -1,5 +1,6 @@
 ﻿using SimpleDb.Query;
-using SimpleDB.file;
+using SimpleDb.File;
+using SimpleDb.Types;
 
 namespace SimpleDB.Query
 {
@@ -20,78 +21,70 @@ namespace SimpleDB.Query
             this.fieldlist = fieldlist;
         }
 
-        public void beforeFirst()
+        public void BeforeFirst()
         {
-            s.beforeFirst();
+            s.BeforeFirst();
         }
 
-        public bool next()
+        public bool Next()
         {
-            return s.next();
+            return s.Next();
         }
 
-        public int getInt(String fldname)
+        public int GetInt(String fldname)
         {
-            if (hasField(fldname))
-                return s.getInt(fldname);
+            if (HasField(fldname))
+                return s.GetInt(fldname);
             else
                 throw new Exception("field " + fldname + " not found.");
         }
 
-        public String getString(String fldname)
+        public String GetString(String fldname)
         {
-            if (hasField(fldname))
-                return s.getString(fldname);
+            if (HasField(fldname))
+                return s.GetString(fldname);
             else
                 throw new Exception("field " + fldname + " not found.");
         }
 
-        public Constant getVal(String fldname)
+        public Constant GetValue(String fldname)
         {
-            if (hasField(fldname))
-                return s.getVal(fldname);
+            if (HasField(fldname))
+                return s.GetValue(fldname);
             else
                 throw new Exception("field " + fldname + " not found.");
         }
 
-        public ConstantRefStruct getVal2(string fldname)
-        {
-            if (hasField(fldname))
-                return s.getVal2(fldname);
-            else
-                throw new Exception("field " + fldname + " not found.");
-        }
-
-        public bool hasField(String fldname)
+        public bool HasField(String fldname)
         {
             return fieldlist.Contains(fldname);
         }
 
-        public void close()
+        public void Close()
         {
-            s.close();
+            s.Close();
         }
 
-        public bool CompareString(string fldname, StringConstant val)
+        /*public bool CompareString(string fldname, StringConstant val)
         {
             if (hasField(fldname))
                 return s.CompareString(fldname, val);
             else
                 throw new Exception("field " + fldname + " not found.");
-        }
+        }*/
 
-        public DateTime getDateTime(string fldname)
+        public DateTime GetDateTime(string fldname)
         {
-            if (hasField(fldname))
-                return s.getDateTime(fldname);
+            if (HasField(fldname))
+                return s.GetDateTime(fldname);
             else
                 throw new Exception("field " + fldname + " not found.");
         }
 
-        public bool isNull(string fldname)
+        public bool IsNull(string fldname)
         {
-            if (hasField(fldname))
-                return s.isNull(fldname);
+            if (HasField(fldname))
+                return s.IsNull(fldname);
             else
                 throw new Exception("field " + fldname + " not found.");
         }

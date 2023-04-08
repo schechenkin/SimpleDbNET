@@ -1,4 +1,6 @@
-﻿namespace SimpleDB.Record
+﻿using SimpleDb.Types;
+
+namespace SimpleDb.Record
 {
     public class Schema
     {

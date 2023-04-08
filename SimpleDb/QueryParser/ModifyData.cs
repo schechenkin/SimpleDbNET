@@ -1,18 +1,18 @@
-﻿using SimpleDB.Query;
+﻿using SimpleDb.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimpleDB.QueryParser
+namespace SimpleDb.QueryParser
 {
     public class ModifyData
     {
-        private String tblname;
-        private String fldname;
-        private Expression newval;
-        private Predicate predicate;
+        readonly String tblname;
+        readonly String fldname;
+        readonly Expression newval;
+        readonly Predicate predicate;
 
         /**
          * Saves the table name, the modified field and its new value, and the predicate.

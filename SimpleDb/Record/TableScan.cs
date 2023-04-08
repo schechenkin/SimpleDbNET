@@ -1,10 +1,9 @@
 ﻿using SimpleDb.Query;
-using SimpleDB.file;
-using SimpleDB.Query;
-using SimpleDB.Tx;
-using System;
+using SimpleDb.File;
+using SimpleDb.Transactions;
+using SimpleDb.Types;
 
-namespace SimpleDB.Record
+namespace SimpleDb.Record
 {
     public class TableScan : UpdateScan
     {
@@ -27,12 +26,12 @@ namespace SimpleDB.Record
 
         // Methods that implement Scan
 
-        public void beforeFirst()
+        public void BeforeFirst()
         {
             moveToBlock(0);
         }
 
-        public bool next()
+        public bool Next()
         {
             currentslot = recordPage.nextAfter(currentslot);
             while (currentslot < 0)
@@ -45,47 +44,35 @@ namespace SimpleDB.Record
             return true;
         }
 
-        public int getInt(string fldname)
+        public int GetInt(string fldname)
         {
             return recordPage.getInt(currentslot, fldname);
         }
 
-        public string getString(string fldname)
+        public string GetString(string fldname)
         {
             return recordPage.getString(currentslot, fldname);
         }
 
-        public DateTime getDateTime(string fldname)
+        public DateTime GetDateTime(string fldname)
         {
             return recordPage.getDateTime(currentslot, fldname);
         }
 
-        public bool CompareString(string fldname, StringConstant val)
+        public Constant GetValue(string fldname)
         {
-            return recordPage.CompareString(currentslot, fldname, val);
-        }
+            if (IsNull(fldname))
+                return new NULL();
 
-        public Constant getVal(string fldname)
-        {
-            if (isNull(fldname))
-                return Constant.Null();
-            //TODO datetimes
-            if (layout.schema().GetSqlType(fldname) == SqlType.INTEGER)
-                return new Constant(getInt(fldname));
+            var sqlType = layout.schema().GetSqlType(fldname);
+            if (sqlType == SqlType.INTEGER)
+                return GetInt(fldname);
+            else if(sqlType == SqlType.VARCHAR)
+                return (DbString)GetString(fldname);
+            else if(sqlType == SqlType.DATETIME)
+                return GetDateTime(fldname);
             else
-                return new Constant(getString(fldname));
-        }
-
-        public ConstantRefStruct getVal2(string fldname)
-        {
-            if (isNull(fldname))
-                return ConstantRefStruct.Null();
-
-            //TODO datetimes
-            if (layout.schema().GetSqlType(fldname) == SqlType.INTEGER)
-                return new ConstantRefStruct(getInt(fldname));
-            else
-                return new ConstantRefStruct(getString(fldname));
+                throw new NotImplementedException();
         }
 
         public void setNull(string fldname)
@@ -93,17 +80,17 @@ namespace SimpleDB.Record
             recordPage.setNull(currentslot, fldname);
         }
 
-        public bool isNull(string fldname)
+        public bool IsNull(string fldname)
         {
             return recordPage.isNull(currentslot, fldname);
         }
 
-        public bool hasField(string fldname)
+        public bool HasField(string fldname)
         {
             return layout.schema().HasField(fldname);
         }
 
-        public void close()
+        public void Close()
         {
             if(!recordPage.block().isNull())
                 tx.UnpinBlock(recordPage.block());
@@ -111,7 +98,9 @@ namespace SimpleDB.Record
 
         // Methods that implement UpdateScan
 
-        public void setInt(string fldname, int val)
+
+
+        /*public void setInt(string fldname, int val)
         {
             recordPage.setInt(currentslot, fldname, val);
         }
@@ -124,26 +113,33 @@ namespace SimpleDB.Record
         public void setDateTime(string fldname, DateTime dateTime)
         {
             recordPage.setDateTime(currentslot, fldname, dateTime);
+        }*/
+
+        public void SetValue<T>(string fieldName, T value)
+        {
+            recordPage.SetValue(currentslot, fieldName, value);
         }
 
-        public void setVal(string fldname, Constant val)
+        public void SetValue(string fldname, Constant val)
         {
-            if(val.IsNull())
+            if(val.IsNull)
                 setNull(fldname);
             else
             {
                 var sqlType = layout.schema().GetSqlType(fldname);
 
                 if (sqlType == SqlType.INTEGER)
-                    setInt(fldname, val.asInt());
+                    SetValue(fldname, val.AsInt);
                 else if (sqlType == SqlType.VARCHAR)
-                    setString(fldname, val.asString());
+                    SetValue(fldname, val.AsString.GetString());
                 else if (sqlType == SqlType.DATETIME)
-                    setDateTime(fldname, val.asDateTime());
+                    SetValue(fldname, val.AsDateTime);
+                else
+                    throw new NotImplementedException();
             }
         }
 
-        public void insert()
+        public void Insert()
         {
             currentslot = recordPage.insertAfter(currentslot);
             while (currentslot < 0)
@@ -156,20 +152,20 @@ namespace SimpleDB.Record
             }
         }
 
-        public void delete()
+        public void Delete()
         {
             recordPage.delete(currentslot);
         }
 
-        public void moveToRid(RID rid)
+        public void MoveToRid(RID rid)
         {
-            close();
+            Close();
             BlockId blk = BlockId.New(filename, rid.blockNumber());
             recordPage = new RecordPage(tx, blk, layout);
             currentslot = rid.slot();
         }
 
-        public RID getRid()
+        public RID GetRid()
         {
             return new RID((int)recordPage.block().Number, currentslot);
         }
@@ -178,7 +174,7 @@ namespace SimpleDB.Record
 
         private void moveToBlock(int blknum)
         {
-            close();
+            Close();
             BlockId blk = BlockId.New(filename, blknum);
             recordPage = new RecordPage(tx, blk, layout);
             currentslot = -1;
@@ -186,7 +182,7 @@ namespace SimpleDB.Record
 
         private void moveToNewBlock()
         {
-            close();
+            Close();
             BlockId blk = tx.append(filename);
             recordPage = new RecordPage(tx, blk, layout);
             recordPage.format();

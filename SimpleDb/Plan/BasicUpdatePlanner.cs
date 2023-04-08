@@ -1,13 +1,13 @@
-﻿using SimpleDB.Indexes;
-using SimpleDB.Metadata;
-using SimpleDB.Query;
-using SimpleDB.QueryParser;
-using SimpleDB.Record;
-using SimpleDB.Tx;
+﻿using SimpleDb.Metadata;
+using SimpleDb.Query;
+using SimpleDb.QueryParser;
+using SimpleDb.Record;
+using SimpleDb.Transactions;
+using SimpleDb.Types;
 
-namespace SimpleDB.Plan
+namespace SimpleDb.Plan
 {
-    /*internal class BasicUpdatePlanner : UpdatePlanner
+    internal class BasicUpdatePlanner : UpdatePlanner
     {
         private MetadataMgr metadataManager;
 
@@ -22,12 +22,12 @@ namespace SimpleDB.Plan
             p = new SelectPlan(p, data.pred());
             UpdateScan us = (UpdateScan)p.open();
             int count = 0;
-            while (us.next())
+            while (us.Next())
             {
-                us.delete();
+                us.Delete();
                 count++;
             }
-            us.close();
+            us.Close();
             return count;
         }
 
@@ -37,13 +37,13 @@ namespace SimpleDB.Plan
             p = new SelectPlan(p, data.pred());
             UpdateScan us = (UpdateScan)p.open();
             int count = 0;
-            while (us.next())
+            while (us.Next())
             {
                 Constant val = data.newValue().evaluate(us);
-                us.setVal(data.targetField(), val);
+                us.SetValue(data.targetField(), val);
                 count++;
             }
-            us.close();
+            us.Close();
             return count;
         }
 
@@ -53,16 +53,16 @@ namespace SimpleDB.Plan
             UpdateScan us = (UpdateScan)p.open();
             foreach(List<Constant> rowValues in data.vals())
             {
-                us.insert();
+                us.Insert();
                 var iter = rowValues.GetEnumerator();
                 foreach (string fldname in data.fields())
                 {
                     iter.MoveNext();
                     Constant val = iter.Current;
-                    us.setVal(fldname, val);
+                    us.SetValue(fldname, val);
                 }
             }
-            us.close();
+            us.Close();
             return 1;
         }
 
@@ -77,42 +77,11 @@ namespace SimpleDB.Plan
             metadataManager.createView(data.viewName(), data.viewDef(), tx);
             return 0;
         }
+
         public int executeCreateIndex(CreateIndexData data, Transaction tx)
         {
-            string tableName = data.tableName();
-            string columnName = data.fieldName();
-            string indexName = data.indexName();
-
-            Layout tableLayout = metadataManager.getLayout(tableName, tx);
-            if (!tableLayout.schema().HasField(columnName))
-                throw new Exception($"column {columnName} not exists in table {tableName}");
-
-            var idxinfo = metadataManager.getIndexInfo(tableName, tx);
-            if(idxinfo.ContainsKey(columnName))
-                throw new Exception($"index on column {columnName} already exists");
-
-            metadataManager.createIndex(indexName, tableName, columnName, tx);
-
-            fillIndex(tableName, columnName, tableLayout, tx);
-
-            return 0;
+            throw new NotImplementedException();
         }
-
-        private void fillIndex(string tableName, string columnName, Layout tableLayout, Transaction tx)
-        {
-            var idxinfo = metadataManager.getIndexInfo(tableName, tx);
-            var index = idxinfo[columnName].open();
-
-            TableScan tableScan = new TableScan(tx, tableName, tableLayout);
-            tableScan.beforeFirst();
-
-            while (tableScan.next())
-            {
-                index.insert(tableScan.getVal(columnName), tableScan.getRid());
-            }
-
-            tableScan.close();
-        }
-    }*/
+    }
 
 }

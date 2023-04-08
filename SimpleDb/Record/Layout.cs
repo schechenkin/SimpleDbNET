@@ -1,6 +1,7 @@
-﻿using SimpleDB.file;
+﻿using SimpleDb.File;
+using SimpleDb.Types;
 
-namespace SimpleDB.Record
+namespace SimpleDb.Record
 {
     public class Layout
     {

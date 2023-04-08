@@ -1,7 +1,8 @@
-﻿using SimpleDB.Query;
-using SimpleDB.Record;
+﻿using SimpleDb.Query;
+using SimpleDb.Record;
+using SimpleDb.Types;
 
-namespace SimpleDB.QueryParser
+namespace SimpleDb.QueryParser
 {
     class Parser
     {
@@ -27,11 +28,11 @@ namespace SimpleDB.QueryParser
                 return Constant.Null();
             }
             else if (lex.matchStringConstant())
-                return new Constant(lex.eatStringConstant());
+                return (DbString)lex.eatStringConstant();
             else if (lex.matchIntConstant())
-                return new Constant(lex.eatIntConstant());
+                return lex.eatIntConstant();
             else
-                return new Constant(lex.eatDateTimeConstant());
+                return lex.eatDateTimeConstant();
         }
 
         public Expression expression()
@@ -45,7 +46,7 @@ namespace SimpleDB.QueryParser
         public Term term()
         {
             Expression lhs = expression();
-            Expression rhs = null;
+            Expression? rhs = null;
             Term.CompareOperator compareOperator = Term.CompareOperator.Equal;
             if (lex.matchDelim('='))
             {

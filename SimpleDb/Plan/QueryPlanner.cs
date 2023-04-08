@@ -1,22 +1,16 @@
-﻿using SimpleDB.QueryParser;
-using SimpleDB.Tx;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SimpleDb.Transactions;
+using SimpleDb.QueryParser;
 
-namespace SimpleDB.Plan
+namespace SimpleDb.Plan;
+
+public interface QueryPlanner
 {
-    public interface QueryPlanner
-    {
 
-        /**
-         * Creates a plan for the parsed query.
-         * @param data the parsed representation of the query
-         * @param tx the calling transaction
-         * @return a plan for that query
-         */
-        public Plan createPlan(QueryData data, Transaction tx);
-    }
+    /**
+     * Creates a plan for the parsed query.
+     * @param data the parsed representation of the query
+     * @param tx the calling transaction
+     * @return a plan for that query
+     */
+    public SimpleDb.Plan.Plan createPlan(QueryData data, Transaction tx);
 }

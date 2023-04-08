@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SimpleDB.QueryParser
+namespace SimpleDb.QueryParser
 {
     public class BadSyntaxException : Exception
     {
