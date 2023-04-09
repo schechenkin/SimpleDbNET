@@ -5,6 +5,7 @@ using SimpleDb.Log;
 using SimpleDb.Record;
 using SimpleDb.Transactions;
 using SimpleDb.Transactions.Concurrency;
+using SimpleDb.Types;
 using SimpleDB.Metadata;
 using Xunit;
 
@@ -40,14 +41,14 @@ public class TableScanTest
             tableScan.Insert();
             int n = random.Next(0, 49);
             tableScan.SetValue("A", n);
-            tableScan.SetValue("B", "rec" + n);
+            tableScan.SetValue("B", (DbString)("rec" + n));
             if (n % 2 == 0)
             {
                 tableScan.setNull("C");
             }
             else
             {
-                tableScan.SetValue("C", "rec" + n);
+                tableScan.SetValue("C", (DbString)("rec" + n));
             }
             tableScan.SetValue("D", dt);
         }
@@ -78,7 +79,7 @@ public class TableScanTest
             int A = tableScan.GetInt("A");
 
             A.Should().BeGreaterThan(0);
-            tableScan.GetString("B").Should().NotBeNullOrEmpty();
+            tableScan.GetString("B").GetString().Should().NotBeNullOrEmpty();
             tableScan.GetDateTime("D").Should().Be(dt);
             if (A % 2 == 0)
             {

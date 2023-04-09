@@ -32,7 +32,7 @@ namespace SimpleDb.Query
          * @param fldname the name of the field
          * @return the field's string value in the current record
          */
-        public string GetString(string fldname);
+        public DbString GetString(string fldname);
 
         public DateTime GetDateTime(string fldname);
 

@@ -36,17 +36,6 @@ public class PageTests
     }
 
     [Fact]
-    public void SetDbString_GetDbString()
-    {
-        var sut = new Page(128);
-        DbString str = "hello world";
-
-        sut.SetValue(10, str);
-        var dbString = sut.GetDbString(10);
-        Assert.True(sut.GetDbString(10) == str);
-    }
-
-    [Fact]
     public void SetBit_GetBit()
     {
         var sut = new Page(128);

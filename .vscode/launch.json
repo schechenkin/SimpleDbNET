@@ -10,7 +10,8 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/SimpleDbNET/bin/Debug/net7.0/SimpleDbNET.Api.dll",
+            //"program": "${workspaceFolder}/SimpleDbNET/bin/Debug/net7.0/SimpleDbNET.Api.dll",
+            "program": "${workspaceFolder}/tests/TableScanTest/bin/Debug/net7.0/TableScanTest.dll",
             "args": [],
             "cwd": "${workspaceFolder}/SimpleDbNET",
             "stopAtEntry": false,

@@ -52,7 +52,8 @@ public readonly struct Page
                 break;
 
             case string str when value is string:
-                SetString(offset, str);
+                //throw new NotImplementedException("string type not supported here. Use DbString");
+                SetString(offset, (DbString)str);
                 break;
 
             case DbString dbstr when value is DbString:
@@ -116,54 +117,31 @@ public readonly struct Page
         return result;
     }
 
-    private ReadOnlySpan<byte> GetStringBytes(int offset)
-    {
-        int length = GetInt(offset);
-        return new ReadOnlySpan<byte>(buffer, offset + sizeof(Int32), length);
-    }
-
-    private Memory<byte> GetStringBytes2(int offset)
-    {
-        int length = GetInt(offset);
-        return new Memory<byte>(buffer, offset + sizeof(Int32), length);
-    }
-
     public void SetBytes(int offset, byte[] bytes)
     {
         WriteIntToBuffer(offset, bytes.Length);
         Buffer.BlockCopy(bytes, 0, buffer, offset + sizeof(Int32), bytes.Length);
     }
 
-    public string GetString(int offset)
+    public DbString GetString(int offset)
     {
-        ReadOnlySpan<byte> bytes = GetStringBytes(offset);
-        return CHARSET.GetString(bytes);
-    }
-
-    public DbString GetDbString(int offset)
-    {
-        Memory<byte> bytes = GetStringBytes2(offset);
+        int length = GetInt(offset);
+        Memory<byte> bytes = new Memory<byte>(buffer, offset + sizeof(Int32), length);
         return new DbString(bytes);
-    }
-
-
-    public void SetString(int offset, String value)
-    {
-        WriteIntToBuffer(offset, sizeof(char) * value.Length);
-        CHARSET.GetBytes(value, 0, value.Length, buffer, offset + sizeof(Int32));
     }
 
     public void SetString(int offset, in DbString value)
     {
-        WriteIntToBuffer(offset, sizeof(char) * value.Length());
-        CHARSET.GetBytes(value.GetString(), 0, value.Length(), buffer, offset + sizeof(Int32));
+        WriteIntToBuffer(offset, sizeof(char) * value.StringLength());
+        WriteSpanToBuffer(offset + sizeof(Int32), value.GetMemory());
     }
 
 
-    public static int CalculateStringStoringSize(string text)
+    public static int CalculateStringStoringSize(in DbString dbString)
     {
-        return sizeof(Int32) + CHARSET.GetByteCount(text);
+        return sizeof(Int32) + dbString.BytesLength();
     }
+    
 
     public static int maxLength(int strlen)
     {
@@ -194,6 +172,14 @@ public readonly struct Page
     }
 
     private void WriteBoolToBuffer(int offset, bool value)
+    {
+        if (BitConverter.IsLittleEndian)
+            value.CopyToByteArrayLE(buffer, offset);
+        else
+            throw new NotImplementedException();
+    }
+
+    private void WriteSpanToBuffer(int offset, Memory<byte> value)
     {
         if (BitConverter.IsLittleEndian)
             value.CopyToByteArrayLE(buffer, offset);

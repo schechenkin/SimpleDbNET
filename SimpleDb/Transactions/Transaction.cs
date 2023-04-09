@@ -131,7 +131,7 @@ public class Transaction
      * @param offset the byte offset within the block
      * @return the string stored at that offset
      */
-    public string GetString(in BlockId blockId, int offset)
+    public DbString GetString(in BlockId blockId, int offset)
     {
         concurrencyManager.RequestSharedLock(blockId);
         var buffer = txBuffers.getBuffer(blockId);

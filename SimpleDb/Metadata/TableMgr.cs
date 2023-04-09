@@ -55,7 +55,7 @@ namespace SimpleDB.Metadata
             // insert one record into tblcat
             TableScan tcat = new TableScan(tx, "tblcat", tcatLayout);
             tcat.Insert();
-            tcat.SetValue("tblname", tblname);
+            tcat.SetValue("tblname", (DbString)tblname);
             tcat.SetValue("slotsize", layout.slotSize());
             tcat.Close();
 
@@ -64,8 +64,8 @@ namespace SimpleDB.Metadata
             foreach (String fldname in sch.ColumnNames())
             {
                 fcat.Insert();
-                fcat.SetValue("tblname", tblname);
-                fcat.SetValue("fldname", fldname);
+                fcat.SetValue("tblname", (DbString)tblname);
+                fcat.SetValue("fldname", (DbString)fldname);
                 fcat.SetValue("type", (int)sch.GetSqlType(fldname));
                 fcat.SetValue("length", sch.GetColumnLength(fldname));
                 fcat.SetValue("offset", layout.offset(fldname));
@@ -109,12 +109,12 @@ namespace SimpleDB.Metadata
                 var dbtblname = fcat.GetValue("tblname") ;
                 if (fcat.GetValue("tblname") == tblnameConstant)
                 {
-                    String fldname = fcat.GetString("fldname");
+                    DbString fldname = fcat.GetString("fldname");
                     int fldtype = fcat.GetInt("type");
                     int fldlen = fcat.GetInt("length");
                     int offset = fcat.GetInt("offset");
-                    offsets[fldname] = offset;
-                    sch.AddColumn(fldname, (SqlType)fldtype, fldlen);
+                    offsets[fldname.GetString()] = offset;
+                    sch.AddColumn(fldname.GetString(), (SqlType)fldtype, fldlen);
                 }
             }
             fcat.Close();

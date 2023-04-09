@@ -49,7 +49,7 @@ namespace SimpleDb.Record
             return recordPage.getInt(currentslot, fldname);
         }
 
-        public string GetString(string fldname)
+        public DbString GetString(string fldname)
         {
             return recordPage.getString(currentslot, fldname);
         }
@@ -96,25 +96,6 @@ namespace SimpleDb.Record
                 tx.UnpinBlock(recordPage.block());
         }
 
-        // Methods that implement UpdateScan
-
-
-
-        /*public void setInt(string fldname, int val)
-        {
-            recordPage.setInt(currentslot, fldname, val);
-        }
-
-        public void setString(string fldname, string val)
-        {
-            recordPage.setString(currentslot, fldname, val);
-        }
-
-        public void setDateTime(string fldname, DateTime dateTime)
-        {
-            recordPage.setDateTime(currentslot, fldname, dateTime);
-        }*/
-
         public void SetValue<T>(string fieldName, T value)
         {
             recordPage.SetValue(currentslot, fieldName, value);
@@ -131,7 +112,7 @@ namespace SimpleDb.Record
                 if (sqlType == SqlType.INTEGER)
                     SetValue(fldname, val.AsInt);
                 else if (sqlType == SqlType.VARCHAR)
-                    SetValue(fldname, val.AsString.GetString());
+                    SetValue(fldname, val.AsString);
                 else if (sqlType == SqlType.DATETIME)
                     SetValue(fldname, val.AsDateTime);
                 else
@@ -175,8 +156,8 @@ namespace SimpleDb.Record
         private void moveToBlock(int blknum)
         {
             Close();
-            BlockId blk = BlockId.New(filename, blknum);
-            recordPage = new RecordPage(tx, blk, layout);
+            BlockId block = BlockId.New(filename, blknum);
+            recordPage = new RecordPage(tx, block, layout);
             currentslot = -1;
         }
 

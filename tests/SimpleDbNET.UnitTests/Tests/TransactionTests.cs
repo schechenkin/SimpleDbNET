@@ -5,6 +5,7 @@ using SimpleDb.File;
 using SimpleDb.Log;
 using SimpleDb.Transactions;
 using SimpleDb.Transactions.Concurrency;
+using SimpleDb.Types;
 using Xunit;
 
 namespace SimpleDbNET.UnitTests.Tests;
@@ -23,23 +24,23 @@ public class TransactionTests
         BlockId blk = BlockId.New("testfile", 1);
         tx1.PinBlock(blk);
         tx1.SetValue(blk, 80, 1, false);
-        tx1.SetValue(blk, 40, "one", false);
+        tx1.SetValue(blk, 40, (DbString)"one", false);
         tx1.Commit();
 
         //Check values and update them
         Transaction tx2 = new Transaction(fileManager, logManager, bufferManager, lockTable);
         tx2.PinBlock(blk);
         tx2.GetInt(blk, 80).Should().Be(1);
-        tx2.GetString(blk, 40).Should().Be("one");
+        Assert.True(tx2.GetString(blk, 40) == (DbString)"one");
         tx2.SetValue(blk, 80, 2, true);
-        tx2.SetValue(blk, 40, "two", true);
+        tx2.SetValue(blk, 40, (DbString)"two", true);
         tx2.Commit();
 
         //update value and rollback
         Transaction tx3 = new Transaction(fileManager, logManager, bufferManager, lockTable);
         tx3.PinBlock(blk);
         tx3.GetInt(blk, 80).Should().Be(2);
-        tx3.GetString(blk, 40).Should().Be("two");
+        Assert.True(tx3.GetString(blk, 40) == "two");
         //update int val
         tx3.SetValue(blk, 80, 9999, true);
         tx3.GetInt(blk, 80).Should().Be(9999);

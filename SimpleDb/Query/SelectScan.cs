@@ -43,7 +43,7 @@ namespace SimpleDB.Query
 			return innerScan.GetInt(fldname);
 		}
 
-		public String GetString(String fldname)
+		public DbString GetString(String fldname)
 		{
 			return innerScan.GetString(fldname);
 		}

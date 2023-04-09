@@ -1,5 +1,6 @@
 using SimpleDb.Abstractions;
 using SimpleDb.File;
+using SimpleDb.Types;
 using System.Buffers;
 
 namespace SimpleDb.Transactions.Recovery.Records;
@@ -8,7 +9,7 @@ public class SetStringRecord : ILogRecord
 {
     TransactionNumber transactionNumber_;
     int offset;
-    string oldVal, newVal;
+    DbString oldVal, newVal;
     BlockId blk;
 
     public LogRecordType Type => LogRecordType.SETSTRING;
@@ -19,10 +20,10 @@ public class SetStringRecord : ILogRecord
         int tpos = sizeof(int);
         transactionNumber_ = page.GetTransactionNumber(tpos);
         int fpos = tpos + TransactionNumber.Size();
-        string filename = page.GetString(fpos);
+        DbString filename = page.GetString(fpos);
         int bpos = fpos + Page.CalculateStringStoringSize(filename);
         int blknum = page.GetInt(bpos);
-        blk = BlockId.New(filename, blknum);
+        blk = BlockId.New(filename.GetString(), blknum);
         int opos = bpos + sizeof(int);
         offset = page.GetInt(opos);
         int oldvpos = opos + sizeof(int);
@@ -31,7 +32,7 @@ public class SetStringRecord : ILogRecord
         newVal = page.GetString(newvpos);
     }
 
-    public static LSN WriteToLog(ILogManager lm, in TransactionNumber txnum, BlockId blk, int offset, string oldVal, string newVal)
+    public static LSN WriteToLog(ILogManager lm, in TransactionNumber txnum, BlockId blk, int offset, DbString oldVal, DbString newVal)
     {
         int tpos = sizeof(int);
         int fpos = tpos + TransactionNumber.Size();

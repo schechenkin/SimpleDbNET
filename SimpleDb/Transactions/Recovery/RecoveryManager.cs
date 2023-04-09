@@ -72,8 +72,8 @@ public class RecoveryManager : IRecoveryManager
                 int intValOld = buffer.Page.GetInt(offset);
                 return SetIntRecord.WriteToLog(logManager, txnum, blk, offset, intValOld, intVal);
 
-            case string str when value is string:
-                string strOld = buffer.Page.GetString(offset);
+            case DbString str when value is DbString:
+                DbString strOld = buffer.Page.GetString(offset);
                 return SetStringRecord.WriteToLog(logManager, txnum, blk, offset, strOld, str);
 
             case DateTime dt when value is DateTime:

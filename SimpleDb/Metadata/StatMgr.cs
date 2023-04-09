@@ -1,5 +1,6 @@
 ﻿using SimpleDb.Record;
 using SimpleDb.Transactions;
+using SimpleDb.Types;
 using SimpleDB.Metadata;
 
 namespace SimpleDb.Metadata
@@ -61,10 +62,10 @@ namespace SimpleDb.Metadata
             TableScan tcat = new TableScan(tx, "tblcat", tcatlayout);
             while (tcat.Next())
             {
-                string tblname = tcat.GetString("tblname");
-                Layout layout = tblMgr.getLayout(tblname, tx);
-                StatInfo si = calcTableStats(tblname, layout, tx);
-                tablestats[tblname] = si;
+                DbString tblname = tcat.GetString("tblname");
+                Layout layout = tblMgr.getLayout(tblname.GetString(), tx);
+                StatInfo si = calcTableStats(tblname.GetString(), layout, tx);
+                tablestats[tblname.GetString()] = si;
             }
             tcat.Close();
         }

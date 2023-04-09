@@ -1,5 +1,6 @@
 ﻿using SimpleDb.Record;
 using SimpleDb.Transactions;
+using SimpleDb.Types;
 using SimpleDB.Metadata;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace SimpleDb.Metadata
             viewmgr.createView(viewname, viewdef, tx);
         }
 
-        public String? getViewDef(string viewname, Transaction tx)
+        public DbString? getViewDef(string viewname, Transaction tx)
         {
             return viewmgr.getViewDef(viewname, tx);
         }

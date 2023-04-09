@@ -19,10 +19,10 @@ public class SetDateTimeRecord : ILogRecord
         int tpos = sizeof(int);
         transactionNumber_ = p.GetTransactionNumber(tpos);
         int fpos = tpos + TransactionNumber.Size();
-        String filename = p.GetString(fpos);
+        var filename = p.GetString(fpos);
         int bpos = fpos + Page.CalculateStringStoringSize(filename);
         int blknum = p.GetInt(bpos);
-        blk = BlockId.New(filename, blknum);
+        blk = BlockId.New(filename.GetString(), blknum);
         int opos = bpos + sizeof(int);
         offset = p.GetInt(opos);
         int oldvpos = opos + sizeof(int);

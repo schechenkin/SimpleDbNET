@@ -35,9 +35,9 @@ namespace SimpleDB.Metadata
             ts.Close();
         }
 
-        public string? getViewDef(String vname, Transaction tx)
+        public DbString? getViewDef(String vname, Transaction tx)
         {
-            string? result = null;
+            DbString? result = null;
             Layout layout = tblMgr.getLayout("viewcat", tx);
             DbString vnameConstant = new DbString(vname);
             TableScan ts = new TableScan(tx, "viewcat", layout);

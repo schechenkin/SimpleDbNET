@@ -25,10 +25,10 @@ namespace SimpleDb.Plan
             List<Plan> plans = new List<Plan>();
             foreach (String tblname in queryData.tables())
             {
-                String? viewdef = mdm.getViewDef(tblname, tx);
+                DbString? viewdef = mdm.getViewDef(tblname, tx);
                 if (viewdef != null)
                 { // Recursively plan the view.
-                    Parser parser = new Parser(viewdef);
+                    Parser parser = new Parser(viewdef.Value.GetString());
                     QueryData viewdata = parser.query();
                     plans.Add(createPlan(viewdata, tx));
                 }

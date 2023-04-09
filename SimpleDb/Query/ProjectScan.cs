@@ -39,7 +39,7 @@ namespace SimpleDB.Query
                 throw new Exception("field " + fldname + " not found.");
         }
 
-        public String GetString(String fldname)
+        public DbString GetString(String fldname)
         {
             if (HasField(fldname))
                 return s.GetString(fldname);

@@ -110,7 +110,7 @@ public class LogManagerTest
         public static Record FromBytes(byte[] bytes)
         {
             Page page = new Page(bytes);
-            return new Record { Id = page.GetInt(0), Text = page.GetString(4) };
+            return new Record { Id = page.GetInt(0), Text = page.GetString(4).GetString() };
         }
     }
 }

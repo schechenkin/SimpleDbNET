@@ -33,18 +33,12 @@ public struct DbString
             return memory.Length;
     }
 
-    public int Length()
+    public int StringLength()
     {       
         return GetString().Length;
     }
 
-
-    public Memory<byte> AsSpan()
-    {       
-        return memory;
-    }
-
-    private Memory<byte> GetMemory()
+    public Memory<byte> GetMemory()
     {
         if(fromString)
         {
@@ -56,6 +50,16 @@ public struct DbString
             }
         }
         return memory;
+    }
+
+    public string GetString()
+    {
+        if(value is null)
+        {
+            value = Page.CHARSET.GetString(memory.Span);
+        }
+
+        return value;
     }
 
     public bool Equals(in DbString other)
@@ -79,15 +83,22 @@ public struct DbString
         return lhs.Equals(rhs);
     }
 
-    public static bool operator !=(in DbString lhs, in DbString rhs) => !(lhs == rhs);
-
-    public string GetString()
+    public override bool Equals([NotNullWhen(true)] object? obj)
     {
-        if(value is null)
+        if(obj is null)
+            return false;
+
+        if(obj is string str)
         {
-            value = Page.CHARSET.GetString(memory.Span);
+            return this.Equals(new DbString(str));
+        }
+        else if(obj is DbString dbString) 
+        {
+            return this.Equals(dbString);
         }
 
-        return value;
+        return false;
     }
+
+    public static bool operator !=(in DbString lhs, in DbString rhs) => !(lhs == rhs);
 }

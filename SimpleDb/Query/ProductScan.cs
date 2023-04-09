@@ -78,7 +78,7 @@ namespace SimpleDb.Query
          * contains the field.
          * @see simpledb.query.Scan#getString(java.lang.String)
          */
-        public String GetString(String fldname)
+        public DbString GetString(String fldname)
         {
             if (s1.HasField(fldname))
                 return s1.GetString(fldname);

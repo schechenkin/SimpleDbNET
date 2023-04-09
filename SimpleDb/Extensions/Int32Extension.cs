@@ -90,5 +90,15 @@ namespace SimpleDb.Extensions
 
             destination[offset] = source ? (byte)1 : (byte)0;
         }
+
+        public static void CopyToByteArrayLE(this in Memory<byte> source, byte[] destination, int offset)
+        {
+            Debug.Assert(destination != null, "Destination array cannot be null");
+
+            // check if there is enough space for all the 8 bytes we will copy
+            Debug.Assert(destination.Length >= offset + source.Length, "Not enough room in the destination array");
+
+            source.CopyTo(destination.AsMemory(offset, source.Length));
+        }
     }
 }

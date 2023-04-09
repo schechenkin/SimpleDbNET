@@ -1,5 +1,6 @@
 using SimpleDb.Abstractions;
 using SimpleDb.File;
+using SimpleDb.Types;
 using System.Buffers;
 
 namespace SimpleDb.Transactions.Recovery.Records;
@@ -19,10 +20,10 @@ public class SetNullRecord : ILogRecord
         int tpos = sizeof(int);
         transactionNumber_ = page.GetTransactionNumber(tpos);
         int fpos = tpos + TransactionNumber.Size();
-        String filename = page.GetString(fpos);
+        DbString filename = page.GetString(fpos);
         int bpos = fpos + Page.CalculateStringStoringSize(filename);
         int blknum = page.GetInt(bpos);
-        blk = BlockId.New(filename, blknum);
+        blk = BlockId.New(filename.GetString(), blknum);
         int opos = bpos + sizeof(int);
         offset = page.GetInt(opos);
         int blpos = opos + sizeof(int);

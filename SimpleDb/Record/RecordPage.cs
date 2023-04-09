@@ -38,7 +38,7 @@ namespace SimpleDb.Record
          * @param fldname the name of the field.
          * @return the string stored in that field
          */
-        public String getString(int slot, String fldname)
+        public DbString getString(int slot, String fldname)
         {
             int fldpos = offset(slot) + layout.offset(fldname);
             return tx.GetString(blk, fldpos);
