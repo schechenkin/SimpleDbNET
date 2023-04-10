@@ -11,4 +11,7 @@
     <PackageReference Include="OneOf" Version="3.0.243" />
     <PackageReference Include="Serilog.AspNetCore" Version="6.1.0" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SimpleDb\SimpleDb.csproj" />
+  </ItemGroup>
 </Project>

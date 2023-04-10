@@ -53,8 +53,10 @@ public class Buffer
     {
         if (transactionNumber_ is not null)
         {
-            Debug.Assert(lsn_.HasValue);
-            logManager_.Flush(lsn_.Value);
+            if(lsn_.HasValue)
+            {
+                logManager_.Flush(lsn_.Value);
+            }
             Debug.Assert(BlockId.HasValue);
             fileManager_.WritePage(BlockId.Value, Page);
             transactionNumber_ = null;

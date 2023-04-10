@@ -52,6 +52,8 @@ public class LogManagerTest
 
             counter--;
         }
+
+        counter.Should().Be(0);
     }
 
     [Fact]
@@ -78,6 +80,8 @@ public class LogManagerTest
 
             counter++;
         }
+
+        counter.Should().Be(36);
     }
 
     private void addRecordsToLog(int start, int end, LogManager logManager)

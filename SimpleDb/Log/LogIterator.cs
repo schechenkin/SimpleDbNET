@@ -40,7 +40,7 @@ public class LogIterator : IEnumerable
      * is the earliest record in the log file.
      * @return true if there is an earlier record
      */
-    internal bool HasNext()
+    public bool HasNext()
     {
         return currentRecordPositionIndex_ < recordsPositions_.Count || !atLastBlock();
     }
@@ -52,7 +52,7 @@ public class LogIterator : IEnumerable
      * and return the log record from there.
      * @return the next earliest log record
      */
-    internal byte[] Next()
+    public byte[] Next()
     {
         if (currentRecordPositionIndex_ == recordsPositions_.Count)
         {

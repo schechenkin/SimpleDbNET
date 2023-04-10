@@ -1,7 +1,17 @@
 using SimpleDb.File;
-namespace SimpleDb.Transactions.Concurrency;
+using SimpleDb.Transactions.Concurrency;
+using System.Collections.Concurrent;
 
-public class LockTable
+namespace Playground.LockTest;
+
+public interface ILockTable
+{
+    void WaitExclusiveLock(BlockId blockId);
+    void WaitSharedLock(BlockId blockId);
+    void UnLock(BlockId blockId);
+}
+
+public class MyLockTable : ILockTable
 {
     private Dictionary<BlockId, int> locks_ = new Dictionary<BlockId, int>();
 
@@ -13,8 +23,7 @@ public class LockTable
         {
             DateTime timestamp = DateTime.Now;
             while (hasOtherSLocks(blockId) && !WaitingTooLong(timestamp))
-                Monitor.Wait(locks_, MAX_WAIT_TIME);
-
+                Monitor.Wait(locks_);
             if (hasOtherSLocks(blockId))
                 throw new LockAbortException();
 
@@ -31,15 +40,15 @@ public class LockTable
         {
             DateTime startWaitingTime = DateTime.Now;
             while (hasXlock(blockId) && !WaitingTooLong(startWaitingTime))
-                Monitor.Wait(locks_, MAX_WAIT_TIME);
+                Monitor.Wait(locks_);
             if (hasXlock(blockId))
                 throw new LockAbortException();
             int lockValue = getLockVal(blockId);  // will not be negative
 
-            if(!locks_.TryAdd(blockId, lockValue + 1))
-            {
+            if (!locks_.ContainsKey(blockId))
+                locks_.Add(blockId, lockValue + 1);
+            else
                 locks_[blockId] = lockValue + 1;
-            }
         }
     }
 
@@ -82,4 +91,10 @@ public class LockTable
         }
         return 0;
     }
+}
+
+public interface IQueue
+{
+    void Lock();
+    void Wait();
 }

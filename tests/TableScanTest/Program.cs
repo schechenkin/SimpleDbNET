@@ -30,8 +30,9 @@ public class Program
     {
         //Dictionary<RRS, string> dict = new Dictionary<RRS, string>();
         
-        var fileManager = new FileManager("TableScanTest", 4096, false);
-        var logManager = new LogManager(fileManager, "log");
+        var fileManager = new FileManager("TableScanTest", 4096, false, 4096);
+        var fileManagerForLogmanager = new FileManager("TableScanTest", 1024*1024*16, false, 100);
+        var logManager = new LogManager(fileManagerForLogmanager, "log");
         var bufferManager = new BufferManager(fileManager, logManager, 50000);
         var lockTable = new LockTable();
         Random random = new Random();
@@ -47,30 +48,23 @@ public class Program
 
         //Filling the table
         TableScan tableScan = new TableScan(tx, "T", layout);
-        //CreateRecords(tx, tableScan);
+        //CreateRecords(tx, tableScan, 1_000_000);
         //bufferManager.FlushAll(tx.Number);
 
-        //Deleting these records, whose A-values are less than 25
-        /*int deleteCount = 0;
-        tableScan.beforeFirst();
-        while (tableScan.next())
-        {
-            int a = tableScan.getInt("A");
-            if (a < 25)
-            {
-                deleteCount++;
-                tableScan.delete();
-            }
-        }*/
-
+        bufferManager.Print(false);
         DoMeasurement(tableScan);
         Thread.Sleep(1000);
+        bufferManager.Print(false);
         DoMeasurement(tableScan);
         Thread.Sleep(1000);
+        bufferManager.Print(false);
         DoMeasurement(tableScan);
+        bufferManager.Print(false);
 
         tableScan.Close();
         tx.Commit();
+
+        //bufferManager.Print();
 
     }
 
@@ -86,9 +80,9 @@ public class Program
         Console.WriteLine($"time ms {stopwatch.ElapsedMilliseconds}");
     }
 
-    private static void CreateRecords(Transaction tx, TableScan tableScan)
+    private static void CreateRecords(Transaction tx, TableScan tableScan, int count)
     {
-        for (int i = 0; i < 400_000; i++)
+        for (int i = 0; i < count; i++)
         {
             tableScan.Insert();
             //int n = random.Next(0, 400_000);

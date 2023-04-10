@@ -34,26 +34,20 @@ public class FileManager : IFileManager
             if (fileName.StartsWith("temp"))
                 Directory.Delete(Path.Combine(dbDirectory, fileName));
 
-        foreach (var tableFilePath in Directory.GetFiles(dbDirectory, "*.tbl"))
-        {
-            var tableFileName = Path.GetFileName(tableFilePath);
-            openFiles.Add(tableFileName, new List<DbFile>());
-            openFiles[tableFileName].Add(new DbFile(Path.Combine(dbDirectory, tableFileName)));
-
-            var tableName = Path.GetFileNameWithoutExtension(tableFileName);
-            foreach (var chunkFilePath in Directory.GetFiles(dbDirectory, $"{tableName}.tbl_*"))
-            {
-                openFiles[tableFileName].Add(new DbFile(chunkFilePath));
-            }
-        }
+        OpenTablesFiles();
 
     }
 
-    public void OpenLogFile(string fileName)
+    public void OpenFile(string fileName)
     {
+        OpenFileIfExists(fileName);
+    }
+
+    private void OpenFileIfExists(string fileName)
+    {
+        openFiles.Add(fileName, new List<DbFile>());
         if (System.IO.File.Exists(Path.Combine(dbDirectory, fileName)))
         {
-            openFiles.Add(fileName, new List<DbFile>());
             openFiles[fileName].Add(new DbFile(Path.Combine(dbDirectory, fileName)));
             foreach (var chunkFilePath in Directory.GetFiles(dbDirectory, $"{fileName}_*"))
             {
@@ -144,6 +138,11 @@ public class FileManager : IFileManager
     {
         CloseFiles();
 
+        OpenTablesFiles();
+    }
+
+    private void OpenTablesFiles()
+    {
         foreach (var tableFilePath in Directory.GetFiles(dbDirectory, "*.tbl"))
         {
             var tableFileName = Path.GetFileName(tableFilePath);
@@ -162,7 +161,7 @@ public class FileManager : IFileManager
     {
         if (!openFiles.ContainsKey(filename))
         {
-            openFiles.Add(filename, new List<DbFile>());
+            OpenFileIfExists(filename);
         }
 
         int part = blockNumber / blocksPerFile;

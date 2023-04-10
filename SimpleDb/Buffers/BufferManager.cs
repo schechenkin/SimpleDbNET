@@ -52,7 +52,7 @@ public class BufferManager
             buffer.Unpin();
             if (!buffer.IsPinned)
             {
-                //notifyAll();
+                Monitor.PulseAll(mutex);
             }
         }
     }
@@ -73,7 +73,7 @@ public class BufferManager
             var buff = TryPinBlock(blockId);
             while (buff == null && !WaitingTooLong(timestamp))
             {
-                Thread.Sleep(100);
+                Monitor.Wait(mutex, MAX_WAIT_TIME);
                 buff = TryPinBlock(blockId);
             }
             if (buff == null)
@@ -82,9 +82,9 @@ public class BufferManager
         }
     }
 
-    private bool WaitingTooLong(DateTime starttime)
+    private bool WaitingTooLong(DateTime startWaitingTime)
     {
-        return DateTime.Now - starttime > MAX_WAIT_TIME;
+        return DateTime.Now - startWaitingTime > MAX_WAIT_TIME;
     }
 
     /**
@@ -216,7 +216,7 @@ public class BufferManager
         }
     }
 
-    public void PrintBufferPool()
+    private void PrintBufferPool()
     {
         Console.WriteLine("buffers:");
         foreach (var buffer in m_Bufferpool)
@@ -225,7 +225,7 @@ public class BufferManager
         }
     }
 
-    public void Print()
+    public void Print(bool printBufferPool = true)
     {
         var usageStats = GetUsageStats();
 
@@ -237,8 +237,8 @@ public class BufferManager
         {
             Console.WriteLine($"Table {kvp.Key} count {kvp.Value}");
         }
-
-        PrintBufferPool();
+        if(printBufferPool)
+            PrintBufferPool();
     }
 
     public class UsageStats

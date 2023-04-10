@@ -15,7 +15,7 @@ public class ConcurrencyManager
     internal void Release()
     {
         foreach (BlockId blockId in locks.Keys)
-            lockTable.unlock(blockId);
+            lockTable.UnLock(blockId);
 
         locks.Clear();
     }
@@ -24,7 +24,7 @@ public class ConcurrencyManager
     {
         if (!locks.ContainsKey(blockId))
         {
-            lockTable.sLock(blockId);
+            lockTable.WaitSharedLock(blockId);
             locks[blockId] = 'S';
         }
     }
@@ -34,7 +34,7 @@ public class ConcurrencyManager
         if (!HasXLock(blockId))
         {
             RequestSharedLock(blockId);
-            lockTable.xLock(blockId);
+            lockTable.WaitExclusiveLock(blockId);
             locks[blockId] = 'X';
         }
     }
@@ -44,6 +44,6 @@ public class ConcurrencyManager
         if (!locks.ContainsKey(blockId))
             return false;
 
-        return (char)locks[blockId] == 'X';
+        return locks[blockId] == 'X';
     }
 }

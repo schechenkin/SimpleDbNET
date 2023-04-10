@@ -73,6 +73,6 @@ public class SetStringRecord : ILogRecord
 
     public override string ToString()
     {
-        return "<SETSTRING " + transactionNumber_.Value + " " + blk + " " + offset + " " + oldVal + " " + newVal + ">";
+        return "<SETSTRING " + transactionNumber_.Value + " " + blk + " " + offset + " " + oldVal.GetString() + " " + newVal.GetString() + ">";
     }
 }

@@ -8,6 +8,7 @@ public interface IFileManager
     void WritePage(in BlockId blockId, in Page page);
     int GetBlocksCount(string fileName);
     BlockId AppendNewBlock(string m_Logfile);
+    void OpenFile(string fileName);
 
     int BlockSize {get;}
 }

@@ -14,7 +14,6 @@ namespace SimpleDb.Plan
             this.qplanner = qplanner;
             this.uplanner = uplanner;
         }
-
         /**
          * Creates a plan for an SQL select statement, using the supplied planner.
          * @param qry the SQL query string

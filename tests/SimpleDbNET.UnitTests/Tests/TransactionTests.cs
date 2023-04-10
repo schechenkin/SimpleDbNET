@@ -54,4 +54,45 @@ public class TransactionTests
         tx4.Commit();
     }
 
+    //[Fact]
+    public void Test()
+    {
+        var fileManager = new FileManager("TransactionTest", 400, true);
+        var logManager = new LogManager(fileManager, "log");
+        var bufferManager = new BufferManager(fileManager, logManager, 3);
+        var lockTable = new LockTable();
+
+        Func<Transaction> newTx = () => new Transaction(fileManager, logManager, bufferManager, lockTable);
+
+        //Save some values to 1st block
+        Transaction tx1 = newTx();
+        BlockId blk = BlockId.New("testfile", 1);
+        tx1.PinBlock(blk);
+        tx1.SetValue(blk, 80, 1, true);
+        tx1.SetValue(blk, 40, (DbString)"one", true);
+        tx1.Commit();
+
+        //update value and rollback
+        Transaction updateTransaction = newTx();
+        updateTransaction.PinBlock(blk);
+        updateTransaction.GetInt(blk, 80).Should().Be(1);
+        updateTransaction.GetString(blk, 40).Should().Be("one");
+        //update int val
+        updateTransaction.SetValue(blk, 80, 9999, true);
+
+        var selectTran = newTx();
+        selectTran.PinBlock(blk);
+        selectTran.GetInt(blk, 80).Should().Be(1);
+        selectTran.Commit();
+
+
+        updateTransaction.Commit();
+
+        //value should not be changed
+        Transaction tx4 = newTx();
+        tx4.PinBlock(blk);
+        tx4.GetInt(blk, 80).Should().Be(9999);
+        tx4.Commit();
+    }
+
 }

@@ -183,11 +183,6 @@ public class Transaction
         buff.SetModified(txNumber, lsn);
     }
 
-    /*public void SetValue(in BlockId blockId, int offset, string value, bool writeToLog)
-    {
-        SetValue(blockId, offset, (DbString)value, writeToLog);
-    }*/
-
     /**
      * Return the number of blocks in the specified file.
      * This method first obtains an SLock on the 

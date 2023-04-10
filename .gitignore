@@ -12,6 +12,8 @@
 
 # Installshield output folder
 database/
+database_flights/
+
 
 # TableScanTest
 tests/TableScanTest/TableScanTest/

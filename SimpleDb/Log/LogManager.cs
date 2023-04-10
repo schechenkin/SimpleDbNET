@@ -20,12 +20,12 @@ public class LogManager : ILogManager
      * @param FileMgr the file manager
      * @param logfile the name of the log file
      */
-    public LogManager(FileManager fileManager, string logfile)
+    public LogManager(IFileManager fileManager, string logfile)
     {
         fileManager_ = fileManager;
         logFile_ = logfile;
-        fileManager.OpenLogFile(logFile_);
-        m_LogPage = new Page(fileManager.BlockSize);
+        fileManager.OpenFile(logFile_);
+        m_LogPage = new Page(1024*1024*16);
         int logsize = fileManager.GetBlocksCount(logfile);
         if (logsize == 0)
             currentBlockId_ = AppendNewBlock();
