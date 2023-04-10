@@ -45,31 +45,49 @@ public class FileManagerTests
 
     }
 
-        [Fact]
-        public void When_write_at_the_2nd_chunk_of_the_file()
-        {
-            //given
-            var fileManager = new FileManager("filetest_chunks", 400, true, 2);
-            BlockId firstBlock = BlockId.New("testfile", 0);
-            Page page = new Page(fileManager.BlockSize);
-            page.SetInt(0, 42);
-            fileManager.WritePage(firstBlock, page);
+    [Fact]
+    public void Shrink_file()
+    {
+        //given
+        var fileManager = new FileManager("shrinkfiletest", 400, true);
+        BlockId thirdBlock = BlockId.New("testfile", 2);
+        Page page = new Page(fileManager.BlockSize);
+        page.SetInt(100, 42);
+        fileManager.WritePage(thirdBlock, page);
+        fileManager.GetBlocksCount("testfile").Should().Be(3);
 
-            BlockId block2 = BlockId.New("testfile", 2);
-            page = new Page(fileManager.BlockSize);
+        //when
+        fileManager.Shrink("testfile");
 
-            string importantString = "important string";
+        //then
+        fileManager.GetBlocksCount("testfile").Should().Be(0);
+    }
 
-            //when
-            page.SetString(0, importantString);
-            fileManager.WritePage(block2, page);
+    [Fact]
+    public void When_write_at_the_2nd_chunk_of_the_file()
+    {
+        //given
+        var fileManager = new FileManager("filetest_chunks", 400, true, 2);
+        BlockId firstBlock = BlockId.New("testfile", 0);
+        Page page = new Page(fileManager.BlockSize);
+        page.SetInt(0, 42);
+        fileManager.WritePage(firstBlock, page);
 
-            //then
-            Page page2 = new Page(fileManager.BlockSize);
-            BlockId block = BlockId.New("testfile", 2);
-            fileManager.ReadPage(block, page2);
+        BlockId block2 = BlockId.New("testfile", 2);
+        page = new Page(fileManager.BlockSize);
 
-            page2.GetString(0).Should().Be(importantString);
+        string importantString = "important string";
 
-        }
+        //when
+        page.SetString(0, importantString);
+        fileManager.WritePage(block2, page);
+
+        //then
+        Page page2 = new Page(fileManager.BlockSize);
+        BlockId block = BlockId.New("testfile", 2);
+        fileManager.ReadPage(block, page2);
+
+        page2.GetString(0).Should().Be(importantString);
+
+    }
 }

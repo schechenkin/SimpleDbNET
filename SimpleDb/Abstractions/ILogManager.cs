@@ -10,4 +10,6 @@ public interface ILogManager
     LogIterator GetIterator();
 
     LogReverseIterator GetReverseIterator();
+
+    void Shrink();
 }

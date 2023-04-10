@@ -13,6 +13,7 @@
 # Installshield output folder
 database/
 database_flights/
+database_test/
 
 
 # TableScanTest

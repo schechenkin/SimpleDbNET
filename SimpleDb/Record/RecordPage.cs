@@ -145,7 +145,7 @@ namespace SimpleDb.Record
 
         private bool isValidSlot(int slot)
         {
-            return offset(slot + 1) <= tx.blockSize();
+            return offset(slot + 1) <= tx.BlockSize();
         }
 
         private int offset(int slot)

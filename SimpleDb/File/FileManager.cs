@@ -40,15 +40,18 @@ public class FileManager : IFileManager
 
     public void OpenFile(string fileName)
     {
-        OpenFileIfExists(fileName);
+        OpenFileIfNotExists(fileName);
     }
 
-    private void OpenFileIfExists(string fileName)
+    private void OpenFileIfNotExists(string fileName)
     {
+        if(openFiles.ContainsKey(fileName))
+            return;
+
         openFiles.Add(fileName, new List<DbFile>());
+        openFiles[fileName].Add(new DbFile(Path.Combine(dbDirectory, fileName)));
         if (System.IO.File.Exists(Path.Combine(dbDirectory, fileName)))
         {
-            openFiles[fileName].Add(new DbFile(Path.Combine(dbDirectory, fileName)));
             foreach (var chunkFilePath in Directory.GetFiles(dbDirectory, $"{fileName}_*"))
             {
                 openFiles[fileName].Add(new DbFile(chunkFilePath));
@@ -71,9 +74,12 @@ public class FileManager : IFileManager
         var dbFile = GetDbFile(blockId.FileName, blockId.Number);
         lock (dbFile.Stream)
         {
-            dbFile.Stream.Seek((blockId.Number % blocksPerFile) * blocksize, SeekOrigin.Begin);
+            long offset = (blockId.Number % blocksPerFile) * blocksize;
+            dbFile.Stream.Seek(offset, SeekOrigin.Begin);
             dbFile.Stream.Write(page.GetBuffer(), 0, blocksize);
             dbFile.Stream.Flush(true);
+            if (offset + blocksize >= dbFile.Length)
+                dbFile.RecalculateLength();
         }
     }
 
@@ -157,22 +163,22 @@ public class FileManager : IFileManager
         }
     }
 
-    private DbFile GetDbFile(string filename, int blockNumber)
+    private DbFile GetDbFile(string fileName, int blockNumber)
     {
-        if (!openFiles.ContainsKey(filename))
+        if (!openFiles.ContainsKey(fileName))
         {
-            OpenFileIfExists(filename);
+            OpenFileIfNotExists(fileName);
         }
 
         int part = blockNumber / blocksPerFile;
 
-        var fileChunks = openFiles[filename];
+        var fileChunks = openFiles[fileName];
         if (fileChunks.Count < part + 1)
         {
             if (part + 1 - fileChunks.Count > 1)
                 throw new Exception("bad part num");
 
-            string chunkFileName = part > 0 ? $"{filename}_{part}" : filename;
+            string chunkFileName = part > 0 ? $"{fileName}_{part}" : fileName;
             var fileStream = new DbFile(Path.Combine(dbDirectory, chunkFileName));
             lock (fileChunks)
             {
@@ -180,6 +186,54 @@ public class FileManager : IFileManager
             }
         }
 
-        return openFiles[filename][part];
+        return openFiles[fileName][part];
+    }
+
+    public void Shrink(string fileName)
+    {
+        lock (openFiles)
+        {
+            var fileChunks = openFiles[fileName];
+            if (fileChunks != null)
+            {
+                {
+                    //delete file chunks
+                    int chunksCount = fileChunks.Count;
+                    for (int part = 0; part < chunksCount; part++)
+                    {
+                        var chunk = fileChunks[part];
+                        chunk.Stream.Close();
+                        chunk.Stream.Dispose();
+                        string chunkFileName = part > 0 ? $"{fileName}_{part}" : fileName;
+                        System.IO.File.Delete(Path.Combine(dbDirectory, chunkFileName));
+                    }
+                    fileChunks.Clear();
+                }
+                openFiles.Remove(fileName);
+            }
+            OpenFileIfNotExists(fileName);
+        }
+
+        /*var fileChunks = openFiles[fileName];
+        if (fileChunks != null)
+        {
+            lock (fileChunks)
+            {
+                //delete file chunks exept last
+                int chunksCount = fileChunks.Count;
+                var lastChunk = fileChunks[chunksCount - 1];
+                for (int part = 0; part < chunksCount - 2; part++)
+                {
+                    var chunk = fileChunks[part];
+                    chunk.Stream.Close();
+                    chunk.Stream.Dispose();
+                    string chunkFileName = part > 0 ? $"{fileName}_{part}" : fileName;
+                    System.IO.File.Delete(chunkFileName);
+                }
+                fileChunks.Clear();
+                fileChunks.Add(lastChunk);
+                lastChunk.Stream.
+            }
+        }*/
     }
 }

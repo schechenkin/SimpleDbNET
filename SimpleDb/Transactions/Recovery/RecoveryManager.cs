@@ -18,28 +18,34 @@ public class RecoveryManager : IRecoveryManager
      * Create a recovery manager for the specified transaction.
      * @param txnum the ID of the specified transaction
      */
-    public RecoveryManager(Transaction tx, TransactionNumber txnum, ILogManager lm, BufferManager bm)
+    public RecoveryManager(Transaction tx, ILogManager lm, BufferManager bm)
     {
         this.tx = tx;
-        this.txnum = txnum;
+        this.txnum = tx.Number;
         this.logManager = lm;
         this.bufferManager = bm;
-        StartRecord.WriteToLog(lm, txnum);
+        if(!tx.IsReadOnly)
+        {
+            StartRecord.WriteToLog(lm, txnum);
+        }
     }
 
     /**
      * Write a commit record to the log, and flushes it to disk.
      */
-    public void commit()
+    public void Commit()
     {
-        var lsn = CommitRecord.WriteToLog(logManager, txnum);
-        logManager.Flush(lsn);
+        if(!tx.IsReadOnly)
+        {
+            var lsn = CommitRecord.WriteToLog(logManager, txnum);
+            logManager.Flush(lsn);
+        }
     }
 
     /**
      * Write a rollback record to the log and flush it to disk.
      */
-    public void rollback()
+    public void Rollback()
     {
         doRollback();
         bufferManager.FlushAll(txnum);
@@ -51,7 +57,7 @@ public class RecoveryManager : IRecoveryManager
      * Recover uncompleted transactions from the log
      * and then write a quiescent checkpoint record to the log and flush it.
      */
-    public void recover()
+    public void Recover()
     {
         var commitedTxs = RevertNotFinishedTransactionsChanges();
         ApplyAllTransactionsFromBeginning(commitedTxs);
@@ -84,31 +90,6 @@ public class RecoveryManager : IRecoveryManager
                 throw new NotImplementedException();
         }
     }
-
-    /*internal LSN setValue(Buffers.Buffer buffer, int offset, Constant value)
-    {
-        Debug.Assert(buffer.BlockId.HasValue);
-        BlockId blk = buffer.BlockId.Value;
-        
-        return value.Match(
-            intVal => 
-            { 
-                int oldval = buffer.Page.GetValue<int>(offset);
-                return SetIntRecord.WriteToLog(logManager, txnum, blk, offset, oldval, intVal);
-            }, 
-            str => 
-            {
-                string oldval = buffer.Page.GetValue<string>(offset);
-                return SetStringRecord.WriteToLog(logManager, txnum, blk, offset, oldval, str);
-            }, 
-            dt => {
-                DateTime oldval = buffer.Page.GetDateTime(offset);
-                return SetDateTimeRecord.WriteToLog(logManager, txnum, blk, offset, oldval, dt);
-            }, 
-            Null => {
-                throw new NotImplementedException();
-            });
-    }*/
 
     internal LSN SetBit(Buffers.Buffer buff, int offset, int bitLocation, bool value)
     {

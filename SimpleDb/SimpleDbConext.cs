@@ -90,7 +90,7 @@ internal class SimpleDbConext : ISimpleDbServer
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        Transaction tx = db.NewTransaction();
+        Transaction tx = db.NewTransaction(readOnly: true);
         var plan = db.Planner.createQueryPlan(sql, tx);
         var schema = plan.schema();
         var columns = schema.ColumnNames();

@@ -31,7 +31,8 @@ public class Server
     private Server(string dirname, int blocksize, int buffsize, bool recreate = false)
     {
         fileManager = new FileManager(dirname, blocksize, recreate, 262144);
-        logManager = new LogManager(new FileManager(dirname, 1024*1024*16, recreate, 100), LOG_FILE);
+        var fileMangerForLog = new FileManager(dirname, 1024*1024*16, recreate, 100);
+        logManager = new LogManager(fileMangerForLog, LOG_FILE);
         bufferManager = new BufferManager(fileManager, logManager, buffsize);
         lockTable = new LockTable();
 
@@ -47,6 +48,9 @@ public class Server
         metaDataManager = new MetadataMgr(isnew, tx);
 
         tx.Commit();
+
+        fileMangerForLog.Shrink(LOG_FILE);
+        logManager = new LogManager(fileMangerForLog, LOG_FILE);
 
         QueryPlanner qp = new BasicQueryPlanner(metaDataManager);
         UpdatePlanner up = new BasicUpdatePlanner(metaDataManager);
@@ -66,9 +70,9 @@ public class Server
 
     }
 
-    public Transaction NewTransaction()
+    public Transaction NewTransaction(bool readOnly = false)
     {
-        return new Transaction(fileManager, logManager, bufferManager, lockTable);
+        return new Transaction(fileManager, logManager, bufferManager, lockTable, readOnly);
     }
 
 

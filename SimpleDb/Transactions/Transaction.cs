@@ -18,6 +18,7 @@ public class Transaction
     private IFileManager fileManager;
     private TransactionNumber txNumber;
     private BufferList txBuffers;
+    private bool readOnly;
     private static Mutex mutex = new Mutex();
 
     /**
@@ -32,17 +33,19 @@ public class Transaction
      * {@link simpledb.server.SimpleDB#initFileLogAndBufferMgr(String)} or
      * is called first.
      */
-    public Transaction(IFileManager fileManager, ILogManager logManager, BufferManager bufferManager, LockTable lockTable)
+    public Transaction(IFileManager fileManager, ILogManager logManager, BufferManager bufferManager, LockTable lockTable, bool readOnly = false)
     {
         this.fileManager = fileManager;
         this.bufferManager = bufferManager;
-        txNumber = nextTxNumber();
-        recoveryManager = new RecoveryManager(this, txNumber, logManager, bufferManager);
+        this.readOnly = readOnly; 
+        txNumber = readOnly ? 0 : nextTxNumber();
+        recoveryManager = new RecoveryManager(this, logManager, bufferManager);
         concurrencyManager = new ConcurrencyManager(lockTable);
         txBuffers = new BufferList(bufferManager);
     }
 
     public TransactionNumber Number => txNumber;
+    public bool IsReadOnly => readOnly;
 
     /**
      * Commit the current transaction.
@@ -52,7 +55,7 @@ public class Transaction
      */
     public void Commit()
     {
-        recoveryManager.commit();
+        recoveryManager.Commit();
         concurrencyManager.Release();
         txBuffers.unpinAll();
     }
@@ -66,7 +69,7 @@ public class Transaction
      */
     public void Rollback()
     {
-        recoveryManager.rollback();
+        recoveryManager.Rollback();
         concurrencyManager.Release();
         txBuffers.unpinAll();
     }
@@ -82,7 +85,7 @@ public class Transaction
     public void Recover()
     {
         bufferManager.FlushAll(txNumber);
-        recoveryManager.recover();
+        recoveryManager.Recover();
     }
 
     /**
@@ -145,13 +148,6 @@ public class Transaction
         return buffer.Page.GetDateTime(offset);
     }
 
-    /*public bool CompareString(in BlockId blockId, int offset, StringConstant val)
-    {
-        concurrencyManager.RequestSharedLock(blockId);
-        var buffer = txBuffers.getBuffer(blockId);
-        return buffer.Page.StringCompare(offset, val);
-    }*/
-
     public bool GetBitValue(in BlockId blockId, int offset, int bitLocation)
     {
         concurrencyManager.RequestSharedLock(blockId);
@@ -191,7 +187,7 @@ public class Transaction
      * @param filename the name of the file
      * @return the number of blocks in the file
      */
-    public int size(string filename)
+    public int Size(string filename)
     {
         BlockId dummyblk = BlockId.Dummy(filename);
         concurrencyManager.RequestSharedLock(dummyblk);
@@ -206,14 +202,14 @@ public class Transaction
      * @param filename the name of the file
      * @return a reference to the newly-created disk block
      */
-    public BlockId append(string filename)
+    public BlockId Append(string filename)
     {
         BlockId dummyblk = BlockId.Dummy(filename);
         concurrencyManager.RequestExclusiveLock(dummyblk);
         return fileManager.AppendNewBlock(filename);
     }
 
-    public int blockSize()
+    public int BlockSize()
     {
         return fileManager.BlockSize;
     }

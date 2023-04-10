@@ -1,5 +1,6 @@
 using SimpleDb.Abstractions;
 using SimpleDb.File;
+using SimpleDb.Transactions.Recovery;
 
 namespace SimpleDb.Log;
 
@@ -116,7 +117,7 @@ public class LogManager : ILogManager
         lastSavedLSN_ = latestLSN_;
     }
 
-    /*internal void Print()
+    internal void Print()
     {
         Console.WriteLine();
         Console.WriteLine("Log records:");
@@ -124,8 +125,13 @@ public class LogManager : ILogManager
         while (iter.HasNext())
         {
             byte[] bytes = iter.Next();
-            LogRecord rec = LogRecord.createLogRecord(bytes);
+            ILogRecord rec = LogRecordFactory.CreateLogRecord(bytes);
             Console.WriteLine(rec.ToString());
         }
-    }*/
+    }
+
+    public void Shrink()
+    {
+        fileManager_.Shrink(logFile_);
+    }
 }

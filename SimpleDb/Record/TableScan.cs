@@ -18,7 +18,7 @@ namespace SimpleDb.Record
             this.tx = tx;
             this.layout = layout;
             filename = tblname + ".tbl";
-            if (tx.size(filename) == 0)
+            if (tx.Size(filename) == 0)
                 moveToNewBlock();
             else
                 moveToBlock(0);
@@ -164,7 +164,7 @@ namespace SimpleDb.Record
         private void moveToNewBlock()
         {
             Close();
-            BlockId blk = tx.append(filename);
+            BlockId blk = tx.Append(filename);
             recordPage = new RecordPage(tx, blk, layout);
             recordPage.format();
             currentslot = -1;
@@ -172,7 +172,7 @@ namespace SimpleDb.Record
 
         private bool atLastBlock()
         {
-            return recordPage.block().Number == tx.size(filename) - 1;
+            return recordPage.block().Number == tx.Size(filename) - 1;
         }
     }
 }
