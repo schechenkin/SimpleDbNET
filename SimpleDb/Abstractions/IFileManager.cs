@@ -9,6 +9,7 @@ public interface IFileManager
     int GetBlocksCount(string fileName);
     BlockId AppendNewBlock(string m_Logfile);
     void OpenFile(string fileName);
+    void OpenTablesFiles();
     void Shrink(string fileName);
     int BlockSize {get;}
 }

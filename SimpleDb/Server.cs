@@ -12,7 +12,7 @@ namespace SimpleDb;
 public class Server
 {
     public static int BLOCK_SIZE = 4096;
-    public static int BUFFER_SIZE = 1000 * 25 * 10;
+    public static int BUFFERS_COUNT = 1000 * 25 * 10;
     public static string LOG_FILE = "simpledb.log";
 
     private FileManager fileManager;
@@ -28,12 +28,14 @@ public class Server
      * @param blocksize the block size
      * @param buffsize the number of buffers
      */
-    private Server(string dirname, int blocksize, int buffsize, bool recreate = false)
+    private Server(string dirname, int blocksize, int buffersCount, bool recreate = false)
     {
         fileManager = new FileManager(dirname, blocksize, recreate, 262144);
+        fileManager.OpenTablesFiles();
+
         var fileMangerForLog = new FileManager(dirname, 1024*1024*16, recreate, 100);
         logManager = new LogManager(fileMangerForLog, LOG_FILE);
-        bufferManager = new BufferManager(fileManager, logManager, buffsize);
+        bufferManager = new BufferManager(fileManager, logManager, buffersCount);
         lockTable = new LockTable();
 
         Transaction tx = NewTransaction();
@@ -65,7 +67,7 @@ public class Server
      * @param dirname the name of the database directory
      */
     public Server(string dirname, bool recreate = false)
-        : this(dirname, BLOCK_SIZE, BUFFER_SIZE, recreate)
+        : this(dirname, BLOCK_SIZE, BUFFERS_COUNT, recreate)
     {
 
     }

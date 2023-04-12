@@ -1,1 +1,0 @@
-dotMemoryUnit.exe "c:\Program Files\dotnet\dotnet.exe" -- test "E:\projects\SImpleDb Console\SimpleDbNET\tests\SimpleDbNET.UnitTests\bin\Release\net6.0\SimpleDbNET.UnitTests.dll" --filter "FullyQualifiedName=SimpleDbNET.UnitTests.TableScanTest.Insert_and_delete"

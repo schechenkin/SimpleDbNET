@@ -49,20 +49,26 @@ public class PlannerTest
         String qry = "select B from T1 where A=10";
         Plan p = planner.createQueryPlan(qry, tx);
         Scan s = p.open();
+        int counter = 0;
         while (s.Next())
         {
             s.GetString("B").Should().Be("rec10");
+            counter++;
         }
         s.Close();
+        counter.Should().Be(1);
 
+        counter = 0;
         qry = "select A from T1 where B='rec10'";
         p = planner.createQueryPlan(qry, tx);
         s = p.open();
         while (s.Next())
         {
             s.GetInt("A").Should().Be(10);
+            counter++;
         }
         s.Close();
+        counter.Should().Be(1);
 
         tx.Commit();
     }

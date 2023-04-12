@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using SimpleDb.Abstractions;
 using SimpleDb.File;
 
@@ -5,12 +6,12 @@ namespace SimpleDb.Buffers;
 
 public class BufferManager
 {
-    private List<Buffer> m_Bufferpool;
-    private Dictionary<BlockId, Buffer> m_BlockToBufferMap = new Dictionary<BlockId, Buffer>();
+    private ConcurrentBag<Buffer> m_bufferpool;
+    private ConcurrentDictionary<BlockId, Buffer> m_blockToBufferMap = new ();
     private object mutex = new object();
     private static TimeSpan MAX_WAIT_TIME = new TimeSpan(0, 0, 10); // 10 seconds
-    private FreeList m_FreeList;
-    private int clockSweepCurrentIndex = 0;
+    private FreeList_ThreadSafe m_freeList;
+    private long m_clockSweepCurrentIndex = 0;
 
     /**
      * Creates a buffer manager having the specified number 
@@ -21,8 +22,8 @@ public class BufferManager
      */
     public BufferManager(IFileManager fm, ILogManager lm, int numbuffs)
     {
-        m_FreeList = new FreeList(numbuffs, fm, lm);
-        m_Bufferpool = new List<Buffer>(numbuffs);
+        m_freeList = new FreeList_ThreadSafe(numbuffs, fm, lm);
+        m_bufferpool = new ConcurrentBag<Buffer>();
     }
 
     /**
@@ -33,7 +34,7 @@ public class BufferManager
     {
         lock (mutex)
         {
-            foreach (Buffer buff in m_Bufferpool)
+            foreach (Buffer buff in m_bufferpool)
                 if (buff.ModifiedByTransaction() == txnum)
                     buff.Flush();
         }
@@ -47,14 +48,7 @@ public class BufferManager
      */
     public void UnpinBuffer(Buffer buffer)
     {
-        lock (mutex)
-        {
-            buffer.Unpin();
-            if (!buffer.IsPinned)
-            {
-                Monitor.PulseAll(mutex);
-            }
-        }
+        buffer.Unpin();
     }
 
     /**
@@ -67,19 +61,18 @@ public class BufferManager
      */
     public Buffer PinBlock(in BlockId blockId)
     {
-        lock (mutex)
+        DateTime timestamp = DateTime.Now;
+        var buff = TryPinBlock(blockId);
+        while (buff == null && !WaitingTooLong(timestamp))
         {
-            DateTime timestamp = DateTime.Now;
-            var buff = TryPinBlock(blockId);
-            while (buff == null && !WaitingTooLong(timestamp))
-            {
-                Monitor.Wait(mutex, MAX_WAIT_TIME);
-                buff = TryPinBlock(blockId);
-            }
-            if (buff == null)
-                throw new BufferAbortException();
-            return buff;
+            buff = TryPinBlock(blockId);
+            if(buff is null)
+                Thread.Yield();
         }
+        if (buff == null)
+            throw new BufferAbortException();
+        return buff;
+
     }
 
     private bool WaitingTooLong(DateTime startWaitingTime)
@@ -101,26 +94,30 @@ public class BufferManager
         var buffer = FindBufferContainsBlock(blockId);
         if (buffer == null)
         {
-            buffer = ChooseBufferFromFreeList();
+            buffer = ChooseBufferFromFreeList();//ts
 
             if (buffer is null)
             {
-                buffer = ChooseUnpinnedBuffer();
+                buffer = ChooseUnpinnedBuffer(); //ts?
                 if (buffer is not null)
-                    RemoveLinkFromBlockToBufferMap(buffer);
+                    RemoveLinkFromBlockToBufferMap(buffer);//ts
             }
             else
-                m_Bufferpool.Add(buffer);
+                m_bufferpool.Add(buffer);//ts
 
             if (buffer == null)
                 return null;
 
-            buffer.AssignToBlock(blockId);
-            m_BlockToBufferMap[blockId] = buffer;
+            if(m_blockToBufferMap.TryAdd(blockId, buffer))
+            {
+                buffer.AssignToBlock(blockId);
+            }
+            else
+                return null;
         }
 
-        buffer.Pin();
-        buffer.IncrementUsageCounter();
+        buffer.Pin();//ts
+        buffer.IncrementUsageCounter();//ts
         return buffer;
     }
 
@@ -128,14 +125,15 @@ public class BufferManager
     {
         if (buffer.BlockId.HasValue)
         {
-            m_BlockToBufferMap.Remove(buffer.BlockId.Value);
+            if(!m_blockToBufferMap.TryRemove(new KeyValuePair<BlockId, Buffer>(buffer.BlockId.Value, buffer)))
+                throw new Exception("error while remove buffer from blockToBufferMap");
         }
     }
 
     private Buffer? FindBufferContainsBlock(in BlockId blockId)
     {
         Buffer? buffer = null;
-        if (m_BlockToBufferMap.TryGetValue(blockId, out buffer))
+        if (m_blockToBufferMap.TryGetValue(blockId, out buffer))
             return buffer;
         else
             return null;
@@ -145,7 +143,7 @@ public class BufferManager
     {
         Buffer? buffer;
 
-        if (m_FreeList.TryGetBuffer(out buffer))
+        if (m_freeList.TryGetBuffer(out buffer))
             return buffer;
         else
             return null;
@@ -157,13 +155,13 @@ public class BufferManager
         //и выходить из него только когда не нашлось ниодного незапиненного с UsageCount > 0
         while (true)
         {
-            if (clockSweepCurrentIndex >= m_Bufferpool.Count)
-                clockSweepCurrentIndex = 0;
+            if (m_clockSweepCurrentIndex >= m_bufferpool.Count)
+                m_clockSweepCurrentIndex = 0;
 
             bool anyFound = false;
-            while (clockSweepCurrentIndex < m_Bufferpool.Count)
-            {
-                Buffer buffer = m_Bufferpool[clockSweepCurrentIndex];
+            while (m_clockSweepCurrentIndex < m_bufferpool.Count)
+            {               
+                Buffer buffer = m_bufferpool.ElementAt((int)m_clockSweepCurrentIndex);
 
                 if (!buffer.IsPinned)
                 {
@@ -175,7 +173,7 @@ public class BufferManager
 
                 buffer.DecrementUsageCounter();
 
-                clockSweepCurrentIndex++;
+                Interlocked.Increment(ref m_clockSweepCurrentIndex);
             }
 
             if (anyFound == false)
@@ -185,12 +183,12 @@ public class BufferManager
 
     public int GetUnpinnedBlocksCount()
     {
-        return m_Bufferpool.Where(x => !x.IsPinned).Count();
+        return m_bufferpool.Where(x => !x.IsPinned).Count();
     }
 
     public int GetFreeBlockCount()
     {
-        return m_FreeList.BufferCount;
+        return m_freeList.BufferCount;
     }
 
     public UsageStats GetUsageStats()
@@ -199,9 +197,9 @@ public class BufferManager
         {
             Dictionary<string, int> blocksCount = new();
 
-            foreach (var group in m_Bufferpool.Where(b => b.BlockId != null).GroupBy(b => b.BlockId?.FileName))
+            foreach (var group in m_bufferpool.Where(b => b.BlockId != null).GroupBy(b => b.BlockId?.FileName))
             {
-                if(group.Key != null)
+                if (group.Key != null)
                     blocksCount.Add(group.Key, group.Count());
             }
 
@@ -219,7 +217,7 @@ public class BufferManager
     private void PrintBufferPool()
     {
         Console.WriteLine("buffers:");
-        foreach (var buffer in m_Bufferpool)
+        foreach (var buffer in m_bufferpool)
         {
             Console.WriteLine(buffer.ToString());
         }
@@ -237,7 +235,7 @@ public class BufferManager
         {
             Console.WriteLine($"Table {kvp.Key} count {kvp.Value}");
         }
-        if(printBufferPool)
+        if (printBufferPool)
             PrintBufferPool();
     }
 

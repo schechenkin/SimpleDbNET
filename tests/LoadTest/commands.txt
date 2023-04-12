@@ -1,0 +1,6 @@
+dotnet-counters ps
+dotnet-trace ps
+dotnet-counters monitor -p 13749
+dotnet-trace collect -p 13749 --format speedscope
+locust -H http://localhost:5000
+

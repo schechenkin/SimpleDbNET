@@ -33,9 +33,6 @@ public class FileManager : IFileManager
         foreach (var fileName in Directory.GetFiles(dbDirectory))
             if (fileName.StartsWith("temp"))
                 Directory.Delete(Path.Combine(dbDirectory, fileName));
-
-        OpenTablesFiles();
-
     }
 
     public void OpenFile(string fileName)
@@ -107,7 +104,7 @@ public class FileManager : IFileManager
             return 0;
 
         var fileChunks = openFiles[filename];
-        lock (fileChunks)
+        //lock (fileChunks)
         {
             long sum = 0;
 
@@ -147,7 +144,7 @@ public class FileManager : IFileManager
         OpenTablesFiles();
     }
 
-    private void OpenTablesFiles()
+    public void OpenTablesFiles()
     {
         foreach (var tableFilePath in Directory.GetFiles(dbDirectory, "*.tbl"))
         {

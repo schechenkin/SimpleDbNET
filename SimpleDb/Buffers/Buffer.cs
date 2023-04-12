@@ -8,15 +8,15 @@ public class Buffer
 {
     IFileManager fileManager_;
     ILogManager logManager_;
-    int pinsCount_ = 0;
-    int usageCount_ = 0;
+    long pinsCount_ = 0;
+    long usageCount_ = 0;
     TransactionNumber? transactionNumber_;
     LSN? lsn_;
 
     public Page Page { get; private set; }
     public BlockId? BlockId { get; private set; }
-    public bool IsPinned => pinsCount_ > 0;
-    public int UsageCount => usageCount_;
+    public bool IsPinned => Interlocked.Read(ref pinsCount_) > 0;
+    public long UsageCount => Interlocked.Read(ref usageCount_);
 
     public Buffer(IFileManager fileManager, ILogManager logManager)
     {
@@ -73,19 +73,19 @@ public class Buffer
 
     internal void IncrementUsageCounter()
     {
-        if (usageCount_ < 5)
-            usageCount_++;
+        if (UsageCount < 5)
+            Interlocked.Increment(ref usageCount_);
     }
 
     internal void DecrementUsageCounter()
     {
-        if (usageCount_ > 0)
-            usageCount_--;
+        if (UsageCount > 0)
+            Interlocked.Decrement(ref usageCount_);
     }
 
     internal void Unpin()
     {
-        pinsCount_--;
+        Interlocked.Decrement(ref pinsCount_);
     }
 
     public override string ToString()

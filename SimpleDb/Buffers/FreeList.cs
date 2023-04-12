@@ -2,13 +2,14 @@ using SimpleDb.Abstractions;
 
 namespace SimpleDb.Buffers;
 
-internal class FreeList
+internal class FreeList_ThreadSafe
 {
-    private LinkedList<Buffer> m_FreeBuffers = new LinkedList<Buffer>();
+    LinkedList<Buffer> m_FreeBuffers = new LinkedList<Buffer>();
+    object m_lock = new object();
 
     public int BufferCount => m_FreeBuffers.Count;
 
-    public FreeList(int bufferCount, IFileManager fm, ILogManager lm)
+    public FreeList_ThreadSafe(int bufferCount, IFileManager fm, ILogManager lm)
     {
         for (int i = 0; i < bufferCount; i++)
             m_FreeBuffers.AddLast(new Buffer(fm, lm));
@@ -16,16 +17,19 @@ internal class FreeList
 
     public bool TryGetBuffer(out Buffer? buffer)
     {
-        if (m_FreeBuffers.First != null)
+        lock(m_lock)
         {
-            buffer = m_FreeBuffers.First.Value;
-            m_FreeBuffers.RemoveFirst();
-            return true;
-        }
-        else
-        {
-            buffer = null;
-            return false;
+            if (m_FreeBuffers.First != null)
+            {
+                buffer = m_FreeBuffers.First.Value;
+                m_FreeBuffers.RemoveFirst();
+                return true;
+            }
+            else
+            {
+                buffer = null;
+                return false;
+            }
         }
     }
 }
