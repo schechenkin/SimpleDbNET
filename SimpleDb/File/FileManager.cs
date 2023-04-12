@@ -107,7 +107,7 @@ public class FileManager : IFileManager
             return 0;
 
         var fileChunks = openFiles[filename];
-        lock (fileChunks)
+        //lock (fileChunks)
         {
             long sum = 0;
 
