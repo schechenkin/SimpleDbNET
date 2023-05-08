@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using SimpleDb.Abstractions;
 using SimpleDb.File;
@@ -24,6 +25,16 @@ public class BufferManager
     {
         m_freeList = new FreeList_ThreadSafe(numbuffs, fm, lm);
         m_bufferpool = new ConcurrentBag<Buffer>();
+    }
+
+    public void FlushDirtyBuffers()
+    {       
+        //TODO Thread safe?
+        foreach (Buffer buffer in m_bufferpool)
+        {
+            if (!buffer.IsPinned && buffer.ModifiedByTransaction().HasValue)
+                buffer.Flush();
+        }
     }
 
     /**

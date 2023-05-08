@@ -111,7 +111,7 @@ public class LogManager : ILogManager
     /**
      * Write the buffer to the log file.
      */
-    internal void Flush()
+    public void Flush()
     {
         fileManager_.WritePage(currentBlockId_, m_LogPage);
         lastSavedLSN_ = latestLSN_;

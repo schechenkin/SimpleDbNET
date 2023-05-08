@@ -33,7 +33,6 @@ public class FileManager : IFileManager
         foreach (var fileName in Directory.GetFiles(dbDirectory))
             if (fileName.StartsWith("temp"))
                 Directory.Delete(Path.Combine(dbDirectory, fileName));
-
     }
 
     public void OpenFile(string fileName)

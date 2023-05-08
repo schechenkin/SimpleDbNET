@@ -18,8 +18,6 @@ public class SqlController : Controller
             sql = await stream.ReadToEndAsync();
         }
 
-        //logger.LogDebug(sql);
-
         try
         {
             if (sql.StartsWith("select"))

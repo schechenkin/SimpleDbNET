@@ -68,7 +68,7 @@ public class Buffer
      */
     internal void Pin()
     {
-        pinsCount_++;
+        Interlocked.Increment(ref pinsCount_);
     }
 
     internal void IncrementUsageCounter()

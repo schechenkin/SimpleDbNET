@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SimpleDb.BackgroundWorkers;
 
 namespace SimpleDb.Extensions;
 
@@ -8,6 +9,7 @@ public static class ServiceCollectionExtension
     public static IServiceCollection AddSimpleDb(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<ISimpleDbServer>(new SimpleDbConext());
+        services.AddHostedService<LogFlushToDiskWorker>();
         return services;
     }
 

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using SimpleDb.Buffers;
 using SimpleDb.Types;
 using SimpleDb.Abstractions;
+using SimpleDb.Log;
 
 namespace SimpleDb;
 
@@ -13,6 +14,7 @@ public interface ISimpleDbServer
     Task<SelectResult> ExecuteSelectSql(string sql, int limit = 100);
     BufferManager.UsageStats GetBufferManagerUsage();
     ILogManager Log {get;}
+    BufferManager GetBufferManager();
 }
 
 public class SelectResult
@@ -78,7 +80,7 @@ internal class SimpleDbConext : ISimpleDbServer
 
     public Task ExecuteUpdateSql(string sql)
     {
-        Transaction tx = db.NewTransaction();
+        Transaction tx = db.NewTransaction(logWriteMode: LogWriteMode.Async);
         db.Planner.executeUpdate(sql, tx);
         tx.Commit();
 
@@ -145,5 +147,10 @@ internal class SimpleDbConext : ISimpleDbServer
     public BufferManager.UsageStats GetBufferManagerUsage()
     {
         return db.BufferManager.GetUsageStats();
+    }
+
+    public BufferManager GetBufferManager()
+    {
+        return db.BufferManager;
     }
 }
