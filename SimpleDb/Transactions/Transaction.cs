@@ -1,6 +1,7 @@
 using SimpleDb.Abstractions;
 using SimpleDb.Buffers;
 using SimpleDb.File;
+using SimpleDb.Log;
 using SimpleDb.Transactions.Concurrency;
 using SimpleDb.Transactions.Recovery;
 using SimpleDb.Types;
@@ -10,7 +11,7 @@ namespace SimpleDb.Transactions;
 public class Transaction
 {
     private static int nextTransactionNumber = 0;
-    private static int END_OF_FILE = -1;
+    private static Mutex transactionNumberMutex = new Mutex();
 
     private RecoveryManager recoveryManager;
     private ConcurrencyManager concurrencyManager;
@@ -19,7 +20,6 @@ public class Transaction
     private TransactionNumber txNumber;
     private BufferList txBuffers;
     private bool readOnly;
-    private static Mutex mutex = new Mutex();
 
     /**
      * Create a new transaction and its associated 
@@ -33,13 +33,13 @@ public class Transaction
      * {@link simpledb.server.SimpleDB#initFileLogAndBufferMgr(String)} or
      * is called first.
      */
-    public Transaction(IFileManager fileManager, ILogManager logManager, BufferManager bufferManager, LockTable lockTable, bool readOnly = false)
+    public Transaction(IFileManager fileManager, ILogManager logManager, BufferManager bufferManager, LockTable lockTable, bool readOnly = false, LogWriteMode logWriteMode = LogWriteMode.Sync)
     {
         this.fileManager = fileManager;
         this.bufferManager = bufferManager;
         this.readOnly = readOnly; 
         txNumber = readOnly ? 0 : nextTxNumber();
-        recoveryManager = new RecoveryManager(this, logManager, bufferManager);
+        recoveryManager = new RecoveryManager(this, logManager, bufferManager, logWriteMode);
         concurrencyManager = new ConcurrencyManager(lockTable);
         txBuffers = new BufferList(bufferManager);
     }
@@ -216,7 +216,7 @@ public class Transaction
 
     private static int nextTxNumber()
     {
-        lock (mutex)
+        lock (transactionNumberMutex)
         {
             nextTransactionNumber++;
         }

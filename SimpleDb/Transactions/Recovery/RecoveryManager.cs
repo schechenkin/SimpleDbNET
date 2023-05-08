@@ -2,6 +2,7 @@ using System.Diagnostics;
 using SimpleDb.Abstractions;
 using SimpleDb.Buffers;
 using SimpleDb.File;
+using SimpleDb.Log;
 using SimpleDb.Transactions.Recovery.Records;
 using SimpleDb.Types;
 
@@ -11,6 +12,7 @@ public class RecoveryManager : IRecoveryManager
 {
     private ILogManager logManager;
     private BufferManager bufferManager;
+    private readonly LogWriteMode logWriteMode;
     private Transaction tx;
     private TransactionNumber txnum;
 
@@ -18,13 +20,14 @@ public class RecoveryManager : IRecoveryManager
      * Create a recovery manager for the specified transaction.
      * @param txnum the ID of the specified transaction
      */
-    public RecoveryManager(Transaction tx, ILogManager lm, BufferManager bm)
+    public RecoveryManager(Transaction tx, ILogManager lm, BufferManager bm, LogWriteMode logWriteMode = LogWriteMode.Sync)
     {
         this.tx = tx;
         this.txnum = tx.Number;
         this.logManager = lm;
         this.bufferManager = bm;
-        if(!tx.IsReadOnly)
+        this.logWriteMode = logWriteMode;
+        if (!tx.IsReadOnly)
         {
             StartRecord.WriteToLog(lm, txnum);
         }
@@ -38,7 +41,8 @@ public class RecoveryManager : IRecoveryManager
         if(!tx.IsReadOnly)
         {
             var lsn = CommitRecord.WriteToLog(logManager, txnum);
-            logManager.Flush(lsn);
+            if(logWriteMode == LogWriteMode.Sync)
+                logManager.Flush(lsn);
         }
     }
 
@@ -50,7 +54,8 @@ public class RecoveryManager : IRecoveryManager
         doRollback();
         bufferManager.FlushAll(txnum);
         var lsn = RollbackRecord.WriteToLog(logManager, txnum);
-        logManager.Flush(lsn);
+        if (logWriteMode == LogWriteMode.Sync)
+            logManager.Flush(lsn);
     }
 
     /**
@@ -64,7 +69,8 @@ public class RecoveryManager : IRecoveryManager
 
         bufferManager.FlushAll(txnum);
         var lsn = CheckpointRecord.WriteToLog(logManager);
-        logManager.Flush(lsn);
+        if (logWriteMode == LogWriteMode.Sync)
+            logManager.Flush(lsn);
     }
 
     internal LSN SetValue<T>(Buffers.Buffer buffer, int offset, T value)

@@ -51,8 +51,11 @@ public class Server
 
         tx.Commit();
 
-        fileMangerForLog.Shrink(LOG_FILE);
-        logManager = new LogManager(fileMangerForLog, LOG_FILE);
+        if(!isnew)
+        {
+            fileMangerForLog.Shrink(LOG_FILE);
+            logManager = new LogManager(fileMangerForLog, LOG_FILE);
+        }
 
         QueryPlanner qp = new BasicQueryPlanner(metaDataManager);
         UpdatePlanner up = new BasicUpdatePlanner(metaDataManager);
@@ -72,9 +75,9 @@ public class Server
 
     }
 
-    public Transaction NewTransaction(bool readOnly = false)
+    public Transaction NewTransaction(bool readOnly = false, LogWriteMode logWriteMode = LogWriteMode.Sync)
     {
-        return new Transaction(fileManager, logManager, bufferManager, lockTable, readOnly);
+        return new Transaction(fileManager, logManager, bufferManager, lockTable, readOnly, logWriteMode);
     }
 
 
