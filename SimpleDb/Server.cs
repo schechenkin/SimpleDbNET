@@ -31,6 +31,7 @@ public class Server
     private Server(string dirname, int blocksize, int buffersCount, bool recreate = false)
     {
         fileManager = new FileManager(dirname, blocksize, recreate, 262144);
+        fileManager.OpenTablesFiles();
         var fileMangerForLog = new FileManager(dirname, 1024*1024*16, recreate, 100);
         logManager = new LogManager(fileMangerForLog, LOG_FILE);
         bufferManager = new BufferManager(fileManager, logManager, buffersCount);

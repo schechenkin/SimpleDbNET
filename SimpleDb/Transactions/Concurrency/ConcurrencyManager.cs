@@ -13,9 +13,7 @@ public class ConcurrencyManager
     }
 
     internal void Release()
-    {
-        return;
-        
+    {       
         foreach (BlockId blockId in locks.Keys)
             lockTable.UnLock(blockId);
 
@@ -23,9 +21,7 @@ public class ConcurrencyManager
     }
 
     internal void RequestSharedLock(in BlockId blockId)
-    {
-        return;
-        
+    {       
         if (!locks.ContainsKey(blockId))
         {
             lockTable.WaitSharedLock(blockId);
@@ -34,9 +30,7 @@ public class ConcurrencyManager
     }
 
     internal void RequestExclusiveLock(in BlockId blockId)
-    {       
-        return;
-        
+    {              
         if (!HasXLock(blockId))
         {
             RequestSharedLock(blockId);

@@ -4,11 +4,11 @@
     {
         public static void Main(string[] args)
         {
-            var lines = GetAllLines(@"c:\temp\postgres_air.sql");
+            var lines = GetAllLines(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "postgres_air.sql"));
 
             float val = float.Parse("213,12");
 
-            SQLExecutor.Run(@"create table account (
+            SQLExecutor.Run(@"create table account (ReadFromResource
     account_id int not null,
     login varchar(32) not null,
     first_name varchar(16) not null,
@@ -17,7 +17,7 @@
     update_ts dateTime
 )");
 
-            //Console.WriteLine("AccountLoader");
+        Console.WriteLine("AccountLoader");
 
         new AccountLoader().Load(lines);
 
@@ -29,7 +29,7 @@
     code varchar(3) not null
 )");
 
-           // Console.WriteLine("AircraftLoader");
+           Console.WriteLine("AircraftLoader");
 
             new AircraftLoader().Load(lines);
 
@@ -45,7 +45,7 @@
 )");
 
             Console.WriteLine("AirportLoader");
-            //new AirportLoader().Load(lines);
+            new AirportLoader().Load(lines);
 
             SQLExecutor.Run(@"create table boarding_pass (
     pass_id int  not null,
@@ -58,7 +58,7 @@
 
             Console.WriteLine("BoardingPassLoader");
 
-            //new BoardingPassLoader().Load(lines);
+            new BoardingPassLoader().Load(lines);
 
             SQLExecutor.Run(@"create table booking (
     booking_id int not null,
@@ -86,7 +86,7 @@
 
 
             Console.WriteLine("BookingLegLoader");
-            //new BookingLegLoader().Load(lines);
+            new BookingLegLoader().Load(lines);
 
             SQLExecutor.Run(@"create table flight (
     flight_id int not null,
@@ -104,7 +104,7 @@
 
             Console.WriteLine("FlightLoader");
 
-            //new FlightLoader().Load(lines);
+            new FlightLoader().Load(lines);
 
             /*SQLExecutor.Run(@"create table frequent_flyer (
     frequent_flyer_id int not null,

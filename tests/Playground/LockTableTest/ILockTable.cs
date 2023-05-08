@@ -1,8 +1,17 @@
 using System.Collections.Concurrent;
 using SimpleDb.File;
-namespace SimpleDb.Transactions.Concurrency;
 
-public class LockTable
+namespace Playground.LockTableTest;
+
+public interface ILockTable
+{
+    void WaitExclusiveLock(in BlockId blockId);
+    void WaitSharedLock(in BlockId blockId);
+    void UnLock(in BlockId blockId);
+}
+
+
+public class LockTableWithReadWriteLock : ILockTable
 {
     ConcurrentDictionary<BlockId, ReaderWriterLock> locks = new();
 
@@ -21,9 +30,10 @@ public class LockTable
     public void UnLock(in BlockId blockId)
     {
         ReaderWriterLock? rwl;
-        if (locks.TryGetValue(blockId, out rwl))
+        if(locks.TryGetValue(blockId, out rwl))
         {
             rwl.ReleaseLock();
         }
     }
 }
+

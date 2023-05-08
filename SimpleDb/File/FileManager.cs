@@ -34,8 +34,6 @@ public class FileManager : IFileManager
             if (fileName.StartsWith("temp"))
                 Directory.Delete(Path.Combine(dbDirectory, fileName));
 
-        OpenTablesFiles();
-
     }
 
     public void OpenFile(string fileName)
@@ -147,7 +145,7 @@ public class FileManager : IFileManager
         OpenTablesFiles();
     }
 
-    private void OpenTablesFiles()
+    public void OpenTablesFiles()
     {
         foreach (var tableFilePath in Directory.GetFiles(dbDirectory, "*.tbl"))
         {
