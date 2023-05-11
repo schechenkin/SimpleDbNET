@@ -77,12 +77,12 @@ namespace SimpleDb.Record
 
         public void setNull(string fldname)
         {
-            recordPage.setNull(currentslot, fldname);
+            recordPage.SetNull(currentslot, fldname);
         }
 
         public bool IsNull(string fldname)
         {
-            return recordPage.isNull(currentslot, fldname);
+            return recordPage.IsNull(currentslot, fldname);
         }
 
         public bool HasField(string fldname)
@@ -135,7 +135,7 @@ namespace SimpleDb.Record
 
         public void Delete()
         {
-            recordPage.delete(currentslot);
+            recordPage.Delete(currentslot);
         }
 
         public void MoveToRid(RID rid)

@@ -1,4 +1,5 @@
-﻿using SimpleDb.File;
+﻿using SimpleDb.Abstractions;
+using SimpleDb.File;
 using SimpleDb.Types;
 
 namespace SimpleDb.Record
@@ -25,6 +26,7 @@ namespace SimpleDb.Record
             _offsets = new ();
             int pos = sizeof(int); // leave space for the empty/inuse flag
             pos += NullBytesFlagsOffset; //space for null fldname values flags
+            pos += TransactionNumber.Size(); //space for modified transaction number
             foreach (string fldname in schema.ColumnNames())
             {
                 _offsets[fldname] = pos;

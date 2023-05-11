@@ -24,8 +24,9 @@ namespace SimpleDb.BackgroundWorkers
             {
                 while (await timer.WaitForNextTickAsync(stoppingToken))
                 {
-                    _logger.LogInformation("Flush log to Disk");
+                    _logger.LogInformation("Flush log to Disk starts");
                     dbServer.Log.Flush();
+                    _logger.LogInformation("Flush log to Disk ends");
                 }
             }
             catch (OperationCanceledException)

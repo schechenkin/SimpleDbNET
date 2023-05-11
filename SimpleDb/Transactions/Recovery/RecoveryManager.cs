@@ -13,7 +13,7 @@ public class RecoveryManager : IRecoveryManager
     private ILogManager logManager;
     private BufferManager bufferManager;
     private readonly LogWriteMode logWriteMode;
-    private Transaction tx;
+    private Transaction transaction;
     private TransactionNumber txnum;
 
     /**
@@ -22,7 +22,7 @@ public class RecoveryManager : IRecoveryManager
      */
     public RecoveryManager(Transaction tx, ILogManager lm, BufferManager bm, LogWriteMode logWriteMode = LogWriteMode.Sync)
     {
-        this.tx = tx;
+        this.transaction = tx;
         this.txnum = tx.Number;
         this.logManager = lm;
         this.bufferManager = bm;
@@ -38,7 +38,7 @@ public class RecoveryManager : IRecoveryManager
      */
     public void Commit()
     {
-        if(!tx.IsReadOnly)
+        if(!transaction.IsReadOnly)
         {
             var lsn = CommitRecord.WriteToLog(logManager, txnum);
             if(logWriteMode == LogWriteMode.Sync)
@@ -124,7 +124,7 @@ public class RecoveryManager : IRecoveryManager
             {
                 if (rec.Type == LogRecordType.START)
                     return;
-                rec.Undo(tx);
+                rec.Undo(transaction);
             }
         }
     }
@@ -155,7 +155,7 @@ public class RecoveryManager : IRecoveryManager
                 }
             }
             else if (!finishedTxs.Contains(rec.TransactionNumber))
-                rec.Undo(tx);
+                rec.Undo(transaction);
         }
 
         return commitedTxs;
@@ -171,7 +171,7 @@ public class RecoveryManager : IRecoveryManager
             var txNum = rec.TransactionNumber;
             if (commitedTxs.Contains(txNum))
             {
-                rec.Apply(tx);
+                rec.Apply(transaction);
             }
         }
     }

@@ -26,6 +26,7 @@ namespace SimpleDb.BackgroundWorkers
                 {
                     _logger.LogInformation("run FlushDirtyBuffers");
                     dbServer.GetBufferManager().FlushDirtyBuffers();
+                    _logger.LogInformation("end FlushDirtyBuffers");
                 }
             }
             catch (OperationCanceledException)

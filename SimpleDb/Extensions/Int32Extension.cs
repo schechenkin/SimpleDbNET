@@ -85,8 +85,7 @@ namespace SimpleDb.Extensions
         {
             Debug.Assert(destination != null, "Destination array cannot be null");
 
-            // check if there is enough space for all the 8 bytes we will copy
-            Debug.Assert(destination.Length >= offset + 8, "Not enough room in the destination array");
+            Debug.Assert(destination.Length >= offset, "Not enough room in the destination array");
 
             destination[offset] = source ? (byte)1 : (byte)0;
         }

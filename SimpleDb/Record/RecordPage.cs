@@ -1,4 +1,5 @@
-﻿using SimpleDb.File;
+﻿using SimpleDb.Abstractions;
+using SimpleDb.File;
 using SimpleDb.Transactions;
 using SimpleDb.Types;
 using System;
@@ -8,13 +9,15 @@ namespace SimpleDb.Record
     public struct RecordPage
     {
         public static int EMPTY = 0, USED = 1;
-        private Transaction tx;
+        private Transaction transaction;
         private BlockId blk;
         private Layout layout;
 
+        public static int TransactionNumberOffset = 0;
+
         public RecordPage(Transaction tx, in BlockId blk, Layout layout)
         {
-            this.tx = tx;
+            this.transaction = tx;
             this.blk = blk;
             this.layout = layout;
             tx.PinBlock(blk);
@@ -29,7 +32,7 @@ namespace SimpleDb.Record
         public int getInt(int slot, String fldname)
         {
             int fldpos = offset(slot) + layout.offset(fldname);
-            return tx.GetInt(blk, fldpos);
+            return transaction.GetInt(blk, fldpos);
         }
 
         /**
@@ -41,41 +44,48 @@ namespace SimpleDb.Record
         public DbString getString(int slot, String fldname)
         {
             int fldpos = offset(slot) + layout.offset(fldname);
-            return tx.GetString(blk, fldpos);
+            return transaction.GetString(blk, fldpos);
         }
 
         public DateTime getDateTime(int slot, String fldname)
         {
             int fldpos = offset(slot) + layout.offset(fldname);
-            return tx.GetDateTime(blk, fldpos);
+            return transaction.GetDateTime(blk, fldpos);
         }
 
         public void SetValue<T>(int slot, String fldname, T value)
         {
             int fldpos = offset(slot) + layout.offset(fldname);
-            tx.SetValue(blk, fldpos, value, true);
-            setNotNull(slot, fldname);
+            transaction.SetValue(blk, fldpos, value, true);
+            SetNotNull(slot, fldname);
+            SaveTransactionNumberIntoBlockHeader();
         }
 
-        public void setNull(int slot, String fldname)
+        public void SetNull(int slot, String fldname)
         {
             var index = layout.bitLocation(fldname);
-            tx.SetBit(blk, offset(slot) + Layout.NullBytesFlagsOffset, index, true, true);
-        }
-
-        private void setNotNull(int slot, String fldname)
+            transaction.SetBit(blk, offset(slot) + Layout.NullBytesFlagsOffset, index, true, true);
+            SaveTransactionNumberIntoBlockHeader();
+        }  
+        private void SetNotNull(int slot, String fldname)
         {
             var index = layout.bitLocation(fldname);
-            tx.SetBit(blk, offset(slot) + Layout.NullBytesFlagsOffset, index, false, true);
+            transaction.SetBit(blk, offset(slot) + Layout.NullBytesFlagsOffset, index, false, true);
+            SaveTransactionNumberIntoBlockHeader();
         }
 
-        public bool isNull(int slot, String fldname)
+        private void SaveTransactionNumberIntoBlockHeader()
+        {
+            transaction.SetValue(blk, TransactionNumberOffset, transaction.Number, false);
+        }     
+
+        public bool IsNull(int slot, String fldname)
         {
             var index = layout.bitLocation(fldname);
-            return tx.GetBitValue(blk, offset(slot) + Layout.NullBytesFlagsOffset, index);
+            return transaction.GetBitValue(blk, offset(slot) + Layout.NullBytesFlagsOffset, index);
         }
 
-        public void delete(int slot)
+        public void Delete(int slot)
         {
             setFlag(slot, EMPTY);
         }
@@ -89,15 +99,15 @@ namespace SimpleDb.Record
             int slot = 0;
             while (isValidSlot(slot))
             {
-                tx.SetValue(blk, offset(slot), EMPTY, false);
+                transaction.SetValue(blk, offset(slot), EMPTY, false);
                 Schema sch = layout.schema();
                 foreach (string fldname in sch.ColumnNames())
                 {
                     int fldpos = offset(slot) + layout.offset(fldname);
                     if (sch.GetSqlType(fldname) == SqlType.INTEGER)
-                        tx.SetValue(blk, fldpos, 0, false);
+                        transaction.SetValue(blk, fldpos, 0, false);
                     else
-                        tx.SetValue(blk, fldpos, "", false);
+                        transaction.SetValue(blk, fldpos, "", false);
                 }
                 slot++;
             }
@@ -128,7 +138,7 @@ namespace SimpleDb.Record
          */
         private void setFlag(int slot, int flag)
         {
-            tx.SetValue(blk, offset(slot), flag, true);
+            transaction.SetValue(blk, offset(slot), flag, true);
         }
 
         private int searchAfter(int slot, int flag)
@@ -136,7 +146,7 @@ namespace SimpleDb.Record
             slot++;
             while (isValidSlot(slot))
             {
-                if (tx.GetInt(blk, offset(slot)) == flag)
+                if (transaction.GetInt(blk, offset(slot)) == flag)
                     return slot;
                 slot++;
             }
@@ -145,12 +155,12 @@ namespace SimpleDb.Record
 
         private bool isValidSlot(int slot)
         {
-            return offset(slot + 1) <= tx.BlockSize();
+            return offset(slot + 1) <= transaction.BlockSize();
         }
 
         private int offset(int slot)
         {
-            return slot * layout.slotSize();
+            return TransactionNumber.Size() + slot * layout.slotSize();
         }
     }
 }

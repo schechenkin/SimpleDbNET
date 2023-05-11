@@ -112,7 +112,7 @@ public readonly struct Page
     public byte[] GetBytesArray(int offset)
     {
         int length = GetInt(offset);
-        byte[] result = new byte[length];
+        byte[] result = new byte[length];//TODO use byte pool
         Buffer.BlockCopy(buffer, offset + sizeof(Int32), result, 0, length);
         return result;
     }

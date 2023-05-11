@@ -1,5 +1,6 @@
 using SimpleDb.Abstractions;
 using SimpleDb.File;
+using SimpleDb.Record;
 using SimpleDb.Types;
 using System.Buffers;
 
@@ -57,7 +58,10 @@ public class SetIntRecord : ILogRecord
     public void Apply(Transaction tx)
     {
         tx.PinBlock(blk);
-        tx.SetValue(blk, offset, newVal, false);
+        if(tx.GetBuffer(blk).Page.GetTransactionNumber(RecordPage.TransactionNumberOffset) <  transactionNumber_)
+        {
+            tx.SetValue(blk, offset, newVal, false);
+        }
         tx.UnpinBlock(blk);
     }
 

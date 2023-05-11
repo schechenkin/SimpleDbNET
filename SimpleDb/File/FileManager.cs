@@ -93,7 +93,7 @@ public class FileManager : IFileManager
             dbFile.Stream.Write(bytes);
             ArrayPool<byte>.Shared.Return(bytes);
             dbFile.RecalculateLength();
-            dbFile.Stream.Flush(true);
+            dbFile.Stream.Flush(/*true*/);
             return blockId;
         }
     }

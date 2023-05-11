@@ -130,3 +130,5 @@ select pass_id, passenger_id, booking_leg_id, seat, boarding_time, precheck, upd
 }
 
 insert into T1(A,B) values(3, 'three')
+
+insert into boarding_pass (pass_id, passenger_id, booking_leg_id, seat, boarding_time, precheck, update_ts) values(13328577, 4484037, 3710696, '8E', '2020-07-07 00:05:00-05', 0, '2020-07-06 20:18:44.163071-05')

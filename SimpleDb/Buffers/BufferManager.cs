@@ -202,6 +202,11 @@ public class BufferManager
         return m_freeList.BufferCount;
     }
 
+    public int GetDirtyBlocksCount()
+    {
+        return m_bufferpool.Where(x => !x.IsPinned && x.ModifiedByTransaction().HasValue).Count();
+    }
+
     public UsageStats GetUsageStats()
     {
         lock (mutex)
@@ -218,6 +223,7 @@ public class BufferManager
             {
                 FreeBlockCount = GetFreeBlockCount(),
                 UnpinnedBlockCount = GetUnpinnedBlocksCount(),
+                DirtyBlockCount = GetDirtyBlocksCount(),
                 BlocksCount = blocksCount
             };
 
@@ -242,6 +248,7 @@ public class BufferManager
         Console.WriteLine($"stats:");
         Console.WriteLine($"FreeBlockCount {usageStats.FreeBlockCount}");
         Console.WriteLine($"UnpinnedBlockCount {usageStats.UnpinnedBlockCount}");
+        Console.WriteLine($"DirtyBlockCount {usageStats.DirtyBlockCount}");
         foreach (var kvp in usageStats.BlocksCount)
         {
             Console.WriteLine($"Table {kvp.Key} count {kvp.Value}");
@@ -254,6 +261,7 @@ public class BufferManager
     {
         public int FreeBlockCount { get; set; }
         public int UnpinnedBlockCount { get; set; }
+        public int DirtyBlockCount { get; set; }
         public Dictionary<string, int> BlocksCount { get; set; } = new Dictionary<string, int>();
     }
 }

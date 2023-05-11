@@ -8,18 +8,24 @@ public class LockTable
 
     public void WaitExclusiveLock(in BlockId blockId)
     {
+        return;
+        
         ReaderWriterLock rwl = locks.GetOrAdd(blockId, (blockId) => new ReaderWriterLock());
         rwl.AcquireWriterLock(100);
     }
 
     public void WaitSharedLock(in BlockId blockId)
     {
+        return;
+        
         ReaderWriterLock rwl = locks.GetOrAdd(blockId, (blockId) => new ReaderWriterLock());
         rwl.AcquireReaderLock(100);
     }
 
     public void UnLock(in BlockId blockId)
     {
+        return;
+        
         ReaderWriterLock? rwl;
         if (locks.TryGetValue(blockId, out rwl))
         {

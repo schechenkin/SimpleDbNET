@@ -8,7 +8,7 @@
 
             float val = float.Parse("213,12");
 
-            SQLExecutor.Run(@"create table account (ReadFromResource
+            SQLExecutor.Run(@"create table account (
     account_id int not null,
     login varchar(32) not null,
     first_name varchar(16) not null,
@@ -17,7 +17,7 @@
     update_ts dateTime
 )");
 
-        Console.WriteLine("AccountLoader");
+        Console.WriteLine("AccountLoader!!");
 
         new AccountLoader().Load(lines);
 

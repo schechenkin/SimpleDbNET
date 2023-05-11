@@ -82,7 +82,7 @@ namespace PostgresSQLFileParser
 
         public override string To => "\\.";
 
-        public override int GroupBy => 2000;
+        public override int GroupBy => 1000;
 
         public override void GenerateInsert(List<string> lines)
         {
@@ -124,7 +124,15 @@ namespace PostgresSQLFileParser
                 sql += $"({values[0]}, {values[1]}, {values[2]}, '{values[3]}', '{values[4]}', {GetBool(values[5])}, '{values[6]}'),";
             }
 
-            SQLExecutor.Run(sql.TrimEnd(','));
+            try
+            {
+                SQLExecutor.Run(sql.TrimEnd(','));    
+            }
+            catch(Exception exc)
+            {
+                Console.WriteLine(sql.TrimEnd(','));
+                throw exc;
+            }
         }
     }
 

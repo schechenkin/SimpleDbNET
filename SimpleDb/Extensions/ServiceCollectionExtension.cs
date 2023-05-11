@@ -10,6 +10,7 @@ public static class ServiceCollectionExtension
     {
         services.AddSingleton<ISimpleDbServer>(new SimpleDbConext());
         services.AddHostedService<LogFlushToDiskWorker>();
+        services.AddHostedService<BuffersFlushToDiskWorker>();
         return services;
     }
 

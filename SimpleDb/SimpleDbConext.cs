@@ -80,7 +80,7 @@ internal class SimpleDbConext : ISimpleDbServer
 
     public Task ExecuteUpdateSql(string sql)
     {
-        Transaction tx = db.NewTransaction(logWriteMode: LogWriteMode.Async);
+        Transaction tx = db.NewTransaction(logWriteMode: LogWriteMode.Sync);
         db.Planner.executeUpdate(sql, tx);
         tx.Commit();
 
