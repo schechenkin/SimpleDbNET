@@ -25,7 +25,7 @@ namespace SimpleDb.BackgroundWorkers
                 while (await timer.WaitForNextTickAsync(stoppingToken))
                 {
                     _logger.LogInformation("Flush log to Disk starts");
-                    dbServer.Log.Flush();
+                    dbServer.Log.Flush(true);
                     _logger.LogInformation("Flush log to Disk ends");
                 }
             }

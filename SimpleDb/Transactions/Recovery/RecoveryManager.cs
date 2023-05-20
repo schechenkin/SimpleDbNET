@@ -42,7 +42,7 @@ public class RecoveryManager : IRecoveryManager
         {
             var lsn = CommitRecord.WriteToLog(logManager, txnum);
             if(logWriteMode == LogWriteMode.Sync)
-                logManager.Flush(lsn);
+                logManager.Flush(lsn, true);
         }
     }
 
@@ -55,7 +55,7 @@ public class RecoveryManager : IRecoveryManager
         bufferManager.FlushAll(txnum);
         var lsn = RollbackRecord.WriteToLog(logManager, txnum);
         if (logWriteMode == LogWriteMode.Sync)
-            logManager.Flush(lsn);
+            logManager.Flush(lsn, true);
     }
 
     /**
@@ -70,7 +70,7 @@ public class RecoveryManager : IRecoveryManager
         bufferManager.FlushAll(txnum);
         var lsn = CheckpointRecord.WriteToLog(logManager);
         if (logWriteMode == LogWriteMode.Sync)
-            logManager.Flush(lsn);
+            logManager.Flush(lsn, true);
     }
 
     internal LSN SetValue<T>(Buffers.Buffer buffer, int offset, T value)

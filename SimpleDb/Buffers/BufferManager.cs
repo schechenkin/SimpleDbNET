@@ -9,6 +9,7 @@ public class BufferManager
 {
     private ConcurrentBag<Buffer> m_bufferpool;
     private ConcurrentDictionary<BlockId, Buffer> m_blockToBufferMap = new ();
+    private IFileManager fileManager;
     private object mutex = new object();
     private static TimeSpan MAX_WAIT_TIME = new TimeSpan(0, 0, 10); // 10 seconds
     private FreeList_ThreadSafe m_freeList;
@@ -25,16 +26,20 @@ public class BufferManager
     {
         m_freeList = new FreeList_ThreadSafe(numbuffs, fm, lm);
         m_bufferpool = new ConcurrentBag<Buffer>();
+        fileManager = fm;
     }
 
     public void FlushDirtyBuffers()
     {       
         //TODO Thread safe?
-        foreach (Buffer buffer in m_bufferpool)
+        var dirtyBuffers = m_bufferpool.Where(buffer => buffer.IsDirty).ToList();
+        foreach (Buffer buffer in dirtyBuffers)
         {
-            if (!buffer.IsPinned && buffer.ModifiedByTransaction().HasValue)
-                buffer.Flush();
+            if (buffer.IsDirty)
+                 buffer.Flush();
         }
+
+        fileManager.FlushTableFilesToDisk();
     }
 
     /**

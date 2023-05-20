@@ -17,6 +17,7 @@ public class Buffer
     public BlockId? BlockId { get; private set; }
     public bool IsPinned => Interlocked.Read(ref pinsCount_) > 0;
     public long UsageCount => Interlocked.Read(ref usageCount_);
+    public bool IsDirty => !IsPinned && ModifiedByTransaction().HasValue;
 
     public Buffer(IFileManager fileManager, ILogManager logManager)
     {
@@ -49,16 +50,16 @@ public class Buffer
     /**
      * Write the buffer to its disk block if it is dirty.
      */
-    internal void Flush()
+    internal void Flush(bool forceDiskWrite = false)
     {
         if (transactionNumber_ is not null)
         {
             if(lsn_.HasValue)
             {
-                logManager_.Flush(lsn_.Value);
+                logManager_.Flush(lsn_.Value, forceDiskWrite);
             }
             Debug.Assert(BlockId.HasValue);
-            fileManager_.WritePage(BlockId.Value, Page);
+            fileManager_.WritePage(BlockId.Value, Page, forceDiskWrite);
             transactionNumber_ = null;
         }
     }

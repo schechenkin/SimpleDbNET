@@ -39,17 +39,17 @@ namespace PostgresSQLFileParser
         public override void GenerateInsert(List<string> lines)
         {
             string sql = "insert into flight (flight_id, flight_no, scheduled_departure, scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival, update_ts) values";
-
+            var sb = new StringBuilder();
+            sb.Append(sql);
             //126148	1554	2020-07-01 12:30:00-05	2020-07-01 13:30:00-05	CLT	TYS	Canceled	CR2	2020-07-01 13:12:17.28-05	2020-07-01 13:31:09.84-05	\N 
 
             foreach (var line in lines)
             {
                 var values = line.Split('\t');
-
-                sql += $"({values[0]}, '{values[1]}', '{values[2]}', '{values[3]}', '{values[4]}', '{values[5]}', '{values[6]}', '{values[7]}', {GetDateTimeValOrNull(values[8])}, {GetDateTimeValOrNull(values[9])}, {GetDateTimeValOrNull(values[10])}),";
+                sb.Append($"({values[0]}, '{values[1]}', '{values[2]}', '{values[3]}', '{values[4]}', '{values[5]}', '{values[6]}', '{values[7]}', {GetDateTimeValOrNull(values[8])}, {GetDateTimeValOrNull(values[9])}, {GetDateTimeValOrNull(values[10])}),");
             }
 
-            SQLExecutor.Run(sql.TrimEnd(','));
+            SQLExecutor.Run(sb.ToString().TrimEnd(','));
         }
     }
 
@@ -64,15 +64,17 @@ namespace PostgresSQLFileParser
         public override void GenerateInsert(List<string> lines)
         {
             string sql = "insert into booking_leg (booking_leg_id, booking_id, flight_id, leg_num, is_returning, update_ts) values";
+            var sb = new StringBuilder();
+            sb.Append(sql);
 
             foreach (var line in lines)
             {
                 var values = line.Split('\t');
 
-                sql += $"({values[0]}, {values[1]}, {values[2]}, {values[3]}, {GetBool(values[4])}, '{values[5]}'),";
+                sb.Append($"({values[0]}, {values[1]}, {values[2]}, {values[3]}, {GetBool(values[4])}, '{values[5]}'),");
             }
 
-            SQLExecutor.Run(sql.TrimEnd(','));
+            SQLExecutor.Run(sb.ToString().TrimEnd(','));
         }
     }
 
@@ -87,15 +89,16 @@ namespace PostgresSQLFileParser
         public override void GenerateInsert(List<string> lines)
         {
             string sql = "insert into booking (booking_id, booking_ref, booking_name, account_id, email, phone, update_ts, price) values";
+            var sb = new StringBuilder();
+            sb.Append(sql);
 
             foreach (var line in lines)
             {
                 var values = line.Split('\t');
-
-                sql += $"({values[0]}, '{values[1]}', '{values[2]}', {values[3]}, '{values[4]}', '{values[5]}', '{values[6]}', {GetIntFromDecimal(values[7])}),";
+                sb.Append($"({values[0]}, '{values[1]}', '{values[2]}', {values[3]}, '{values[4]}', '{values[5]}', '{values[6]}', {GetIntFromDecimal(values[7])}),");
             }
 
-            SQLExecutor.Run(sql.TrimEnd(','));
+            SQLExecutor.Run(sb.ToString().TrimEnd(','));
         }
 
         private string GetIntFromDecimal(string v)
@@ -116,17 +119,18 @@ namespace PostgresSQLFileParser
         public override void GenerateInsert(List<string> lines)
         {
             string sql = "insert into boarding_pass (pass_id, passenger_id, booking_leg_id, seat, boarding_time, precheck, update_ts) values";
+            var sb = new StringBuilder();
+            sb.Append(sql);
 
             foreach (var line in lines)
             {
                 var values = line.Split('\t');
-
-                sql += $"({values[0]}, {values[1]}, {values[2]}, '{values[3]}', '{values[4]}', {GetBool(values[5])}, '{values[6]}'),";
+                sb.Append($"({values[0]}, {values[1]}, {values[2]}, '{values[3]}', '{values[4]}', {GetBool(values[5])}, '{values[6]}'),");
             }
 
             try
             {
-                SQLExecutor.Run(sql.TrimEnd(','));    
+                SQLExecutor.Run(sb.ToString().TrimEnd(','));    
             }
             catch(Exception exc)
             {
@@ -182,7 +186,7 @@ namespace PostgresSQLFileParser
 
     public static class SQLExecutor
     {
-        static HttpClient client = new HttpClient();
+        static HttpClient client = new HttpClient() { Timeout = TimeSpan.FromMinutes(5) };
 
         public static void Run(string sql)
         {

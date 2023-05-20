@@ -15,6 +15,7 @@ public interface ISimpleDbServer
     BufferManager.UsageStats GetBufferManagerUsage();
     ILogManager Log {get;}
     BufferManager GetBufferManager();
+    void ShrinkLogFile();
 }
 
 public class SelectResult
@@ -80,7 +81,7 @@ internal class SimpleDbConext : ISimpleDbServer
 
     public Task ExecuteUpdateSql(string sql)
     {
-        Transaction tx = db.NewTransaction(logWriteMode: LogWriteMode.Sync);
+        Transaction tx = db.NewTransaction(logWriteMode: LogWriteMode.Async);
         db.Planner.executeUpdate(sql, tx);
         tx.Commit();
 
@@ -152,5 +153,10 @@ internal class SimpleDbConext : ISimpleDbServer
     public BufferManager GetBufferManager()
     {
         return db.BufferManager;
+    }
+
+    public void ShrinkLogFile()
+    {
+        db.ShrinkLogFile();
     }
 }

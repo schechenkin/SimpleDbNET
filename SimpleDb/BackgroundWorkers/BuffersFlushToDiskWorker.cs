@@ -18,7 +18,7 @@ namespace SimpleDb.BackgroundWorkers
         {
             _logger.LogInformation("BuffersFlushToDiskWorker Service running.");
 
-            using PeriodicTimer timer = new(TimeSpan.FromMinutes(1));
+            using PeriodicTimer timer = new(TimeSpan.FromMinutes(5));
 
             try
             {

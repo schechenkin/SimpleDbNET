@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SimpleDb;
 using SimpleDb.Abstractions;
+using SimpleDb.Checkpoint;
 using SimpleDb.Transactions.Recovery;
 
 namespace SimpleDbNET.Api.Controllers;
@@ -9,7 +10,7 @@ namespace SimpleDbNET.Api.Controllers;
 public class SqlController : Controller
 {
     [HttpPost]
-    public async Task<ActionResult> Run([FromServices] ISimpleDbServer db, [FromServices] ILogger<SqlController> logger)
+    public async Task<ActionResult> Run([FromServices] ISimpleDbServer db, [FromServices] ActiveRequestsCounter activeRequestsCounter, [FromServices] ICheckpoint checkpoint, [FromServices] ILogger<SqlController> logger)
     {
         string sql;
 
@@ -20,6 +21,10 @@ public class SqlController : Controller
 
         try
         {
+            checkpoint.WaitCheckpointIsComplete();
+            
+            activeRequestsCounter.Increment();
+
             if (sql.StartsWith("select"))
             {
                 return Ok(await db.ExecuteSelectSql(sql));
@@ -35,6 +40,18 @@ public class SqlController : Controller
             logger.LogError("error execute sql: " + sql, ex.Message);
             throw;
         }
+        finally
+        {
+            activeRequestsCounter.Decrement();
+        }
+    }
+
+    [HttpPost("checkpoint")]
+    public ActionResult Checkpoint([FromServices] ISimpleDbServer db, [FromServices] ICheckpoint checkpoint, [FromServices] ILogger<SqlController> logger)
+    {
+        checkpoint.WaitCheckpointIsComplete();
+        checkpoint.Execute();
+        return Ok();
     }
 
     [HttpGet("test")]

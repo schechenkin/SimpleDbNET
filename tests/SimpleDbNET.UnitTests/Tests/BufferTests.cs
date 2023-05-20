@@ -75,7 +75,7 @@ public class BufferTests
         //Then
         fileManager.Received().WritePage(BlockId.New("fileName", 0), sut.Page);
         fileManager.Received().ReadPage(BlockId.New("fileName", 1), sut.Page);
-        logManager.Received().Flush(lsn);
+        logManager.Received().Flush(lsn, false);
 
         sut.ModifiedByTransaction().Should().BeNull();
 

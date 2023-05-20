@@ -17,10 +17,12 @@ public class Server
 
     private FileManager fileManager;
     private LogManager logManager;
+    private FileManager fileMangerForLog;
     private BufferManager bufferManager;
     private MetadataMgr metaDataManager;
     private Planner planner;
     private LockTable lockTable;
+    private string dirname;
 
     /**
      * A constructor useful for debugging.
@@ -30,10 +32,12 @@ public class Server
      */
     private Server(string dirname, int blocksize, int buffersCount, bool recreate = false)
     {
+        this.dirname= dirname;
+        
         fileManager = new FileManager(dirname, blocksize, recreate, 262144);
         fileManager.OpenTablesFiles();
 
-        var fileMangerForLog = new FileManager(dirname, 1024*1024*16, recreate, 100);
+        fileMangerForLog = new FileManager(dirname, 1024*1024*16, recreate, 100);
         logManager = new LogManager(fileMangerForLog, LOG_FILE);
         bufferManager = new BufferManager(fileManager, logManager, buffersCount);
         lockTable = new LockTable();
@@ -53,7 +57,7 @@ public class Server
 
         if(!isnew)
         {
-            fileMangerForLog.Shrink(LOG_FILE);
+            ShrinkLogFile();
             logManager = new LogManager(fileMangerForLog, LOG_FILE);
         }
 
@@ -78,6 +82,12 @@ public class Server
     public Transaction NewTransaction(bool readOnly = false, LogWriteMode logWriteMode = LogWriteMode.Sync)
     {
         return new Transaction(fileManager, logManager, bufferManager, lockTable, readOnly, logWriteMode);
+    }
+
+    public void ShrinkLogFile()
+    {
+        fileMangerForLog.Shrink(LOG_FILE);
+        logManager = new LogManager(fileMangerForLog, LOG_FILE);
     }
 
 

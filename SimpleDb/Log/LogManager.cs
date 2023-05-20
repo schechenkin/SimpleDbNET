@@ -45,21 +45,21 @@ public class LogManager : ILogManager
      * All earlier log records will also be written to disk.
      * @param lsn the LSN of a log record
      */
-    public void Flush(LSN lsn)
+    public void Flush(LSN lsn, bool forceWriteOnDisk)
     {
         if (lsn >= lastSavedLSN_)
-            Flush();
+            Flush(forceWriteOnDisk);
     }
 
     public LogIterator GetIterator()
     {
-        Flush();
+        Flush(true);
         return new LogIterator(fileManager_, BlockId.New(logFile_, 0));
     }
 
     public LogReverseIterator GetReverseIterator()
     {
-        Flush();
+        Flush(true);
         return new LogReverseIterator(fileManager_, currentBlockId_);
     }
 
@@ -84,7 +84,7 @@ public class LogManager : ILogManager
             int bytesneeded = recsize + sizeof(int);
             if (boundary - bytesneeded < sizeof(int))
             { // the log record doesn't fit,
-                Flush();        // so move to the next block.
+                Flush(true);        // so move to the next block.
                 currentBlockId_ = AppendNewBlock();
                 boundary = m_LogPage.GetInt(0);
             }
@@ -104,16 +104,16 @@ public class LogManager : ILogManager
     {
         BlockId blk = fileManager_.AppendNewBlock(logFile_);
         m_LogPage.SetInt(0, fileManager_.BlockSize);
-        fileManager_.WritePage(blk, m_LogPage);
+        fileManager_.WritePage(blk, m_LogPage, true);
         return blk;
     }
 
     /**
      * Write the buffer to the log file.
      */
-    public void Flush()
+    public void Flush(bool forceWriteOnDisk)
     {
-        fileManager_.WritePage(currentBlockId_, m_LogPage);
+        fileManager_.WritePage(currentBlockId_, m_LogPage, forceWriteOnDisk);
         lastSavedLSN_ = latestLSN_;
     }
 

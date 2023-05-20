@@ -66,7 +66,7 @@ public class FileManager : IFileManager
         }
     }
 
-    public void WritePage(in BlockId blockId, in Page page)
+    public void WritePage(in BlockId blockId, in Page page, bool forceWriteOnDisk = false)
     {
         var dbFile = GetDbFile(blockId.FileName, blockId.Number);
         lock (dbFile.Stream)
@@ -74,7 +74,7 @@ public class FileManager : IFileManager
             long offset = (blockId.Number % blocksPerFile) * blocksize;
             dbFile.Stream.Seek(offset, SeekOrigin.Begin);
             dbFile.Stream.Write(page.GetBuffer(), 0, blocksize);
-            dbFile.Stream.Flush(true);
+            dbFile.Stream.Flush(forceWriteOnDisk);
             if (offset + blocksize >= dbFile.Length)
                 dbFile.RecalculateLength();
         }
@@ -232,5 +232,19 @@ public class FileManager : IFileManager
                 lastChunk.Stream.
             }
         }*/
+    }
+
+    public void FlushTableFilesToDisk()
+    {
+        lock(openFiles) 
+        {
+            foreach (var file in openFiles)
+            {
+                foreach (DbFile chunk in file.Value)
+                {
+                    chunk.Stream.Flush(true);
+                }
+            }
+        }
     }
 }
