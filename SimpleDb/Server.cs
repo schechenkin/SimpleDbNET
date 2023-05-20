@@ -22,7 +22,6 @@ public class Server
     private MetadataMgr metaDataManager;
     private Planner planner;
     private LockTable lockTable;
-    private string dirname;
 
     /**
      * A constructor useful for debugging.
@@ -31,9 +30,7 @@ public class Server
      * @param buffsize the number of buffers
      */
     private Server(string dirname, int blocksize, int buffersCount, bool recreate = false)
-    {
-        this.dirname= dirname;
-        
+    {       
         fileManager = new FileManager(dirname, blocksize, recreate, 262144);
         fileManager.OpenTablesFiles();
 

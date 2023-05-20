@@ -7,12 +7,12 @@ namespace SimpleDb.Buffers;
 
 public class BufferManager
 {
-    private ConcurrentBag<Buffer> m_bufferpool;
+    private BuffersPool m_bufferpool;
     private ConcurrentDictionary<BlockId, Buffer> m_blockToBufferMap = new ();
     private IFileManager fileManager;
-    private object mutex = new object();
+    private object m_statsLocker = new object();
     private static TimeSpan MAX_WAIT_TIME = new TimeSpan(0, 0, 10); // 10 seconds
-    private FreeList_ThreadSafe m_freeList;
+    private FreeList m_freeList;
     private long m_clockSweepCurrentIndex = 0;
 
     /**
@@ -24,16 +24,14 @@ public class BufferManager
      */
     public BufferManager(IFileManager fm, ILogManager lm, int numbuffs)
     {
-        m_freeList = new FreeList_ThreadSafe(numbuffs, fm, lm);
-        m_bufferpool = new ConcurrentBag<Buffer>();
+        m_freeList = new FreeList(numbuffs, fm, lm);
+        m_bufferpool = new BuffersPool(numbuffs);
         fileManager = fm;
     }
 
     public void FlushDirtyBuffers()
     {       
-        //TODO Thread safe?
-        var dirtyBuffers = m_bufferpool.Where(buffer => buffer.IsDirty).ToList();
-        foreach (Buffer buffer in dirtyBuffers)
+        foreach (Buffer buffer in m_bufferpool.GetDirtyBuffers())
         {
             if (buffer.IsDirty)
                  buffer.Flush();
@@ -48,12 +46,8 @@ public class BufferManager
      */
     public void FlushAll(in TransactionNumber txnum)
     {
-        lock (mutex)
-        {
-            foreach (Buffer buff in m_bufferpool)
-                if (buff.ModifiedByTransaction() == txnum)
-                    buff.Flush();
-        }
+        foreach (Buffer buff in m_bufferpool.GetBuffersModifiedBy(txnum))
+            buff.Flush();
     }
 
 
@@ -177,7 +171,7 @@ public class BufferManager
             bool anyFound = false;
             while (m_clockSweepCurrentIndex < m_bufferpool.Count)
             {               
-                Buffer buffer = m_bufferpool.ElementAt((int)m_clockSweepCurrentIndex);
+                Buffer buffer = m_bufferpool[(int)m_clockSweepCurrentIndex];
 
                 if (!buffer.IsPinned)
                 {
@@ -197,51 +191,26 @@ public class BufferManager
         }
     }
 
-    public int GetUnpinnedBlocksCount()
-    {
-        return m_bufferpool.Where(x => !x.IsPinned).Count();
-    }
-
     public int GetFreeBlockCount()
     {
         return m_freeList.BufferCount;
     }
 
-    public int GetDirtyBlocksCount()
-    {
-        return m_bufferpool.Where(x => !x.IsPinned && x.ModifiedByTransaction().HasValue).Count();
-    }
-
     public UsageStats GetUsageStats()
     {
-        lock (mutex)
+        lock (m_statsLocker)
         {
-            Dictionary<string, int> blocksCount = new();
-
-            foreach (var group in m_bufferpool.Where(b => b.BlockId != null).GroupBy(b => b.BlockId?.FileName))
-            {
-                if (group.Key != null)
-                    blocksCount.Add(group.Key, group.Count());
-            }
+            Dictionary<string, int> blocksCount = m_bufferpool.GetUsageByFiles();
 
             UsageStats stats = new UsageStats
             {
                 FreeBlockCount = GetFreeBlockCount(),
-                UnpinnedBlockCount = GetUnpinnedBlocksCount(),
-                DirtyBlockCount = GetDirtyBlocksCount(),
+                UnpinnedBlockCount = m_bufferpool.GetUnpinnedBlocksCount(),
+                DirtyBlockCount = m_bufferpool.GetDirtyBlocksCount(),
                 BlocksCount = blocksCount
             };
 
             return stats;
-        }
-    }
-
-    private void PrintBufferPool()
-    {
-        Console.WriteLine("buffers:");
-        foreach (var buffer in m_bufferpool)
-        {
-            Console.WriteLine(buffer.ToString());
         }
     }
 
@@ -259,7 +228,7 @@ public class BufferManager
             Console.WriteLine($"Table {kvp.Key} count {kvp.Value}");
         }
         if (printBufferPool)
-            PrintBufferPool();
+            m_bufferpool.PrintBufferPool();
     }
 
     public class UsageStats
