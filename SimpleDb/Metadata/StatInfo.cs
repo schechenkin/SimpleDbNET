@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SimpleDb.Types;
 
 namespace SimpleDb.Metadata
 {
@@ -51,7 +47,7 @@ namespace SimpleDb.Metadata
          * @param fldname the name of the field
          * @return a guess as to the number of distinct field values
          */
-        public int distinctValues(String fldname)
+        public int distinctValues(DbString fldname)
         {
             return 1 + (numRecs / 3);
         }

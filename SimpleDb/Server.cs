@@ -6,6 +6,7 @@ using SimpleDb.Transactions;
 using SimpleDb.Log;
 using SimpleDb.Buffers;
 using SimpleDb.Abstractions;
+using SimpleDb.Indexes.Planner;
 
 namespace SimpleDb;
 
@@ -59,9 +60,8 @@ public class Server
         }
 
         QueryPlanner qp = new BasicQueryPlanner(metaDataManager);
-        UpdatePlanner up = new BasicUpdatePlanner(metaDataManager);
         //QueryPlanner qp = new HeuristicQueryPlanner(mdm);
-        //UpdatePlanner up = new IndexUpdatePlanner(mdm);
+        UpdatePlanner up = new IndexUpdatePlanner(metaDataManager);
         planner = new Planner(qp, up);
     }
 

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using SimpleDb;
-using SimpleDb.Abstractions;
 using SimpleDb.Checkpoint;
 using SimpleDb.Transactions.Recovery;
 
@@ -91,7 +90,7 @@ public class SqlController : Controller
     }
 
     [HttpGet("buffermanager")]
-    public async Task<ActionResult> GetBufferManagerStats([FromServices] ISimpleDbServer db)
+    public ActionResult GetBufferManagerStats([FromServices] ISimpleDbServer db)
     {
         return Ok(db.GetBufferManagerUsage());
     }

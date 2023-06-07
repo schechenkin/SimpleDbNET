@@ -12,14 +12,14 @@ namespace SimpleDb.Metadata
         private TableMgr tblmgr;
         private ViewMgr viewmgr;
         private StatMgr statmgr;
-        //private static IndexMgr idxmgr;
+        private IndexMgr idxmgr;
 
         public MetadataMgr(bool isnew, Transaction tx)
         {
             tblmgr = new TableMgr(isnew, tx);
             viewmgr = new ViewMgr(isnew, tblmgr, tx);
             statmgr = new StatMgr(tblmgr, tx);
-            //idxmgr = new IndexMgr(isnew, tblmgr, statmgr, tx);
+            idxmgr = new IndexMgr(isnew, tblmgr, statmgr, tx);
         }
 
         public void createTable(string tblname, Schema sch, Transaction tx)
@@ -42,7 +42,7 @@ namespace SimpleDb.Metadata
             return viewmgr.getViewDef(viewname, tx);
         }
 
-        /*public void createIndex(string idxname, string tblname, string fldname, Transaction tx)
+        public void createIndex(string idxname, string tblname, string fldname, Transaction tx)
         {
             idxmgr.createIndex(idxname, tblname, fldname, tx);
         }
@@ -50,7 +50,7 @@ namespace SimpleDb.Metadata
         public Dictionary<string, IndexInfo> getIndexInfo(string tblname, Transaction tx)
         {
             return idxmgr.getIndexInfo(tblname, tx);
-        }*/
+        }
 
         public StatInfo getStatInfo(String tblname, Layout layout, Transaction tx)
         {

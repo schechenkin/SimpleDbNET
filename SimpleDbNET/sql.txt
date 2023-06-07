@@ -20,6 +20,8 @@
   "elapsedMilliseconds": 112
 }
 
+create index accountIdIndex on account (account_id)
+
 select flight_id, flight_no, scheduled_departure,  scheduled_arrival, departure_airport, arrival_airport, status, aircraft_code, actual_departure, actual_arrival, update_ts from flight where flight_id = 278663
 
 {
@@ -132,3 +134,14 @@ select pass_id, passenger_id, booking_leg_id, seat, boarding_time, precheck, upd
 insert into T1(A,B) values(3, 'three')
 
 insert into boarding_pass (pass_id, passenger_id, booking_leg_id, seat, boarding_time, precheck, update_ts) values(13328577, 4484037, 3710696, '8E', '2020-07-07 00:05:00-05', 0, '2020-07-06 20:18:44.163071-05')
+
+
+create table Students(Id int, Name varchar(10))
+insert into Students(Id, Name) values (1, 'bob')
+insert into Students(Id, Name) values (2, 'alice')
+insert into Students(Id, Name) values (3, 'tom')
+insert into Students(Id, Name) values (4, 'jeck')
+insert into Students(Id, Name) values (5, 'elma')
+
+select Id, Name from Students
+create index StudentIdIndex on Students (Id)
